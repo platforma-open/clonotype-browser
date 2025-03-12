@@ -1,0 +1,23 @@
+{
+  "name": "@platforma-open/milaboratories.clonotype-tagger.test",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Block tests",
+  "scripts": {
+    "test": "vitest"
+  },
+  "files": [],
+  "keywords": [],
+  "dependencies": {
+    "this-block": "workspace:@platforma-open/milaboratories.clonotype-tagger@*",
+    "@platforma-open/milaboratories.clonotype-tagger.model": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.model": "catalog:",
+    "@platforma-open/milaboratories.samples-and-data": "catalog:",
+    "@platforma-sdk/model": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/test": "catalog:",
+    "vitest": "catalog:",
+    "typescript": "catalog:"
+  }
+}

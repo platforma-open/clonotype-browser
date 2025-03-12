@@ -1,0 +1,31 @@
+{
+  "name": "@platforma-open/milaboratories.clonotype-tagger.ui",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "watch": "vue-tsc && vite build --watch",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "ag-grid-enterprise": "catalog:",
+    "ag-grid-vue3": "catalog:",
+    "@platforma-open/milaboratories.clonotype-tagger.model": "workspace:*",
+    "@platforma-sdk/model": "catalog:",
+    "@platforma-sdk/ui-vue": "catalog:",
+    "vue": "catalog:",
+    "@vueuse/core": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue-tsc": "catalog:",
+    "rollup-plugin-sourcemaps2": "catalog:"
+  }
+}

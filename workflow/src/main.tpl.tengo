@@ -1,0 +1,11 @@
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+
+wf.setPreRun(assets.importTemplate(":prerun"))
+
+wf.body(func(args) {
+	return {
+		outputs: {},
+		exports: {}
+	}
+})

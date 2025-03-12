@@ -1,0 +1,43 @@
+{
+  "scripts": {
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
+    "build": "turbo run build",
+    "test": "turbo run test --concurrency 1 --env-mode=loose",
+    "mark-stable": "turbo run mark-stable",
+    "watch": "turbo watch build",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "devDependencies": {
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "@changesets/cli": "catalog:"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "//": {
+    "pnpm": {
+      "overrides": {
+        "@platforma-sdk/model": "file:/Users/dbolotin/milab/core/platforma/sdk/model/package.tgz",
+        "@platforma-sdk/ui-vue": "file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz",
+        "@milaboratories/uikit": "file:/Users/dbolotin/milab/core/platforma/lib/ui/uikit/package.tgz",
+        "@platforma-sdk/workflow-tengo": "file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz",
+        "@platforma-sdk/tengo-builder": "file:/Users/dbolotin/mi/core/platforma/tools/tengo-builder/package.tgz",
+        "@milaboratories/pl-middle-layer": "file:/Users/dbolotin/mi/core/platforma/lib/node/pl-middle-layer/package.tgz"
+      }
+    }
+  },
+  "pnpm": {
+    "overrides": {}
+  },
+  "///": {
+    "pnpm": {
+      "overrides": {
+        "@milaboratories/pl-model-common": "file:/Users/poslavskysv/Projects/milab/platforma/platforma-sdk/lib/model/common/package.tgz",
+        "@platforma-sdk/model": "file:/Users/poslavskysv/Projects/milab/platforma/platforma-sdk/sdk/model/package.tgz",
+        "@platforma-sdk/ui-vue": "file:/Users/poslavskysv/Projects/milab/platforma/platforma-sdk/sdk/ui-vue/package.tgz",
+        "@platforma-sdk/workflow-tengo": "file:/Users/poslavskysv/Projects/milab/platforma/platforma-sdk/sdk/workflow-tengo/package.tgz",
+        "@milaboratories/uikit": "file:/Users/poslavskysv/Projects/milab/platforma/platforma-sdk/lib/ui/uikit/package.tgz"
+      }
+    }
+  }
+}
