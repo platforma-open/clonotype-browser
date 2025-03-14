@@ -4,8 +4,7 @@
   "description": "Tengo-based template",
   "scripts": {
     "build": "rm -rf dist && pl-tengo check && pl-tengo build",
-    "format": "/usr/bin/env emacs --script ./format.el",
-    "test": "vitest"
+    "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
     "@platforma-open/milaboratories.clonotype-tagger.tagger": "workspace:*"

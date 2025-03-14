@@ -27,7 +27,11 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@platforma-open/milaboratories.mixcr-clonotyping-2": "file:/Users/dbolotin/mi/blocks/mixcr-clonotyping-2/block/package.tgz",
+      "@platforma-open/milaboratories.mixcr-clonotyping-2.workflow": "file:/Users/dbolotin/mi/blocks/mixcr-clonotyping-2/workflow/package.tgz",
+      "@platforma-open/milaboratories.mixcr-clonotyping-2.model": "file:/Users/dbolotin/mi/blocks/mixcr-clonotyping-2/model/package.tgz"
+    }
   },
   "///": {
     "pnpm": {

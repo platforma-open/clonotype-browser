@@ -13,10 +13,14 @@
     "@platforma-open/milaboratories.clonotype-tagger.model": "workspace:*",
     "@platforma-open/milaboratories.samples-and-data.model": "catalog:",
     "@platforma-open/milaboratories.samples-and-data": "catalog:",
+    "@platforma-open/milaboratories.mixcr-clonotyping-2.model": "catalog:",
+    "@platforma-open/milaboratories.mixcr-clonotyping-2": "catalog:",
     "@platforma-sdk/model": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
+    "eslint": "catalog:",
     "vitest": "catalog:",
     "typescript": "catalog:"
   }

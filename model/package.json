@@ -8,7 +8,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup && vite build && block-tools build-model",
-    "test": "vitest",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -18,6 +17,7 @@
   "devDependencies": {
     "@platforma-sdk/block-tools": "catalog:",
     "@platforma-sdk/eslint-config": "catalog:",
+    "eslint": "catalog:",
     "vitest": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
