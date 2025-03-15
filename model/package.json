@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
-    "zod": "catalog:"
+    "remeda": "catalog:",
+    "canonicalize": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/block-tools": "catalog:",

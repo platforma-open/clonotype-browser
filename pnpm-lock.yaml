@@ -66,9 +66,15 @@ catalogs:
     ag-grid-vue3:
       specifier: ^33.1.1
       version: 33.1.1
+    canonicalize:
+      specifier: ~2.0.0
+      version: 2.0.0
     eslint:
       specifier: ^9.21.0
       version: 9.22.0
+    remeda:
+      specifier: ^2.21.2
+      version: 2.21.2
     rollup-plugin-sourcemaps2:
       specifier: ^0.5.0
       version: 0.5.0
@@ -140,9 +146,12 @@ importers:
       '@platforma-sdk/model':
         specifier: 'catalog:'
         version: 1.22.59
-      zod:
+      canonicalize:
         specifier: 'catalog:'
-        version: 3.23.8
+        version: 2.0.0
+      remeda:
+        specifier: 'catalog:'
+        version: 2.21.2
     devDependencies:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
@@ -1183,7 +1192,7 @@ packages:
     engines: {node: '>=14'}
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2.model@file:../mixcr-clonotyping-2/model/package.tgz':
-    resolution: {integrity: sha512-B2/oHnL2Q23nwJL1l0hIrH91xeFnuuYFzSTa2N54dDWWq/QgUuPSgYveW8IBoIxOFzNevR0q1+O7MVr/EN6dSg==, tarball: file:../mixcr-clonotyping-2/model/package.tgz}
+    resolution: {integrity: sha512-cSg98h1yukGHrvE5Z/BzrlXYILVmydVMSfegN+ln5sk8XI/hgLuyteOpsPNnn3ql756+K8nvBZATaniB+LbWlg==, tarball: file:../mixcr-clonotyping-2/model/package.tgz}
     version: 1.8.1
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2.sc-clonotype-builder@1.0.1':
@@ -1193,11 +1202,11 @@ packages:
     resolution: {integrity: sha512-xmYnLNUlD/lCW9Xs/qiRBIJTZ6TOVIzC+bt/eRJo5Zy+pd/I2cbVRPNy7PJuByaQBOClLCvjB8kfqfeJqwzR/Q==}
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow@file:../mixcr-clonotyping-2/workflow/package.tgz':
-    resolution: {integrity: sha512-VISBJN/dIw9mkR1Ftu0zv/dzECjEwSnW24ZfjH7ykFb/OBNZOTL4/dmvEHsLVD/L13EuFumhWW2V3SyFAdfNbA==, tarball: file:../mixcr-clonotyping-2/workflow/package.tgz}
+    resolution: {integrity: sha512-rosM35+KWMyAZAFODLa/A5eNlSA+ItwvJ/vuO6+P9BOZegZMJDONEJ5grC0wWUdToIHSUo8Tk5+ZxLoSekuKQQ==, tarball: file:../mixcr-clonotyping-2/workflow/package.tgz}
     version: 2.1.0
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2@file:../mixcr-clonotyping-2/block/package.tgz':
-    resolution: {integrity: sha512-H978caiFNZg4j2QB4j74TDBd5723VVY1e5vXWhSD4KfweGOHVGcba0Xhd4Dp98SNuQMOq/TpOm9et7O0dEPBAA==, tarball: file:../mixcr-clonotyping-2/block/package.tgz}
+    resolution: {integrity: sha512-rqqYPiZMx0rvD8KFzU175325A7g4XuwveyifZH/zGgfgabdzzhnJPQZsk8JUCUsHUR+Q/jdVs0gR4sYtpngLGw==, tarball: file:../mixcr-clonotyping-2/block/package.tgz}
     version: 2.0.4
 
   '@platforma-open/milaboratories.runenv-python-3@1.1.7':

@@ -1,11 +1,8 @@
 import type {
-  BlockArgs,
+  BlockArgs as MiXCRClonotypingBlockArgs,
   BlockOutputs as MiXCRClonotypingBlockOutputs,
   platforma as mixcrPlatforma } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import {
-  AlignReport,
-  AssembleReport,
-  Qc,
   SupportedPresetList,
   uniquePlId,
 } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
@@ -14,9 +11,9 @@ import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaborato
 import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
 import { blockSpec as annotationBlockSpec } from 'this-block';
-import type { platforma } from '@platforma-open/milaboratories.clonotype-tagger.model';
+import type { BlockArgs, BlockOutputs, platforma } from '@platforma-open/milaboratories.clonotype-tagger.model';
 import type { InferBlockState } from '@platforma-sdk/model';
-import { fromPlRef, wrapOutputs } from '@platforma-sdk/model';
+import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
@@ -26,54 +23,92 @@ blockTest(
     const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
     const annotationBlockId = await project.addBlock('Clonotype Annotation', annotationBlockSpec);
 
-    const sample1Id = uniquePlId();
-    const metaColumn1Id = uniquePlId();
+    const metaColumnDonorId = uniquePlId();
+    const metaColumnTissueId = uniquePlId();
+    const metaColumnDayAfterVaccinationId = uniquePlId();
     const dataset1Id = uniquePlId();
 
-    const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
-    const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
+    const s652_sampleId = uniquePlId();
+    const s652_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233652_sampledBulk_R1.fastq.gz');
+    const s652_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233652_sampledBulk_R2.fastq.gz');
+    const s663_sampleId = uniquePlId();
+    const s663_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233663_sampledBulk_R1.fastq.gz');
+    const s663_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233663_sampledBulk_R2.fastq.gz');
+    const s664_sampleId = uniquePlId();
+    const s664_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233664_sampledBulk_R1.fastq.gz');
+    const s664_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233664_sampledBulk_R2.fastq.gz');
 
     await project.setBlockArgs(sndBlockId, {
       metadata: [
         {
-          id: metaColumn1Id,
-          label: 'MetaColumn1',
+          id: metaColumnDonorId,
+          label: 'Donor',
+          global: false,
+          valueType: 'String',
+          data: {
+            [s652_sampleId]: '321-05',
+            [s663_sampleId]: '321-04',
+            [s664_sampleId]: '321-04',
+          },
+        },
+        {
+          id: metaColumnTissueId,
+          label: 'Tissue',
+          global: true,
+          valueType: 'String',
+          data: {
+            [s652_sampleId]: 'Plasmablasts',
+            [s663_sampleId]: 'PBMC',
+            [s664_sampleId]: 'Plasmablasts',
+          },
+        },
+        {
+          id: metaColumnDayAfterVaccinationId,
+          label: 'Day after vaccination',
           global: false,
           valueType: 'Long',
           data: {
-            [sample1Id]: 2345,
+            [s652_sampleId]: 5,
+            [s663_sampleId]: 0,
+            [s664_sampleId]: 5,
           },
         },
       ],
-      sampleIds: [sample1Id],
+      sampleIds: [s652_sampleId, s663_sampleId, s664_sampleId],
       sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: { [sample1Id]: 'Sample 1' },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Dataset 1',
-          content: {
-            type: 'Fastq',
-            readIndices: ['R1', 'R2'],
-            gzipped: true,
-            data: {
-              [sample1Id]: {
-                R1: r1Handle,
-                R2: r2Handle,
-              },
+      sampleLabels: { [s652_sampleId]: 'SRR11233652', [s663_sampleId]: 'SRR11233663', [s664_sampleId]: 'SRR11233664' },
+      datasets: [{
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'Fastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          data: {
+            [s652_sampleId]: {
+              R1: s652_r1Handle,
+              R2: s652_r2Handle,
+            },
+            [s663_sampleId]: {
+              R1: s663_r1Handle,
+              R2: s663_r2Handle,
+            },
+            [s664_sampleId]: {
+              R1: s664_r1Handle,
+              R2: s664_r2Handle,
             },
           },
         },
-      ],
+      }],
     } satisfies SamplesAndDataBlockArgs);
     await project.runBlock(sndBlockId);
     await helpers.awaitBlockDone(sndBlockId, 8000);
-    const sndBlockState = project.getBlockState(sndBlockId);
+    // const sndBlockState = project.getBlockState(sndBlockId);
     const clonotypingBlockState = project.getBlockState(clonotypingBlockId);
 
     const sdnStableState1 = await helpers.awaitBlockDoneAndGetStableBlockState(sndBlockId, 8000);
     expect(sdnStableState1.outputs).toMatchObject({
-      fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
+      fileImports: { ok: true, value: { [s652_r1Handle]: { done: true }, [s652_r2Handle]: { done: true }, [s663_r1Handle]: { done: true }, [s663_r2Handle]: { done: true }, [s664_r1Handle]: { done: true }, [s664_r2Handle]: { done: true } } },
     });
 
     const clonotypingStableState1 = (await awaitStableState(
@@ -105,9 +140,9 @@ blockTest(
 
     await project.setBlockArgs(clonotypingBlockId, {
       input: clonotypingStableState1Outputs.inputOptions[0].ref,
-      preset: { type: 'name', name: 'milab-human-dna-xcr-7genes-multiplex' },
-      chains: ['IGHeavy', 'TRB'],
-    } satisfies BlockArgs);
+      preset: { type: 'name', name: 'neb-human-rna-xcr-umi-nebnext' },
+      chains: ['IGHeavy'],
+    } satisfies MiXCRClonotypingBlockArgs);
 
     const clonotypingStableState2 = (await awaitStableState(
       project.getBlockState(clonotypingBlockId),
@@ -115,7 +150,7 @@ blockTest(
     )) as InferBlockState<typeof mixcrPlatforma>;
 
     const outputs2 = wrapOutputs<MiXCRClonotypingBlockOutputs>(clonotypingStableState2.outputs);
-    expect(outputs2.sampleLabels![sample1Id]).toBeDefined();
+    expect(outputs2.sampleLabels![s652_sampleId]).toBeDefined();
 
     await project.runBlock(clonotypingBlockId);
     const clonotypingStableState3 = (await helpers.awaitBlockDoneAndGetStableBlockState<typeof mixcrPlatforma>(
@@ -129,6 +164,21 @@ blockTest(
       project.getBlockState(annotationBlockId),
       25000,
     )) as InferBlockState<typeof platforma>;
-    console.dir(annotationStableState1, { depth: 8 });
+    const outputs4 = wrapOutputs<BlockOutputs>(annotationStableState1.outputs);
+    expect(outputs4.inputOptions).toBeDefined();
+    expect(outputs4.inputOptions).toHaveLength(1);
+
+    await project.setBlockArgs(annotationBlockId, {
+      inputAnchor: outputs4.inputOptions[0].ref,
+    } satisfies BlockArgs);
+
+    const annotationStableState2 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      5000,
+    )) as InferBlockState<typeof platforma>;
+
+    const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
+
+    console.dir(outputs5, { depth: 8 });
   },
 );
