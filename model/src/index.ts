@@ -1,21 +1,17 @@
 import type {
   AxisId,
   InferHrefType,
-  LabelDerivationOps,
   PColumnSpec,
   PlRef,
-  PObjectSpec,
   RenderCtx } from '@platforma-sdk/model';
 import {
   BlockModel,
-  deriveLabels,
+  generateAnchoredColumnOptions,
   getAxisId,
   isPColumnSpec,
   matchAxisId,
   type InferOutputsType,
 } from '@platforma-sdk/model';
-import { evolve, omit, omitBy, pick, pipe } from 'remeda';
-import { getGeneralizedIdOptions } from './gen_id';
 
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
@@ -64,7 +60,7 @@ export const platforma = BlockModel.create('Heavy')
     if (anchorAxes === undefined)
       return undefined;
 
-    return getGeneralizedIdOptions(ctx,
+    return generateAnchoredColumnOptions(ctx,
       { main: anchorAxes.anchorSpec },
       (spec) => isPColumnSpec(spec)
         && spec.axesSpec.length === 1
@@ -77,7 +73,7 @@ export const platforma = BlockModel.create('Heavy')
     const anchorAxes = getAnchorAxes(ctx);
     if (anchorAxes === undefined)
       return undefined;
-    return getGeneralizedIdOptions(ctx,
+    return generateAnchoredColumnOptions(ctx,
       { main: anchorAxes.anchorSpec },
       (spec) => isPColumnSpec(spec)
         && spec.axesSpec.length === 2
