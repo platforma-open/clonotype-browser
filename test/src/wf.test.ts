@@ -170,6 +170,7 @@ blockTest(
 
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
+      extraColumns: [],
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -178,6 +179,17 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
+
+    await project.setBlockArgs(annotationBlockId, {
+      inputAnchor: outputs4.inputOptions[0].ref,
+      extraColumns: [
+        {
+          operation: 'count',
+          metaColumn: outputs4.metaColumnsOptions![0].value,
+          targetColumn: outputs4.abundanceColumnsOptions![0].value,
+        },
+      ],
+    } satisfies BlockArgs);
 
     console.dir(outputs5, { depth: 8 });
   },

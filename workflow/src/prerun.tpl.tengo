@@ -2,6 +2,8 @@ wf := import("@platforma-sdk/workflow-tengo:workflow")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 
 wf.body(func(args) {
+	specs := {}
+
 	return {
 		outputs: {},
 		exports: {}
