@@ -1,20 +1,32 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 smart := import("@platforma-sdk/workflow-tengo:smart")
-ll := import("@platforma-sdk/workflow-tengo:ll")
-util := import(":util")
 file := import("@platforma-sdk/workflow-tengo:file")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+
+util := import(":util")
+
+doCalculations := assets.importTemplate(":do-calculations")
 
 wf.body(func(args) {
-	extraColumnsResult := util.calculateExtraColumns(wf, args)
-
-	extraColumnsMapBuilder := smart.mapBuilder()
-	for extraColumn in extraColumnsResult {
-		extraColumnsMapBuilder.add(extraColumn.name, file.exportFile(extraColumn.data))
+	if is_undefined(args.inputAnchor) {
+		return {
+			outputs: {},
+			exports: {}
+		}
 	}
+
+	columnPool := util.createColumnPool(wf, args)
+
+	calculationResult := render.createEphemeral(doCalculations, {
+		blockArgs: args,
+		columnPool: columnPool
+	})
 
 	return {
 		outputs: {
-			extraColumns: extraColumnsMapBuilder.build()
+			extraColumns: calculationResult.output("extraColumns")
 		},
 		exports: {}
 	}

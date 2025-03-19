@@ -1,0 +1,56 @@
+self := import("@platforma-sdk/workflow-tengo:tpl")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+file := import("@platforma-sdk/workflow-tengo:file")
+pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
+
+self.awaitState("columnPool", { wildcard: "*" }, "data", "InputsLocked")
+self.awaitState("columnPool", { wildcard: "*" }, "spec", "ResourceReady")
+
+self.body(func(inputs) {
+
+	blockArgs := inputs.blockArgs
+	columnPool := {}
+
+	allSpecs := []
+	for columnId, resolutionResult in inputs.columnPool {
+		columnPool[columnId] = {
+			name: columnId,
+			spec: resolutionResult.spec,
+			data: resolutionResult.data
+		}
+		allSpecs = append(allSpecs, resolutionResult.spec)
+	}
+
+	distiller := pSpec.createSpecDistiller(allSpecs)
+	for _, poolEntry in columnPool {
+		poolEntry.distilledSpec = maps.deepMerge(
+			distiller.distill(poolEntry.spec),
+			{ annotations: { "pl7.app/label": poolEntry.name } }
+		)
+	}
+
+	extraColumnsMapBuilder := smart.mapBuilder()
+
+	for idx, extraColumn in blockArgs.extraColumns {
+		metaColumnEntry := columnPool[extraColumn.metaColumn]
+		targetColumnEntry := columnPool[extraColumn.targetColumn]
+
+		if is_undefined(metaColumnEntry) || is_undefined(targetColumnEntry) {
+			ll.panic("Column not found: %s or %s", extraColumn.metaColumn, extraColumn.targetColumn)
+		}
+
+		inputTsv := xsv.exportFrame([
+			{ spec: metaColumnEntry.distilledSpec, data: metaColumnEntry.data },
+			{ spec: targetColumnEntry.distilledSpec, data: targetColumnEntry.data }],
+			"tsv", {}, {})
+
+		extraColumnsMapBuilder.add(string(idx), file.exportFile(inputTsv))
+	}
+
+    return {
+        extraColumns: extraColumnsMapBuilder.build()
+    }
+})

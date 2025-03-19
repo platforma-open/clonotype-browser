@@ -1,92 +1,83 @@
-self := import("@platforma-sdk/workflow-tengo:tpl")
-xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
-ll := import("@platforma-sdk/workflow-tengo:ll")
+// self := import("@platforma-sdk/workflow-tengo:tpl")
+// xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+// ll := import("@platforma-sdk/workflow-tengo:ll")
 
-self.defineOutputs(["result"])
+// self.defineOutputs(["result"])
 
-self.body(func(inputs) {
-	metaColumnSpec := inputs.metaColumnSpec
-	abundanceColumnSpec := inputs.abundanceColumnSpec
+// self.body(func(inputs) {
 
-	metaColumnData := inputs.metaColumnData
-	abundanceColumnData := inputs.abundanceColumnData
 
-	inputTsv := xsv.exportFrame([
-		{ spec: metaColumnSpec, data: metaColumnData },
-		{ spec: abundanceColumnSpec, data: abundanceColumnData }],
-		"tsv", {}, {})
+//     // aggregationWorkflow := {
+// 	// 	steps: [ {
+// 	// 		type: "aggregate",
+// 	// 		groupBy: keyColumns,
+// 	// 		aggregations: [
+// 	// 			{
+// 	// 				type: aggParams[0],
+// 	// 				rankingCol: rankingCol,
+// 	// 				pickCols: pickCols
+// 	// 			}
+// 	// 		]
+// 	// 	} ]
+// 	// }
+//     // if len(aggParams) > 1 {
+//     //     pickCols := []
+//     //     for col in pfConvParams.columns {
+//     //         pickCols = append(pickCols, [
+//     //             col.column,
+//     //             col.column
+//     //             ]
+//     //         )
+//     //     }
 
-    // aggregationWorkflow := {
-	// 	steps: [ {
-	// 		type: "aggregate",
-	// 		groupBy: keyColumns,
-	// 		aggregations: [
-	// 			{
-	// 				type: aggParams[0],
-	// 				rankingCol: rankingCol,
-	// 				pickCols: pickCols
-	// 			}
-	// 		]
-	// 	} ]
-	// }
-    // if len(aggParams) > 1 {
-    //     pickCols := []
-    //     for col in pfConvParams.columns {
-    //         pickCols = append(pickCols, [
-    //             col.column,
-    //             col.column
-    //             ]
-    //         )
-    //     }
+//     //     rankingCol := aggParams[1]
+//     //     aggregationWorkflow = {
+//     //         steps: [
+//     //             {
+//     //                 type: "aggregate",
+//     //                 groupBy: keyColumns,
+//     //                 aggregations: [
+//     //                     {
+//     //                         type: aggParams[0],
+//     //                         rankingCol: rankingCol,
+//     //                         pickCols: pickCols
+//     //                     }
+//     //                 ]
+//     //             }
+//     //         ]
+//     //     }
+//     // } else {
+//     //     aggregations := []
+//     //     for col in pfConvParams.columns {
+//     //         aggregations = append(aggregations, {
+//     //             type: aggParams[0],
+//     //             src: col.column,
+//     //             dst: col.column
+//     //         })
+//     //     }
 
-    //     rankingCol := aggParams[1]
-    //     aggregationWorkflow = {
-    //         steps: [
-    //             {
-    //                 type: "aggregate",
-    //                 groupBy: keyColumns,
-    //                 aggregations: [
-    //                     {
-    //                         type: aggParams[0],
-    //                         rankingCol: rankingCol,
-    //                         pickCols: pickCols
-    //                     }
-    //                 ]
-    //             }
-    //         ]
-    //     }
-    // } else {
-    //     aggregations := []
-    //     for col in pfConvParams.columns {
-    //         aggregations = append(aggregations, {
-    //             type: aggParams[0],
-    //             src: col.column,
-    //             dst: col.column
-    //         })
-    //     }
+//     //     aggregationWorkflow = { steps: [
+//     //         {
+//     //             type: "aggregate",
+//     //             groupBy: keyColumns,
+//     //             aggregations: aggregations
+//     //             }
+//     //         ]
+//     //     }
+//     // }
 
-    //     aggregationWorkflow = { steps: [
-    //         {
-    //             type: "aggregate",
-    //             groupBy: keyColumns,
-    //             aggregations: aggregations
-    //             }
-    //         ]
-    //     }
-    // }
+//     // aggregateCmd := exec.builder().
+//     //     printErrStreamToStdout().
+//     //     software(paggregateSw).
+//     //     arg("--workflow").arg("wf.json").
+//     //     writeFile("wf.json", json.encode(aggregationWorkflow)).
+//     //     arg("input.tsv").addFile("input.tsv", inputTsv).
+//     //     arg("output.tsv").saveFile("output.tsv").
+//     //     run()
 
-    // aggregateCmd := exec.builder().
-    //     printErrStreamToStdout().
-    //     software(paggregateSw).
-    //     arg("--workflow").arg("wf.json").
-    //     writeFile("wf.json", json.encode(aggregationWorkflow)).
-    //     arg("input.tsv").addFile("input.tsv", inputTsv).
-    //     arg("output.tsv").saveFile("output.tsv").
-    //     run()
+//     // return aggregateCmd.getFile("output.tsv")
 
-    // return aggregateCmd.getFile("output.tsv")
-
-    return {
-        result: inputTsv
-    }
-})
+//     return {
+//         result: inputTsv
+//     }
+// })

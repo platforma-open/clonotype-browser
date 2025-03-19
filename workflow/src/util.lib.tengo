@@ -6,33 +6,34 @@ json := import("json")
 
 calculateExtraColumnTpl := assets.importTemplate(":calculate-extra-column")
 
-// createColumnPool := func(wf, args) {
-// 	queries := {}
+createColumnPool := func(wf, args) {
+	queryMap := {}
 
-// 	addColumn := func(columnId) {
-// 		if queries[columnId] {
-// 			return
-// 		}
-// 		queries[columnId] = json.decode(columnId)
-// 	}
+	addColumn := func(columnId) {
+		if queryMap[columnId] {
+			return
+		}
+		queryMap[columnId] = json.decode(columnId)
+	}
 
-// 	for idx, extraColumn in args.extraColumns {
-// 		addColumn(extraColumn.metaColumn)
-// 		addColumn(extraColumn.targetColumn)
-// 	}
+	for idx, extraColumn in args.extraColumns {
+		addColumn(extraColumn.metaColumn)
+		addColumn(extraColumn.targetColumn)
+	}
 
-// 	queryResult := wf.anchoredQuery({
-// 		main: args.inputAnchor
-// 	}, queries)
+	queryResult := wf.anchoredQuery({
+		main: args.inputAnchor
+	}, queryMap)
 
-// 	columnPoolBuilder := smart.mapBuilder()
+	columnPoolBuilder := smart.mapBuilder()
+	columnPoolBuilder.add("anchor", queryResult.getAnchor("main"))
 
-// 	for columnId in queries {
-// 		columnPoolBuilder.add(columnId, queryResult.getResult(columnId))
-// 	}
+	for columnId, _ in queryMap {
+		columnPoolBuilder.add(columnId, queryResult.getResult(columnId))
+	}
 
-// 	return columnPoolBuilder.build()
-// }
+	return columnPoolBuilder.build()
+}
 
 calculateExtraColumns := func(wf, args) {
 	if is_undefined(args.inputAnchor) {
@@ -70,5 +71,6 @@ calculateExtraColumns := func(wf, args) {
 }
 
 export ll.toStrict({
+	createColumnPool: createColumnPool,
 	calculateExtraColumns: calculateExtraColumns
 })

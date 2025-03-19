@@ -57,9 +57,6 @@ catalogs:
     '@platforma-sdk/ui-vue':
       specifier: ^1.23.0
       version: 1.23.0
-    '@platforma-sdk/workflow-tengo':
-      specifier: ^2.16.0
-      version: 2.16.0
     '@vitejs/plugin-vue':
       specifier: ^5.2.3
       version: 5.2.3
@@ -102,6 +99,9 @@ catalogs:
     zod:
       specifier: ~3.23.8
       version: 3.23.8
+
+overrides:
+  '@platforma-sdk/workflow-tengo': file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz
 
 importers:
 
@@ -287,8 +287,8 @@ importers:
         specifier: 'catalog:'
         version: 1.23.0(@types/node@22.13.10)
       '@platforma-sdk/workflow-tengo':
-        specifier: 'catalog:'
-        version: 2.16.0
+        specifier: file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz
+        version: file:../../core/platforma/sdk/workflow-tengo/package.tgz
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1298,8 +1298,9 @@ packages:
   '@platforma-sdk/ui-vue@1.23.0':
     resolution: {integrity: sha512-Cx6XSHp35BjcJ4GpgbujACtjqemiJ5p/T2ck4/NcNU4CJIe86n2Sn7WTMMAfQxBqEcZQCXEPfTlgTPQKRp4Tvg==}
 
-  '@platforma-sdk/workflow-tengo@2.16.0':
-    resolution: {integrity: sha512-vV3xYd1H1TSk9M8+J5ewN0QZnyznqBuOxXFHzv0+8jKuuR3a7JTlR5jKmIGDCmf5MiZ7L9jA4ycPWSCB/KOnwQ==}
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
+    resolution: {integrity: sha512-BimpBLnvk0Wn6KGoWeQfU0P4AuFzQwRAiD5HiGKRzjzFvYq0yLRoKqmwU3Iro3I5PRAm3ktDgUkUW645xPOs+g==, tarball: file:../../core/platforma/sdk/workflow-tengo/package.tgz}
+    version: 2.16.0
 
   '@protobuf-ts/grpc-transport@2.9.5':
     resolution: {integrity: sha512-6lIUl+tl1T4cuLppY2If000tv1PXs7jMSM20wLxiySBtdrfsjxVtLnCl3lc0+HsAEni6EeEgjON9LMw2LJRcPQ==}
@@ -4888,7 +4889,7 @@ snapshots:
       '@milaboratories/ts-helpers': 1.1.4
       '@platforma-sdk/block-tools': 2.5.21
       '@platforma-sdk/model': 1.23.0
-      '@platforma-sdk/workflow-tengo': 2.16.0
+      '@platforma-sdk/workflow-tengo': file:../../core/platforma/sdk/workflow-tengo/package.tgz
       canonicalize: 2.1.0
       denque: 2.1.0
       lru-cache: 11.0.2
@@ -5211,7 +5212,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@platforma-sdk/workflow-tengo@2.16.0':
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
     dependencies:
       '@milaboratories/software-pframes-conv': 2.1.17
       '@platforma-open/milaboratories.software-small-binaries': 1.15.19
