@@ -11,9 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@platforma-sdk/model": "catalog:",
-    "remeda": "catalog:",
-    "canonicalize": "catalog:"
+    "@platforma-sdk/model": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/block-tools": "catalog:",

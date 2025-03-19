@@ -60,6 +60,19 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('extraColumns', (ctx) => {
+    const extraColumns = ctx.prerun?.resolve('extraColumns');
+    if (extraColumns === undefined)
+      return undefined;
+
+    return extraColumns.mapFields((name, val) => {
+      return {
+        name,
+        data: val?.getFileContentAsString(),
+      };
+    });
+  })
+
   .sections((_ctx) => {
     return [{ type: 'link', href: '/', label: 'Main' }];
   })

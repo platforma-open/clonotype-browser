@@ -1,0 +1,74 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+json := import("json")
+
+calculateExtraColumnTpl := assets.importTemplate(":calculate-extra-column")
+
+// createColumnPool := func(wf, args) {
+// 	queries := {}
+
+// 	addColumn := func(columnId) {
+// 		if queries[columnId] {
+// 			return
+// 		}
+// 		queries[columnId] = json.decode(columnId)
+// 	}
+
+// 	for idx, extraColumn in args.extraColumns {
+// 		addColumn(extraColumn.metaColumn)
+// 		addColumn(extraColumn.targetColumn)
+// 	}
+
+// 	queryResult := wf.anchoredQuery({
+// 		main: args.inputAnchor
+// 	}, queries)
+
+// 	columnPoolBuilder := smart.mapBuilder()
+
+// 	for columnId in queries {
+// 		columnPoolBuilder.add(columnId, queryResult.getResult(columnId))
+// 	}
+
+// 	return columnPoolBuilder.build()
+// }
+
+calculateExtraColumns := func(wf, args) {
+	if is_undefined(args.inputAnchor) {
+		return []
+	}
+
+	results := []
+
+	for idx, extraColumn in args.extraColumns {
+		metaColumnId := extraColumn.metaColumn
+		targetColumnId := extraColumn.targetColumn
+
+		queryResult := wf.anchoredQuery({
+			main: args.inputAnchor
+		}, {
+			metaColumn: json.decode(metaColumnId),
+			targetColumn: json.decode(targetColumnId)
+		})
+
+		tplResult := render.create(calculateExtraColumnTpl, {
+			metaColumnSpec: queryResult.getResultSpec("metaColumn"),
+			abundanceColumnSpec: queryResult.getResultSpec("targetColumn"),
+			metaColumnData: queryResult.getResultData("metaColumn"),
+			abundanceColumnData: queryResult.getResultData("targetColumn"),
+			operation: extraColumn.operation
+		})
+
+		results = append(results, {
+			name: string(idx),
+			data: tplResult.output("result")
+		})
+	}
+
+	return results
+}
+
+export ll.toStrict({
+	calculateExtraColumns: calculateExtraColumns
+})

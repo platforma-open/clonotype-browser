@@ -17,7 +17,7 @@ import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
-  { timeout: 55000 },
+  { timeout: 100000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
     const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
@@ -185,12 +185,20 @@ blockTest(
       extraColumns: [
         {
           operation: 'count',
-          metaColumn: outputs4.metaColumnsOptions![0].value,
-          targetColumn: outputs4.abundanceColumnsOptions![0].value,
+          metaColumn: outputs5.metaColumnsOptions![0].value,
+          targetColumn: outputs5.abundanceColumnsOptions![0].value,
         },
       ],
     } satisfies BlockArgs);
 
     console.dir(outputs5, { depth: 8 });
+
+    const annotationStableState3 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      25000,
+    )) as InferBlockState<typeof platforma>;
+
+    const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
+    console.dir(outputs6, { depth: 8 });
   },
 );

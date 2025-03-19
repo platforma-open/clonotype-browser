@@ -1,11 +1,21 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
+smart := import("@platforma-sdk/workflow-tengo:smart")
 ll := import("@platforma-sdk/workflow-tengo:ll")
+util := import(":util")
+file := import("@platforma-sdk/workflow-tengo:file")
 
 wf.body(func(args) {
-	specs := {}
+	extraColumnsResult := util.calculateExtraColumns(wf, args)
+
+	extraColumnsMapBuilder := smart.mapBuilder()
+	for extraColumn in extraColumnsResult {
+		extraColumnsMapBuilder.add(extraColumn.name, file.exportFile(extraColumn.data))
+	}
 
 	return {
-		outputs: {},
+		outputs: {
+			extraColumns: extraColumnsMapBuilder.build()
+		},
 		exports: {}
 	}
 })
