@@ -7,13 +7,11 @@
     "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
-    "@platforma-open/milaboratories.clonotype-tagger.tagger": "workspace:*"
+    "@platforma-open/milaboratories.clonotype-tagger.tagger": "workspace:*",
+    "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/tengo-builder": "catalog:",
-    "@platforma-sdk/workflow-tengo": "catalog:",
-    "@milaboratories/software-pframes-conv": "catalog:",
-    "@platforma-open/milaboratories.software-small-binaries": "catalog:",
     "@platforma-open/milaboratories.software-mixcr": "catalog:",
     "@platforma-open/milaboratories.software-ptransform": "catalog:",
     "@platforma-sdk/test": "catalog:",

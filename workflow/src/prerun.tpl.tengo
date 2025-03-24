@@ -17,11 +17,11 @@ wf.body(func(args) {
 		}
 	}
 
-	columnPool := util.createColumnPool(wf, args)
+	columnBundle := util.createColumnBundle(wf, args)
 
 	calculationResult := render.createEphemeral(doCalculations, {
 		blockArgs: args,
-		columnPool: columnPool
+		columnBundle: columnBundle
 	})
 
 	return {

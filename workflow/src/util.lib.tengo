@@ -2,37 +2,43 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 render := import("@platforma-sdk/workflow-tengo:render")
+pBundle := import("@platforma-sdk/workflow-tengo:pframes.bundle")
 json := import("json")
 
 calculateExtraColumnTpl := assets.importTemplate(":calculate-extra-column")
 
-createColumnPool := func(wf, args) {
+createColumnBundle := func(wf, args) {
 	queryMap := {}
 
-	addColumn := func(columnId) {
-		if queryMap[columnId] {
-			return
-		}
-		queryMap[columnId] = json.decode(columnId)
-	}
+	bundleBuilder := wf.createPBundleBuilder()
+
+	bundleBuilder.addAnchor("main", args.inputAnchor)
 
 	for idx, extraColumn in args.extraColumns {
-		addColumn(extraColumn.metaColumn)
-		addColumn(extraColumn.targetColumn)
+		bundleBuilder.addById(extraColumn.metaColumn)
+		bundleBuilder.addById(extraColumn.targetColumn)
 	}
 
-	queryResult := wf.anchoredQuery({
-		main: args.inputAnchor
-	}, queryMap)
+	// addColumn := func(columnId) {
+	// 	if queryMap[columnId] {
+	// 		return
+	// 	}
+	// 	queryMap[columnId] = json.decode(columnId)
+	// }
 
-	columnPoolBuilder := smart.mapBuilder()
-	columnPoolBuilder.add("anchor", queryResult.getAnchor("main"))
 
-	for columnId, _ in queryMap {
-		columnPoolBuilder.add(columnId, queryResult.getResult(columnId))
-	}
+	// queryResult := wf.anchoredQuery({
+	// 	main: args.inputAnchor
+	// }, queryMap)
 
-	return columnPoolBuilder.build()
+	// columnPoolBuilder := smart.mapBuilder()
+	// columnPoolBuilder.add("anchor", queryResult.getAnchor("main"))
+
+	// for columnId, _ in queryMap {
+	// 	columnPoolBuilder.add(columnId, queryResult.getResult(columnId))
+	// }
+
+	return bundleBuilder.build()
 }
 
 calculateExtraColumns := func(wf, args) {
@@ -71,6 +77,6 @@ calculateExtraColumns := func(wf, args) {
 }
 
 export ll.toStrict({
-	createColumnPool: createColumnPool,
+	createColumnBundle: createColumnBundle,
 	calculateExtraColumns: calculateExtraColumns
 })

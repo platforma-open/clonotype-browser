@@ -7,11 +7,25 @@ import {
 } from '@platforma-sdk/model';
 import type { ExtraColumnSpec } from './extra_column';
 
+// type Annotaiton = {
+//   filter: {
+//     // equals, less, rank, count
+//     // sequence match, fuzzyMatch
+//     // vgene, ...
+//   },
+//   label: string;
+// }
+
+// // cloneKey -> Label
+// // // OnlyLabel=12 = > cloneKey
+// // Sample, Label -> abundance..., numberOfCLones
+
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
   /** Extra columns to aggregate */
   extraColumns: ExtraColumnSpec[];
+  // annotations: Annotaiton[];
 };
 
 export const platforma = BlockModel.create('Heavy')
