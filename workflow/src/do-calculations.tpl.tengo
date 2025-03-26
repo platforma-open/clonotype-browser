@@ -5,56 +5,53 @@ xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 file := import("@platforma-sdk/workflow-tengo:file")
 pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+json := import("json")
 
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
+
+ptransformSw := assets.importSoftware("@platforma-open/milaboratories.software-ptransform:main")
 
 self.body(func(inputs) {
 
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
 
-	// columnPool := {}
-
-	// allSpecs := []
-	// for columnId, resolutionResult in inputs.columnPool {
-	// 	columnPool[columnId] = {
-	// 		name: columnId,
-	// 		spec: resolutionResult.spec,
-	// 		data: resolutionResult.data
-	// 	}
-	// 	allSpecs = append(allSpecs, resolutionResult.spec)
-	// }
-
-	// distiller := pSpec.createSpecDistiller(allSpecs)
-	// for _, poolEntry in columnPool {
-	// 	poolEntry.distilledSpec = maps.deepMerge(
-	// 		distiller.distill(poolEntry.spec),
-	// 		{ annotations: { "pl7.app/label": poolEntry.name } }
-	// 	)
-	// }
+	columnBundle.setHeader("pl7.app/vdj/clonotypeKey", "clonotypeKey")
 
 	extraColumnsMapBuilder := smart.mapBuilder()
 
 	for idx, extraColumn in blockArgs.extraColumns {
-		// metaColumnEntry := columnBundle.getColumn(extraColumn.metaColumn)
-		// targetColumnEntry := columnBundle.getColumn(extraColumn.targetColumn)
-
-		// if is_undefined(metaColumnEntry) || is_undefined(targetColumnEntry) {
-		// 	ll.panic("Column not found: %s or %s", extraColumn.metaColumn, extraColumn.targetColumn)
-		// }
-
-		// inputTsv := xsv.exportFrame([
-		// 	{ spec: metaColumnEntry.distilledSpec, data: metaColumnEntry.data },
-		// 	{ spec: targetColumnEntry.distilledSpec, data: targetColumnEntry.data }],
-		// 	"tsv", {}, {})
-
 		table := columnBundle.xsvTableBuilder().
-			add(extraColumn.metaColumn).
-			add(extraColumn.targetColumn).
+			add(extraColumn.metaColumn, { header: "meta" }).
+			add(extraColumn.targetColumn, { header: "target" }).
 			build("tsv")
 
-		extraColumnsMapBuilder.add(string(idx), file.exportFile(table))
+		pWorkflow := {
+			steps: [ {
+				type: "aggregate",
+				groupBy: ["clonotypeKey", "meta"],
+				aggregations: [ {
+					type: string(extraColumn.operation),
+					src: "target",
+					dst: "result"
+				} ]
+			} ]
+		}
+
+		aggregateCmd := exec.builder().
+			printErrStreamToStdout().
+			software(ptransformSw).
+			arg("--workflow").arg("wf.json").
+			writeFile("wf.json", json.encode(pWorkflow)).
+			arg("input.tsv").addFile("input.tsv", table).
+			arg("output.tsv").saveFile("output.tsv").
+			run()
+
+		processedTsv := aggregateCmd.getFile("output.tsv")
+		extraColumnsMapBuilder.add(string(idx), file.exportFile(processedTsv))
 	}
 
     return {

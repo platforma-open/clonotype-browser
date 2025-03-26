@@ -48,7 +48,7 @@ export const platforma = BlockModel.create('Heavy')
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
-    return ctx.resultPool.getAnchoredOptions(
+    return ctx.resultPool.getCanonicalOptions(
       { main: ctx.args.inputAnchor },
       {
         type: ['String', 'Int', 'Long'],
@@ -61,7 +61,7 @@ export const platforma = BlockModel.create('Heavy')
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
-    return ctx.resultPool.getAnchoredOptions(
+    return ctx.resultPool.getCanonicalOptions(
       { main: ctx.args.inputAnchor },
       {
         annotations: { 'pl7.app/isAbundance': 'true' },

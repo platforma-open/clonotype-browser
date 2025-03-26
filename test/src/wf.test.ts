@@ -184,9 +184,9 @@ blockTest(
       inputAnchor: outputs4.inputOptions[0].ref,
       extraColumns: [
         {
-          operation: 'count',
-          metaColumn: outputs5.metaColumnsOptions![0].value,
-          targetColumn: outputs5.abundanceColumnsOptions![0].value,
+          operation: 'mean',
+          metaColumn: outputs5.metaColumnsOptions!.find((m) => m.label === 'Donor')!.value,
+          targetColumn: outputs5.abundanceColumnsOptions!.find((a) => a.value.includes('uniqueMoleculeFraction'))!.value,
         },
       ],
     } satisfies BlockArgs);
