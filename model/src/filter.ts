@@ -1,30 +1,4 @@
-import type { CanonicalPColumnId, PValue } from '@platforma-sdk/model';
-
-//
-// Column identifiers
-//
-
-/**
- * Identifies a column derived from a CanonicalPColumnId by fixing values on certain axes,
- * thus effectively reducing the dimensionality of the original column.
- */
-export type SlicedPColumnId = {
-  /** The original canonical column identifier */
-  source: CanonicalPColumnId;
-  /**
-   * List of fixed axes and their corresponding values.
-   * Each entry fixes one axis to a specific value, creating a slice of the multidimensional data.
-   * This effectively reduces the dimensionality by one for each fixed axis.
-   * Ordered by the axis index.
-   * Format: [axisIndex, fixedValue]
-   */
-  axisFilters: [number, PValue][];
-};
-
-/**
- * Union type to reference either a canonical or sliced column identifier.
- */
-export type GeneralPColumnId = CanonicalPColumnId | SlicedPColumnId;
+import type { CanonicalPColumnId, GeneralizedPColumnId } from '@platforma-sdk/model';
 
 //
 // Sequence filter
@@ -77,7 +51,7 @@ export type PatternFilter = {
  */
 export type UnaryNumericalFilter = {
   /** The column identifier to apply the filter to */
-  column: GeneralPColumnId;
+  column: GeneralizedPColumnId;
   /** The minimum value (inclusive) for the filter range */
   min?: number;
   /** The maximum value (inclusive) for the filter range */
@@ -90,9 +64,9 @@ export type UnaryNumericalFilter = {
  */
 export type GtNumericalFilter = {
   /** The first column to compare (left side of comparison) */
-  column1: GeneralPColumnId;
+  column1: GeneralizedPColumnId;
   /** The second column to compare (right side of comparison) */
-  column2: GeneralPColumnId;
+  column2: GeneralizedPColumnId;
   /** The minimum difference between column1 and column2 values */
   minDiff?: number;
   /** Whether equality is permitted in the comparison */
@@ -159,7 +133,7 @@ export type AnnotationStep = {
  * Annotations are applied from bottom to top (later steps are processed first),
  * with lower indices taking precedence when multiple steps match the same record.
  */
-export type Annotation = {
+export type AnnotationScript = {
   /** Ordered list of annotation steps to apply */
   steps: AnnotationStep[];
 };

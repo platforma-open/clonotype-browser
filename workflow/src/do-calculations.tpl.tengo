@@ -21,40 +21,39 @@ self.body(func(inputs) {
 
 	columnBundle.setHeader("pl7.app/vdj/clonotypeKey", "clonotypeKey")
 
-	extraColumnsMapBuilder := smart.mapBuilder()
+	// extraColumnsMapBuilder := smart.mapBuilder()
+	// for idx, extraColumn in blockArgs.extraColumns {
+	// 	table := columnBundle.xsvTableBuilder().
+	// 		add(extraColumn.metaColumn, { header: "meta" }).
+	// 		add(extraColumn.targetColumn, { header: "target" }).
+	// 		build("tsv")
 
-	for idx, extraColumn in blockArgs.extraColumns {
-		table := columnBundle.xsvTableBuilder().
-			add(extraColumn.metaColumn, { header: "meta" }).
-			add(extraColumn.targetColumn, { header: "target" }).
-			build("tsv")
+	// 	pWorkflow := {
+	// 		steps: [ {
+	// 			type: "aggregate",
+	// 			groupBy: ["clonotypeKey", "meta"],
+	// 			aggregations: [ {
+	// 				type: string(extraColumn.operation),
+	// 				src: "target",
+	// 				dst: "result"
+	// 			} ]
+	// 		} ]
+	// 	}
 
-		pWorkflow := {
-			steps: [ {
-				type: "aggregate",
-				groupBy: ["clonotypeKey", "meta"],
-				aggregations: [ {
-					type: string(extraColumn.operation),
-					src: "target",
-					dst: "result"
-				} ]
-			} ]
-		}
+	// 	aggregateCmd := exec.builder().
+	// 		printErrStreamToStdout().
+	// 		software(ptransformSw).
+	// 		arg("--workflow").arg("wf.json").
+	// 		writeFile("wf.json", json.encode(pWorkflow)).
+	// 		arg("input.tsv").addFile("input.tsv", table).
+	// 		arg("output.tsv").saveFile("output.tsv").
+	// 		run()
 
-		aggregateCmd := exec.builder().
-			printErrStreamToStdout().
-			software(ptransformSw).
-			arg("--workflow").arg("wf.json").
-			writeFile("wf.json", json.encode(pWorkflow)).
-			arg("input.tsv").addFile("input.tsv", table).
-			arg("output.tsv").saveFile("output.tsv").
-			run()
-
-		processedTsv := aggregateCmd.getFile("output.tsv")
-		extraColumnsMapBuilder.add(string(idx), file.exportFile(processedTsv))
-	}
+	// 	processedTsv := aggregateCmd.getFile("output.tsv")
+	// 	extraColumnsMapBuilder.add(string(idx), file.exportFile(processedTsv))
+	// }
 
     return {
-        extraColumns: extraColumnsMapBuilder.build()
+        filterColumn: smart.create()
     }
 })

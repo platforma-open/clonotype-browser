@@ -170,7 +170,9 @@ blockTest(
 
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
-      extraColumns: [],
+      annotationScript: {
+        steps: [],
+      },
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -180,25 +182,27 @@ blockTest(
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
 
-    await project.setBlockArgs(annotationBlockId, {
-      inputAnchor: outputs4.inputOptions[0].ref,
-      extraColumns: [
-        {
-          operation: 'mean',
-          metaColumn: outputs5.metaColumnsOptions!.find((m) => m.label === 'Donor')!.value,
-          targetColumn: outputs5.abundanceColumnsOptions!.find((a) => a.value.includes('uniqueMoleculeFraction'))!.value,
-        },
-      ],
-    } satisfies BlockArgs);
-
     console.dir(outputs5, { depth: 8 });
 
-    const annotationStableState3 = (await awaitStableState(
-      project.getBlockState(annotationBlockId),
-      25000,
-    )) as InferBlockState<typeof platforma>;
+    // await project.setBlockArgs(annotationBlockId, {
+    //   inputAnchor: outputs4.inputOptions[0].ref,
+    //   extraColumns: [
+    //     {
+    //       operation: 'mean',
+    //       metaColumn: outputs5.metaColumnsOptions!.find((m) => m.label === 'Donor')!.value,
+    //       targetColumn: outputs5.abundanceColumnsOptions!.find((a) => a.value.includes('uniqueMoleculeFraction'))!.value,
+    //     },
+    //   ],
+    // } satisfies BlockArgs);
 
-    const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
-    console.dir(outputs6, { depth: 8 });
+    
+
+    // const annotationStableState3 = (await awaitStableState(
+    //   project.getBlockState(annotationBlockId),
+    //   25000,
+    // )) as InferBlockState<typeof platforma>;
+
+    // const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
+    // console.dir(outputs6, { depth: 8 });
   },
 );

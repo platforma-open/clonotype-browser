@@ -5,7 +5,7 @@ import {
   BlockModel,
   type InferOutputsType,
 } from '@platforma-sdk/model';
-import type { ExtraColumnSpec } from './extra_column';
+import type { AnnotationScript } from './filter';
 
 // type Annotaiton = {
 //   filter: {
@@ -23,15 +23,16 @@ import type { ExtraColumnSpec } from './extra_column';
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
-  /** Extra columns to aggregate */
-  extraColumns: ExtraColumnSpec[];
-  // annotations: Annotaiton[];
+  /** Annotation script to apply to the input anchor */
+  annotationScript: AnnotationScript;
 };
 
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
-    extraColumns: [],
+    annotationScript: {
+      steps: [],
+    },
   })
 
   .output('inputOptions', (ctx) =>
@@ -44,7 +45,7 @@ export const platforma = BlockModel.create('Heavy')
     }),
   )
 
-  .output('metaColumnsOptions', (ctx) => {
+  .output('metaColumnOptions', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -57,7 +58,7 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('abundanceColumnsOptions', (ctx) => {
+  .output('abundanceColumnOptions', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -74,17 +75,22 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('extraColumns', (ctx) => {
-    const extraColumns = ctx.prerun?.resolve('extraColumns');
-    if (extraColumns === undefined)
+  .output('clonotypeColumnOptions', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
       return undefined;
 
-    return extraColumns.mapFields((name, val) => {
-      return {
-        name,
-        data: val?.getFileContentAsString(),
-      };
-    });
+    return ctx.resultPool.getCanonicalOptions(
+      { main: ctx.args.inputAnchor },
+      {
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
+        ],
+        annotations: {
+          'pl7.app/table/visibility': 'default',
+        },
+      },
+    );
   })
 
   .sections((_ctx) => {
