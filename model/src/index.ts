@@ -68,7 +68,7 @@ export const platforma = BlockModel.create('Heavy')
         annotations: { 'pl7.app/isAbundance': 'true' },
         domainAnchor: 'main',
         axes: [
-          { anchor: 'main', name: 'pl7.app/sampleId' },
+          { split: true },
           { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
         ],
       },

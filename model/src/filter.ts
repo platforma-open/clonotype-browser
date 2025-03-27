@@ -1,4 +1,4 @@
-import type { CanonicalPColumnId, GeneralizedPColumnId } from '@platforma-sdk/model';
+import type { CanonicalPColumnId } from '@platforma-sdk/model';
 
 //
 // Sequence filter
@@ -51,7 +51,7 @@ export type PatternFilter = {
  */
 export type UnaryNumericalFilter = {
   /** The column identifier to apply the filter to */
-  column: GeneralizedPColumnId;
+  column: CanonicalPColumnId;
   /** The minimum value (inclusive) for the filter range */
   min?: number;
   /** The maximum value (inclusive) for the filter range */
@@ -64,9 +64,9 @@ export type UnaryNumericalFilter = {
  */
 export type GtNumericalFilter = {
   /** The first column to compare (left side of comparison) */
-  column1: GeneralizedPColumnId;
+  column1: CanonicalPColumnId;
   /** The second column to compare (right side of comparison) */
-  column2: GeneralizedPColumnId;
+  column2: CanonicalPColumnId;
   /** The minimum difference between column1 and column2 values */
   minDiff?: number;
   /** Whether equality is permitted in the comparison */

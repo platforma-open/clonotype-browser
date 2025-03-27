@@ -6,22 +6,21 @@ pBundle := import("@platforma-sdk/workflow-tengo:pframes.bundle")
 sets := import("@platforma-sdk/workflow-tengo:sets")
 json := import("json")
 maps := import("@platforma-sdk/workflow-tengo:maps")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
-calculateExtraColumnTpl := assets.importTemplate(":calculate-extra-column")
-
-// Unwraps a GeneralizedPColumnId to get the canonical column ID
 unwrapGeneralizedColumnId := func(columnId) {
-	if is_string(columnId) {
-		// It's already a CanonicalPColumnId
-		return columnId
+	decoded := json.decode(columnId)
+
+	if is_map(decoded) && !is_undefined(decoded.target) {
+		return canonical.encode(decoded.target)
 	}
 
-	// It's a SlicedPColumnId
-	return columnId.source
+	// Not sliced
+	return columnId
 }
 
 // Extracts all columns from a filter recursively and adds them to the columnsSet
-addColumnsFromFilters := func(filter, columnsSet) {
+addColumnsFromFilters := func(filter, columnsSet, unwrap) {
 	if is_undefined(filter) {
 		return
 	}
@@ -31,27 +30,31 @@ addColumnsFromFilters := func(filter, columnsSet) {
 	if filter.type == "or" || filter.type == "and" {
 		// Handle logical OR and AND filters by processing each contained filter
 		for _, subFilter in filter.filters {
-			addColumnsFromFilters(subFilter, columnsSet)
+			addColumnsFromFilters(subFilter, columnsSet, unwrap)
 		}
 	} else if filter.type == "not" {
 		// Handle NOT filter by processing the contained filter
-		addColumnsFromFilters(filter.filter, columnsSet)
+		addColumnsFromFilters(filter.filter, columnsSet, unwrap)
 	} else if !is_undefined(filter.column) {
 		// Handle PatternFilter, UnaryNumericalFilter
-		sets.add(columnsSet, unwrapGeneralizedColumnId(filter.column))
+		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column) : filter.column)
 	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
 		// Handle GtNumericalFilter
-		sets.add(columnsSet, unwrapGeneralizedColumnId(filter.column1))
-		sets.add(columnsSet, unwrapGeneralizedColumnId(filter.column2))
+		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column1) : filter.column1)
+		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column2) : filter.column2)
 	}
 }
 
 // Extracts all column IDs from an annotationScript and returns them as a list
-extractColumnsFromFilter := func(annotationScript) {
+extractColumnsFromFilter := func(annotationScript, unwrap) {
+	if is_undefined(unwrap) {
+		unwrap = true
+	}
+
 	columnsSet := {}
 
 	for _, step in annotationScript.steps {
-		addColumnsFromFilters(step.filter, columnsSet)
+		addColumnsFromFilters(step.filter, columnsSet, unwrap)
 	}
 
 	return sets.toSlice(columnsSet)
@@ -67,7 +70,7 @@ createColumnBundle := func(wf, args) {
 
 	bundleBuilder.addAnchor("main", args.inputAnchor)
 
-	columns := extractColumnsFromFilter(args.annotationScript)
+	columns := extractColumnsFromFilter(args.annotationScript, true)
 
 	for column in columns {
 		bundleBuilder.addById(column)
@@ -137,7 +140,8 @@ transformAnnotationScriptColumns := func(annotationScript, transformFn) {
 
 export ll.toStrict({
 	createColumnBundle: createColumnBundle,
-	calculateExtraColumns: calculateExtraColumns,
 	transformFilterColumns: transformFilterColumns,
-	transformAnnotationScriptColumns: transformAnnotationScriptColumns
+	transformAnnotationScriptColumns: transformAnnotationScriptColumns,
+	decodeColumnId: decodeColumnId,
+	encodeColumnId: encodeColumnId
 })
