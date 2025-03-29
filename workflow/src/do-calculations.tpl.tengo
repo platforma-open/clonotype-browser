@@ -9,51 +9,55 @@ exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 json := import("json")
 
+util := import(":util")
+
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
-ptransformSw := assets.importSoftware("@platforma-open/milaboratories.software-ptransform:main")
+taggerSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-tagger.tagger:main")
 
 self.body(func(inputs) {
 
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
 
-	columnBundle.setHeader("pl7.app/vdj/clonotypeKey", "clonotypeKey")
+	columns := util.extractColumnsFromFilter(blockArgs.annotationScript)
 
-	// extraColumnsMapBuilder := smart.mapBuilder()
-	// for idx, extraColumn in blockArgs.extraColumns {
-	// 	table := columnBundle.xsvTableBuilder().
-	// 		add(extraColumn.metaColumn, { header: "meta" }).
-	// 		add(extraColumn.targetColumn, { header: "target" }).
-	// 		build("tsv")
+	tableBuilder := columnBundle.xsvTableBuilder();
 
-	// 	pWorkflow := {
-	// 		steps: [ {
-	// 			type: "aggregate",
-	// 			groupBy: ["clonotypeKey", "meta"],
-	// 			aggregations: [ {
-	// 				type: string(extraColumn.operation),
-	// 				src: "target",
-	// 				dst: "result"
-	// 			} ]
-	// 		} ]
-	// 	}
+	for column in columns {
+		tableBuilder.add(column)
+	}
 
-	// 	aggregateCmd := exec.builder().
-	// 		printErrStreamToStdout().
-	// 		software(ptransformSw).
-	// 		arg("--workflow").arg("wf.json").
-	// 		writeFile("wf.json", json.encode(pWorkflow)).
-	// 		arg("input.tsv").addFile("input.tsv", table).
-	// 		arg("output.tsv").saveFile("output.tsv").
-	// 		run()
+	transformedAnnotationScript := util.transformAnnotationScriptColumns(
+		blockArgs.annotationScript,
+		func(column) {
+			return tableBuilder.getHeader(column)
+		}
+	)
+	keyColumn := tableBuilder.getHeader(columnBundle.getColumn(blockArgs.inputAnchor).spec.axesSpec[1])
+	fullScript := {
+		keyColumn: keyColumn,
+		steps: transformedAnnotationScript.steps
+	}
 
-	// 	processedTsv := aggregateCmd.getFile("output.tsv")
-	// 	extraColumnsMapBuilder.add(string(idx), file.exportFile(processedTsv))
-	// }
+	fullTable := tableBuilder.build("tsv")
+
+	taggerCmd := exec.builder().
+		printErrStreamToStdout().
+		software(taggerSw).
+		addFile("input.tsv", fullTable).
+		arg("input.tsv").
+		writeFile("script.json", json.encode(fullScript)).
+		arg("script.json").
+		saveFile("output.tsv").
+		arg("output.tsv").
+		run()
+
+	processedResult := taggerCmd.getFile("output.tsv")
 
     return {
-        filterColumn: smart.create()
+        filterColumn: processedResult,
+        fullScript: fullScript
     }
 })

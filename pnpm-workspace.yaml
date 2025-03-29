@@ -8,14 +8,14 @@ packages:
 
 catalog:
   '@platforma-sdk/workflow-tengo': ^3.0.2
-  '@platforma-sdk/model': ^1.24.5
-  '@platforma-sdk/ui-vue': ^1.24.5
-  '@platforma-sdk/tengo-builder': ^2.0.1
+  '@platforma-sdk/model': ^1.24.11
+  '@platforma-sdk/ui-vue': ^1.24.11
+  '@platforma-sdk/tengo-builder': ^2.0.2
   "@platforma-sdk/package-builder": ^2.15.6
-  '@platforma-sdk/block-tools': ^2.5.24
-  '@platforma-sdk/eslint-config': ^1.0.2
+  '@platforma-sdk/block-tools': ^2.5.27
+  '@platforma-sdk/eslint-config': ^1.0.3
 
-  '@platforma-sdk/test': ^1.24.8
+  '@platforma-sdk/test': ^1.24.11
   '@milaboratories/helpers': ^1.6.11
 
   "@platforma-open/milaboratories.runenv-python-3": ^1.1.7

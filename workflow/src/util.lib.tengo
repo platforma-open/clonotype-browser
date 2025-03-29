@@ -8,19 +8,8 @@ json := import("json")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
-unwrapGeneralizedColumnId := func(columnId) {
-	decoded := json.decode(columnId)
-
-	if is_map(decoded) && !is_undefined(decoded.target) {
-		return canonical.encode(decoded.target)
-	}
-
-	// Not sliced
-	return columnId
-}
-
 // Extracts all columns from a filter recursively and adds them to the columnsSet
-addColumnsFromFilters := func(filter, columnsSet, unwrap) {
+addColumnsFromFilters := func(filter, columnsSet) {
 	if is_undefined(filter) {
 		return
 	}
@@ -30,31 +19,27 @@ addColumnsFromFilters := func(filter, columnsSet, unwrap) {
 	if filter.type == "or" || filter.type == "and" {
 		// Handle logical OR and AND filters by processing each contained filter
 		for _, subFilter in filter.filters {
-			addColumnsFromFilters(subFilter, columnsSet, unwrap)
+			addColumnsFromFilters(subFilter, columnsSet)
 		}
 	} else if filter.type == "not" {
 		// Handle NOT filter by processing the contained filter
-		addColumnsFromFilters(filter.filter, columnsSet, unwrap)
+		addColumnsFromFilters(filter.filter, columnsSet)
 	} else if !is_undefined(filter.column) {
 		// Handle PatternFilter, UnaryNumericalFilter
-		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column) : filter.column)
+		sets.add(columnsSet, filter.column)
 	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
 		// Handle GtNumericalFilter
-		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column1) : filter.column1)
-		sets.add(columnsSet, unwrap ? unwrapGeneralizedColumnId(filter.column2) : filter.column2)
+		sets.add(columnsSet, filter.column1)
+		sets.add(columnsSet, filter.column2)
 	}
 }
 
 // Extracts all column IDs from an annotationScript and returns them as a list
-extractColumnsFromFilter := func(annotationScript, unwrap) {
-	if is_undefined(unwrap) {
-		unwrap = true
-	}
-
+extractColumnsFromFilter := func(annotationScript) {
 	columnsSet := {}
 
 	for _, step in annotationScript.steps {
-		addColumnsFromFilters(step.filter, columnsSet, unwrap)
+		addColumnsFromFilters(step.filter, columnsSet)
 	}
 
 	return sets.toSlice(columnsSet)
@@ -70,7 +55,7 @@ createColumnBundle := func(wf, args) {
 
 	bundleBuilder.addAnchor("main", args.inputAnchor)
 
-	columns := extractColumnsFromFilter(args.annotationScript, true)
+	columns := extractColumnsFromFilter(args.annotationScript)
 
 	for column in columns {
 		bundleBuilder.addById(column)
@@ -139,9 +124,8 @@ transformAnnotationScriptColumns := func(annotationScript, transformFn) {
 }
 
 export ll.toStrict({
+	extractColumnsFromFilter: extractColumnsFromFilter,
 	createColumnBundle: createColumnBundle,
 	transformFilterColumns: transformFilterColumns,
-	transformAnnotationScriptColumns: transformAnnotationScriptColumns,
-	decodeColumnId: decodeColumnId,
-	encodeColumnId: encodeColumnId
+	transformAnnotationScriptColumns: transformAnnotationScriptColumns
 })

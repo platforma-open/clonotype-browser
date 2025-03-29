@@ -11,10 +11,11 @@
   "files": [
     "./dist/**/*"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "@platforma-sdk/package-builder": "catalog:",
+  "dependencies": {
     "@platforma-open/milaboratories.runenv-python-3": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/package-builder": "catalog:"
   },
   "block-software": {
     "entrypoints": {

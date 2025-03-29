@@ -26,7 +26,8 @@ wf.body(func(args) {
 
 	return {
 		outputs: {
-			extraColumns: calculationResult.output("extraColumns")
+			filterColumn: file.exportFile(calculationResult.output("filterColumn")),
+			fullScript: calculationResult.output("fullScript")
 		},
 		exports: {}
 	}

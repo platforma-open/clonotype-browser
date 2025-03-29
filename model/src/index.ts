@@ -7,19 +7,6 @@ import {
 } from '@platforma-sdk/model';
 import type { AnnotationScript } from './filter';
 
-// type Annotaiton = {
-//   filter: {
-//     // equals, less, rank, count
-//     // sequence match, fuzzyMatch
-//     // vgene, ...
-//   },
-//   label: string;
-// }
-
-// // cloneKey -> Label
-// // // OnlyLabel=12 = > cloneKey
-// // Sample, Label -> abundance..., numberOfCLones
-
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
@@ -93,6 +80,12 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('filterColumn', (ctx) =>
+    ctx.prerun?.resolve('filterColumn')?.getFileContentAsString())
+
+  .output('fullScript', (ctx) =>
+    ctx.prerun?.resolve('fullScript')?.getDataAsJson())
+
   .sections((_ctx) => {
     return [{ type: 'link', href: '/', label: 'Main' }];
   })
@@ -106,3 +99,5 @@ export const platforma = BlockModel.create('Heavy')
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export { BlockArgs };
+
+export * from './filter';

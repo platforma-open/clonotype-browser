@@ -1,4 +1,4 @@
-import type { CanonicalPColumnId } from '@platforma-sdk/model';
+import type { SUniversalPColumnId } from '@platforma-sdk/model';
 
 //
 // Sequence filter
@@ -36,8 +36,9 @@ export type PatternPredicate = PatternPredicateEquals | PatternPredicateContainS
  * Works with both biological sequences (with wildcards) and regular strings.
  */
 export type PatternFilter = {
+  type: 'pattern';
   /** The column identifier to apply the filter to */
-  column: CanonicalPColumnId;
+  column: SUniversalPColumnId;
   /** The predicate defining the filtering logic */
   predicate: PatternPredicate;
 };
@@ -50,8 +51,9 @@ export type PatternFilter = {
  * Represents a unary numerical filter that applies range constraints to a single column.
  */
 export type UnaryNumericalFilter = {
+  type: 'numericalRange';
   /** The column identifier to apply the filter to */
-  column: CanonicalPColumnId;
+  column: SUniversalPColumnId;
   /** The minimum value (inclusive) for the filter range */
   min?: number;
   /** The maximum value (inclusive) for the filter range */
@@ -63,10 +65,11 @@ export type UnaryNumericalFilter = {
  * Used for "greater than" relationships between columns.
  */
 export type GtNumericalFilter = {
+  type: 'numericalComparison';
   /** The first column to compare (left side of comparison) */
-  column1: CanonicalPColumnId;
+  column1: SUniversalPColumnId;
   /** The second column to compare (right side of comparison) */
-  column2: CanonicalPColumnId;
+  column2: SUniversalPColumnId;
   /** The minimum difference between column1 and column2 values */
   minDiff?: number;
   /** Whether equality is permitted in the comparison */
@@ -130,8 +133,8 @@ export type AnnotationStep = {
 /**
  * Represents a complete annotation configuration.
  * Contains a series of annotation steps that are applied in sequence.
- * Annotations are applied from bottom to top (later steps are processed first),
- * with lower indices taking precedence when multiple steps match the same record.
+ * Annotations are applied from lower indices to higher indices (earlier steps are processed first),
+ * with later steps taking precedence when multiple steps match the same record.
  */
 export type AnnotationScript = {
   /** Ordered list of annotation steps to apply */

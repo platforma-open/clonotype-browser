@@ -181,28 +181,76 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
-
     console.dir(outputs5, { depth: 8 });
 
-    // await project.setBlockArgs(annotationBlockId, {
-    //   inputAnchor: outputs4.inputOptions[0].ref,
-    //   extraColumns: [
-    //     {
-    //       operation: 'mean',
-    //       metaColumn: outputs5.metaColumnsOptions!.find((m) => m.label === 'Donor')!.value,
-    //       targetColumn: outputs5.abundanceColumnsOptions!.find((a) => a.value.includes('uniqueMoleculeFraction'))!.value,
-    //     },
-    //   ],
-    // } satisfies BlockArgs);
+    // Sort column options for consistent behavior across test runs
+    const sortedAbundanceColumns = [...(outputs5.abundanceColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
+    const sortedClonotypeColumns = [...(outputs5.clonotypeColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
 
-    
+    // Extract column values with appropriate casting based on outputs5 structure
+    const readCount652Column = sortedAbundanceColumns.find((col) => col.label.includes('Number Of Reads / SRR11233652'))?.value;
+    const readFraction652Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233652'))?.value;
+    const readFraction664Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233664'))?.value;
+    const vGeneColumn = sortedClonotypeColumns.find((col) => col.label === 'Best V gene')?.value;
 
-    // const annotationStableState3 = (await awaitStableState(
-    //   project.getBlockState(annotationBlockId),
-    //   25000,
-    // )) as InferBlockState<typeof platforma>;
+    // Ensure all column references are defined before using them
+    expect(readCount652Column).toBeDefined();
+    expect(readFraction652Column).toBeDefined();
+    expect(readFraction664Column).toBeDefined();
+    expect(vGeneColumn).toBeDefined();
 
-    // const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
-    // console.dir(outputs6, { depth: 8 });
+    // Type guard to ensure columns are strings
+    if (!readCount652Column || !readFraction652Column || !readFraction664Column || !vGeneColumn) {
+      throw new Error('Required column references are undefined');
+    }
+
+    await project.setBlockArgs(annotationBlockId, {
+      inputAnchor: outputs5.inputOptions[0].ref,
+      annotationScript: {
+        steps: [
+          {
+            filter: {
+              type: 'numericalRange',
+              column: readCount652Column,
+              min: 1,
+              max: 1000,
+            },
+            label: 'Medium Read Count',
+          },
+          {
+            filter: {
+              type: 'numericalComparison',
+              column1: readFraction652Column,
+              column2: readFraction664Column,
+              minDiff: 0.01,
+              allowEqual: false,
+            },
+            label: 'More Abundant in Sample 652',
+          },
+          {
+            filter: {
+              type: 'pattern',
+              column: vGeneColumn,
+              predicate: {
+                type: 'containSubsequence',
+                value: 'IGHV3',
+              },
+            },
+            label: 'IGHV3 Family',
+          },
+        ],
+      },
+    } satisfies BlockArgs);
+
+    const annotationStableState3 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      25000,
+    )) as InferBlockState<typeof platforma>;
+
+    const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
+    console.dir(outputs6, { depth: 8 });
+
+    console.log(JSON.stringify(outputs6.filterColumn));
+    console.log(JSON.stringify(outputs6.fullScript));
   },
 );
