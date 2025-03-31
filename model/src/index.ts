@@ -1,8 +1,11 @@
 import type {
   InferHrefType,
-  PlRef } from '@platforma-sdk/model';
+  PlDataTableState,
+  PlRef,
+  PlTableFiltersModel } from '@platforma-sdk/model';
 import {
   BlockModel,
+  createPlDataTable,
   type InferOutputsType,
 } from '@platforma-sdk/model';
 import type { AnnotationScript } from './filter';
@@ -14,11 +17,27 @@ type BlockArgs = {
   annotationScript: AnnotationScript;
 };
 
+export type UiState = {
+  title?: string;
+  settingsOpen: boolean;
+  filterModel: PlTableFiltersModel;
+  tableState: PlDataTableState;
+};
+
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
     annotationScript: {
       steps: [],
+    },
+  })
+
+  .withUiState<UiState>({
+    title: 'Clonotype Browser V2',
+    settingsOpen: true,
+    filterModel: {},
+    tableState: {
+      gridState: {},
     },
   })
 
@@ -78,6 +97,38 @@ export const platforma = BlockModel.create('Heavy')
         },
       },
     );
+  })
+
+  .output('table', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+
+    const columns = ctx.getAnchoredPColumns(
+      { main: ctx.args.inputAnchor },
+      [
+        {
+          annotations: { 'pl7.app/isAbundance': 'true' },
+          domainAnchor: 'main',
+          axes: [
+            { split: true },
+            { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
+          ],
+        },
+        {
+          domainAnchor: 'main',
+          axes: [
+            { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
+          ],
+          annotations: {
+            'pl7.app/table/visibility': 'default',
+          },
+        },
+      ],
+    );
+    if (!columns) return undefined;
+    return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
+      filters: ctx.uiState.filterModel?.filters,
+    });
   })
 
   .output('filterColumn', (ctx) =>

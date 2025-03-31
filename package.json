@@ -2,7 +2,7 @@
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
-    "build-dev": "PL_PKG_DEV=local turbo run build",
+    "build:dev": "PL_PKG_DEV=local turbo run build",
     "test": "PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
     "mark-stable": "turbo run mark-stable",
     "watch": "turbo watch build",
@@ -31,7 +31,11 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@milaboratories/pl-middle-layer": "file:/Users/dbolotin/mi/core/platforma/lib/node/pl-middle-layer/package.tgz",
+      "@platforma-sdk/model": "file:/Users/dbolotin/mi/core/platforma/sdk/model/package.tgz",
+      "@milaboratories/pl-model-common": "file:/Users/dbolotin/mi/core/platforma/lib/model/common/package.tgz"
+    }
   },
   "///": {
     "pnpm": {
