@@ -22,8 +22,8 @@ jobs:
       - init
     uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
-      app-name: 'Block: Clonotype Tagger'
-      app-name-slug: 'block-clonotype-tagger'
+      app-name: 'Block: Clonotype Browser 2'
+      app-name-slug: 'block-clonotype-browser-2'
       notify-telegram: true
       node-version: '20.x'
       build-script-name: 'build'
