@@ -1,5 +1,5 @@
 ---
-"@platforma-open/milaboratories.clonotype-browser-2.tagger": patch
+"@platforma-open/milaboratories.clonotype-browser-2.annotator": patch
 "@platforma-open/milaboratories.clonotype-browser-2.workflow": patch
 "@platforma-open/milaboratories.clonotype-browser-2": patch
 "@platforma-open/milaboratories.clonotype-browser-2.model": patch
