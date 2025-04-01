@@ -11,7 +11,7 @@ import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaborato
 import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
 import { blockSpec as annotationBlockSpec } from 'this-block';
-import type { BlockArgs, BlockOutputs, platforma } from '@platforma-open/milaboratories.clonotype-tagger.model';
+import type { BlockArgs, BlockOutputs, platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import type { InferBlockState } from '@platforma-sdk/model';
 import { wrapOutputs } from '@platforma-sdk/model';
 

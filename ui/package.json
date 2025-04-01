@@ -1,5 +1,5 @@
 {
-  "name": "@platforma-open/milaboratories.clonotype-tagger.ui",
+  "name": "@platforma-open/milaboratories.clonotype-browser-2.ui",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "ag-grid-enterprise": "catalog:",
     "ag-grid-vue3": "catalog:",
-    "@platforma-open/milaboratories.clonotype-tagger.model": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-2.model": "workspace:*",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",
     "vue": "catalog:",

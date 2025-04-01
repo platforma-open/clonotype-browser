@@ -1,5 +1,5 @@
 {
-  "name": "@platforma-open/milaboratories.clonotype-tagger.workflow",
+  "name": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
   "version": "1.0.0",
   "description": "Tengo-based template",
   "scripts": {
@@ -9,7 +9,7 @@
   "dependencies": {
     "@platforma-open/milaboratories.software-mixcr": "catalog:",
     "@platforma-open/milaboratories.software-ptransform": "catalog:",
-    "@platforma-open/milaboratories.clonotype-tagger.tagger": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-2.tagger": "workspace:*",
     "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {

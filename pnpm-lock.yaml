@@ -113,13 +113,13 @@ importers:
 
   block:
     dependencies:
-      '@platforma-open/milaboratories.clonotype-tagger.model':
+      '@platforma-open/milaboratories.clonotype-browser-2.model':
         specifier: workspace:*
         version: link:../model
-      '@platforma-open/milaboratories.clonotype-tagger.ui':
+      '@platforma-open/milaboratories.clonotype-browser-2.ui':
         specifier: workspace:*
         version: link:../ui
-      '@platforma-open/milaboratories.clonotype-tagger.workflow':
+      '@platforma-open/milaboratories.clonotype-browser-2.workflow':
         specifier: workspace:*
         version: link:../workflow
       '@platforma-sdk/model':
@@ -170,7 +170,7 @@ importers:
 
   test:
     dependencies:
-      '@platforma-open/milaboratories.clonotype-tagger.model':
+      '@platforma-open/milaboratories.clonotype-browser-2.model':
         specifier: workspace:*
         version: link:../model
       '@platforma-open/milaboratories.mixcr-clonotyping-2':
@@ -189,7 +189,7 @@ importers:
         specifier: 'catalog:'
         version: 1.26.0
       this-block:
-        specifier: workspace:@platforma-open/milaboratories.clonotype-tagger@*
+        specifier: workspace:@platforma-open/milaboratories.clonotype-browser-2@*
         version: link:../block
     devDependencies:
       '@platforma-sdk/eslint-config':
@@ -210,7 +210,7 @@ importers:
 
   ui:
     dependencies:
-      '@platforma-open/milaboratories.clonotype-tagger.model':
+      '@platforma-open/milaboratories.clonotype-browser-2.model':
         specifier: workspace:*
         version: link:../model
       '@platforma-sdk/model':
@@ -259,7 +259,7 @@ importers:
 
   workflow:
     dependencies:
-      '@platforma-open/milaboratories.clonotype-tagger.tagger':
+      '@platforma-open/milaboratories.clonotype-browser-2.tagger':
         specifier: workspace:*
         version: link:../software/tagger
       '@platforma-open/milaboratories.software-mixcr':

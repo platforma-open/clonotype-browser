@@ -14,7 +14,7 @@ util := import(":util")
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
-taggerSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-tagger.tagger:main")
+taggerSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.tagger:main")
 
 self.body(func(inputs) {
 
