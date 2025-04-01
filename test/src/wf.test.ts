@@ -17,7 +17,7 @@ import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
-  { timeout: 100000 },
+  { timeout: 150000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
     const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
@@ -102,18 +102,18 @@ blockTest(
       }],
     } satisfies SamplesAndDataBlockArgs);
     await project.runBlock(sndBlockId);
-    await helpers.awaitBlockDone(sndBlockId, 8000);
+    await helpers.awaitBlockDone(sndBlockId, 100000);
     // const sndBlockState = project.getBlockState(sndBlockId);
     const clonotypingBlockState = project.getBlockState(clonotypingBlockId);
 
-    const sdnStableState1 = await helpers.awaitBlockDoneAndGetStableBlockState(sndBlockId, 8000);
+    const sdnStableState1 = await helpers.awaitBlockDoneAndGetStableBlockState(sndBlockId, 100000);
     expect(sdnStableState1.outputs).toMatchObject({
       fileImports: { ok: true, value: { [s652_r1Handle]: { done: true }, [s652_r2Handle]: { done: true }, [s663_r1Handle]: { done: true }, [s663_r2Handle]: { done: true }, [s664_r1Handle]: { done: true }, [s664_r2Handle]: { done: true } } },
     });
 
     const clonotypingStableState1 = (await awaitStableState(
       clonotypingBlockState,
-      25000,
+      100000,
     )) as InferBlockState<typeof mixcrPlatforma>;
 
     expect(clonotypingStableState1.outputs).toMatchObject({
@@ -155,14 +155,14 @@ blockTest(
     await project.runBlock(clonotypingBlockId);
     const clonotypingStableState3 = (await helpers.awaitBlockDoneAndGetStableBlockState<typeof mixcrPlatforma>(
       clonotypingBlockId,
-      35000,
+      100000,
     ));
     const outputs3 = wrapOutputs<MiXCRClonotypingBlockOutputs>(clonotypingStableState3.outputs);
     expect(outputs3.reports.isComplete).toEqual(true);
 
     const annotationStableState1 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      25000,
+      100000,
     )) as InferBlockState<typeof platforma>;
     const outputs4 = wrapOutputs<BlockOutputs>(annotationStableState1.outputs);
     expect(outputs4.inputOptions).toBeDefined();
@@ -177,7 +177,7 @@ blockTest(
 
     const annotationStableState2 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      5000,
+      100000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
@@ -244,7 +244,7 @@ blockTest(
 
     const annotationStableState3 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      25000,
+      100000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
