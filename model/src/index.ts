@@ -42,13 +42,19 @@ export const platforma = BlockModel.create('Heavy')
   })
 
   .output('inputOptions', (ctx) =>
-    ctx.resultPool.getOptions({
+    ctx.resultPool.getOptions([{
       axes: [
         { name: 'pl7.app/sampleId' },
         { name: 'pl7.app/vdj/clonotypeKey' },
       ],
       annotations: { 'pl7.app/isAnchor': 'true' },
-    }),
+    }, {
+      axes: [
+        { name: 'pl7.app/sampleId' },
+        { name: 'pl7.app/vdj/scClonotypeKey' },
+      ],
+      annotations: { 'pl7.app/isAnchor': 'true' },
+    }]),
   )
 
   .output('metaColumnOptions', (ctx) => {
@@ -75,7 +81,7 @@ export const platforma = BlockModel.create('Heavy')
         domainAnchor: 'main',
         axes: [
           { split: true },
-          { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
+          { anchor: 'main', idx: 1 },
         ],
       },
     );
@@ -90,7 +96,7 @@ export const platforma = BlockModel.create('Heavy')
       {
         domainAnchor: 'main',
         axes: [
-          { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
+          { anchor: 'main', idx: 1 },
         ],
         annotations: {
           'pl7.app/table/visibility': 'default',
@@ -103,27 +109,24 @@ export const platforma = BlockModel.create('Heavy')
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
-    const columns = ctx.getAnchoredPColumns(
+    const columns = ctx.resultPool.getAnchoredPColumns(
       { main: ctx.args.inputAnchor },
-      [
-        {
-          annotations: { 'pl7.app/isAbundance': 'true' },
-          domainAnchor: 'main',
-          axes: [
-            { split: true },
-            { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
-          ],
+      [{
+        annotations: { 'pl7.app/isAbundance': 'true' },
+        domainAnchor: 'main',
+        axes: [
+          { split: true },
+          { anchor: 'main', idx: 1 },
+        ],
+      }, {
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 1 },
+        ],
+        annotations: {
+          'pl7.app/table/visibility': 'default',
         },
-        {
-          domainAnchor: 'main',
-          axes: [
-            { anchor: 'main', name: 'pl7.app/vdj/clonotypeKey' },
-          ],
-          annotations: {
-            'pl7.app/table/visibility': 'default',
-          },
-        },
-      ],
+      }],
     );
     if (!columns) return undefined;
     return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
@@ -132,10 +135,10 @@ export const platforma = BlockModel.create('Heavy')
   })
 
   .output('filterColumn', (ctx) =>
-    ctx.prerun?.resolve('filterColumn')?.getFileContentAsString())
+    ctx.prerun?.resolve({ field: 'filterColumn', assertFieldType: 'Input', allowPermanentAbsence: true })?.getFileContentAsString())
 
   .output('fullScript', (ctx) =>
-    ctx.prerun?.resolve('fullScript')?.getDataAsJson())
+    ctx.prerun?.resolve({ field: 'fullScript', assertFieldType: 'Input', allowPermanentAbsence: true })?.getDataAsJson())
 
   .sections((_ctx) => {
     return [{ type: 'link', href: '/', label: 'Main' }];

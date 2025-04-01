@@ -17,18 +17,20 @@ wf.body(func(args) {
 		}
 	}
 
-	columnBundle := util.createColumnBundle(wf, args)
+	outputs := {}
 
-	calculationResult := render.createEphemeral(doCalculations, {
-		blockArgs: args,
-		columnBundle: columnBundle
-	})
+	if len(args.annotationScript.steps) > 0 {
+		columnBundle := util.createColumnBundle(wf, args)
+		calculationResult := render.createEphemeral(doCalculations, {
+			blockArgs: args,
+			columnBundle: columnBundle
+		})
+		outputs["filterColumn"] = file.exportFile(calculationResult.output("filterColumn"))
+		outputs["fullScript"] = calculationResult.output("fullScript")
+	}
 
 	return {
-		outputs: {
-			filterColumn: file.exportFile(calculationResult.output("filterColumn")),
-			fullScript: calculationResult.output("fullScript")
-		},
+		outputs: outputs,
 		exports: {}
 	}
 })
