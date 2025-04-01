@@ -146,7 +146,7 @@ export const platforma = BlockModel.create('Heavy')
 
   .argsValid((ctx) => false)
 
-  .title((ctx) => 'Clonotype Tagger')
+  .title((ctx) => 'Clonotype Browser')
 
   .done();
 
