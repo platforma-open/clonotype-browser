@@ -1,0 +1,63 @@
+self := import("@platforma-sdk/workflow-tengo:tpl")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+file := import("@platforma-sdk/workflow-tengo:file")
+pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+json := import("json")
+
+util := import(":util")
+
+self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
+self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
+
+annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
+
+self.body(func(inputs) {
+
+	blockArgs := inputs.blockArgs
+	columnBundle := inputs.columnBundle
+
+	columns := util.extractColumnsFromFilter(blockArgs.annotationScript)
+
+	tableBuilder := columnBundle.xsvTableBuilder();
+
+	for column in columns {
+		tableBuilder.add(column)
+	}
+
+	transformedAnnotationScript := util.transformAnnotationScriptColumns(
+		blockArgs.annotationScript,
+		func(column) {
+			return tableBuilder.getHeader(column)
+		}
+	)
+	keyColumn := tableBuilder.getHeader(columnBundle.getColumn(blockArgs.inputAnchor).spec.axesSpec[1])
+	fullScript := {
+		keyColumn: keyColumn,
+		steps: transformedAnnotationScript.steps
+	}
+
+	fullTable := tableBuilder.build("tsv")
+
+	taggerCmd := exec.builder().
+		printErrStreamToStdout().
+		software(annotatorSw).
+		addFile("input.tsv", fullTable).
+		arg("input.tsv").
+		writeFile("script.json", json.encode(fullScript)).
+		arg("script.json").
+		saveFile("output.tsv").
+		arg("output.tsv").
+		run()
+
+	processedResult := taggerCmd.getFile("output.tsv")
+
+    return {
+        filterColumn: processedResult,
+        fullScript: fullScript
+    }
+})

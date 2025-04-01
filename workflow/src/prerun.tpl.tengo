@@ -1,9 +1,36 @@
-wf := import("@platforma-sdk/workflow-tengo:workflow")
 ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+
+util := import(":util")
+
+doCalculations := assets.importTemplate(":do-calculations")
 
 wf.body(func(args) {
+	if is_undefined(args.inputAnchor) {
+		return {
+			outputs: {},
+			exports: {}
+		}
+	}
+
+	outputs := {}
+
+	if len(args.annotationScript.steps) > 0 {
+		columnBundle := util.createColumnBundle(wf, args)
+		calculationResult := render.createEphemeral(doCalculations, {
+			blockArgs: args,
+			columnBundle: columnBundle
+		})
+		outputs["filterColumn"] = file.exportFile(calculationResult.output("filterColumn"))
+		outputs["fullScript"] = calculationResult.output("fullScript")
+	}
+
 	return {
-		outputs: {},
+		outputs: outputs,
 		exports: {}
 	}
 })

@@ -1,5 +1,5 @@
 {
-  "name": "@platforma-open/milaboratories.clonotype-tagger",
+  "name": "@platforma-open/milaboratories.clonotype-browser-2",
   "version": "1.0.0",
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
@@ -13,28 +13,28 @@
   ],
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
-    "@platforma-open/milaboratories.clonotype-tagger.workflow": "workspace:*",
-    "@platforma-open/milaboratories.clonotype-tagger.model": "workspace:*",
-    "@platforma-open/milaboratories.clonotype-tagger.ui": "workspace:*"
+    "@platforma-open/milaboratories.clonotype-browser-2.workflow": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-2.model": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-2.ui": "workspace:*"
   },
   "block": {
     "components": {
-      "workflow": "@platforma-open/milaboratories.clonotype-tagger.workflow/dist/tengo/tpl/main.plj.gz",
-      "model": "@platforma-open/milaboratories.clonotype-tagger.model/dist/model.json",
-      "ui": "@platforma-open/milaboratories.clonotype-tagger.ui/dist"
+      "workflow": "@platforma-open/milaboratories.clonotype-browser-2.workflow/dist/tengo/tpl/main.plj.gz",
+      "model": "@platforma-open/milaboratories.clonotype-browser-2.model/dist/model.json",
+      "ui": "@platforma-open/milaboratories.clonotype-browser-2.ui/dist"
     },
     "meta": {
-      "title": "Clonotype Tagger",
+      "title": "Clonotype Browser V2",
       "logo": "file:../logos/block-logo.png",
-      "url": "https://github.com/platforma-open/clonotype-tagger",
+      "url": "https://github.com/platforma-open/clonotype-browser-2",
       "support": "mailto:support@milaboratories.com",
-      "description": "Allows to tag clonotypes for tracking and filtering",
+      "description": "Allows to browse clonotypes and annotate them for tracking and filtering",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:./CHANGELOG.md",
       "tags": [
         "airr",
         "vdj",
-        "tagging"
+        "annotation"
       ],
       "organization": {
         "name": "MiLaboratories Inc",

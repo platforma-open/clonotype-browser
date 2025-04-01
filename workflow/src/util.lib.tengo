@@ -1,0 +1,131 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+pBundle := import("@platforma-sdk/workflow-tengo:pframes.bundle")
+sets := import("@platforma-sdk/workflow-tengo:sets")
+json := import("json")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
+
+// Extracts all columns from a filter recursively and adds them to the columnsSet
+addColumnsFromFilters := func(filter, columnsSet) {
+	if is_undefined(filter) {
+		return
+	}
+
+	ll.assert(is_map(filter), "filter must be a map")
+
+	if filter.type == "or" || filter.type == "and" {
+		// Handle logical OR and AND filters by processing each contained filter
+		for _, subFilter in filter.filters {
+			addColumnsFromFilters(subFilter, columnsSet)
+		}
+	} else if filter.type == "not" {
+		// Handle NOT filter by processing the contained filter
+		addColumnsFromFilters(filter.filter, columnsSet)
+	} else if !is_undefined(filter.column) {
+		// Handle PatternFilter, UnaryNumericalFilter
+		sets.add(columnsSet, filter.column)
+	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
+		// Handle GtNumericalFilter
+		sets.add(columnsSet, filter.column1)
+		sets.add(columnsSet, filter.column2)
+	}
+}
+
+// Extracts all column IDs from an annotationScript and returns them as a list
+extractColumnsFromFilter := func(annotationScript) {
+	columnsSet := {}
+
+	for _, step in annotationScript.steps {
+		addColumnsFromFilters(step.filter, columnsSet)
+	}
+
+	return sets.toSlice(columnsSet)
+}
+
+createColumnBundle := func(wf, args) {
+	// Don't build the bundle if the input anchor is not set
+	if is_undefined(args.inputAnchor) {
+		return undefined
+	}
+
+	bundleBuilder := wf.createPBundleBuilder()
+
+	bundleBuilder.addAnchor("main", args.inputAnchor)
+
+	columns := extractColumnsFromFilter(args.annotationScript)
+
+	for column in columns {
+		bundleBuilder.addById(column)
+	}
+
+	return bundleBuilder.build()
+}
+
+// Transforms column identifiers inside a filter tree
+transformFilterColumns := func(filter, transformFn) {
+	if is_undefined(filter) {
+		return undefined
+	}
+
+	ll.assert(is_map(filter), "filter must be a map")
+
+	if filter.type == "or" || filter.type == "and" {
+		return maps.deepTransform(filter, {
+			filters: func(filters) {
+				newFilters := []
+				for _, subFilter in filters {
+					newFilters = append(newFilters, transformFilterColumns(subFilter, transformFn))
+				}
+				return newFilters
+			}
+		})
+	} else if filter.type == "not" {
+		return maps.deepTransform(filter, {
+			filter: func(subFilter) {
+				return transformFilterColumns(subFilter, transformFn)
+			}
+		})
+	} else if !is_undefined(filter.column) {
+		return maps.deepTransform(filter, {
+			column: transformFn
+		})
+	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
+		return maps.deepTransform(filter, {
+			column1: transformFn,
+			column2: transformFn
+		})
+	}
+
+	return filter
+}
+
+// Transforms column identifiers inside an annotation script
+transformAnnotationScriptColumns := func(annotationScript, transformFn) {
+	if is_undefined(annotationScript) {
+		return undefined
+	}
+
+	return maps.deepTransform(annotationScript, {
+		steps: func(steps) {
+			newSteps := []
+			for _, step in steps {
+				newStep := maps.clone(step)
+				if !is_undefined(step.filter) {
+					newStep.filter = transformFilterColumns(step.filter, transformFn)
+				}
+				newSteps = append(newSteps, newStep)
+			}
+			return newSteps
+		}
+	})
+}
+
+export ll.toStrict({
+	extractColumnsFromFilter: extractColumnsFromFilter,
+	createColumnBundle: createColumnBundle,
+	transformFilterColumns: transformFilterColumns,
+	transformAnnotationScriptColumns: transformAnnotationScriptColumns
+})

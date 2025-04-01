@@ -1,22 +1,19 @@
 {
-  "name": "@platforma-open/milaboratories.clonotype-tagger.workflow",
+  "name": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
   "version": "1.0.0",
   "description": "Tengo-based template",
   "scripts": {
     "build": "rm -rf dist && pl-tengo check && pl-tengo build",
-    "format": "/usr/bin/env emacs --script ./format.el",
-    "test": "vitest"
+    "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
-    "@platforma-open/milaboratories.clonotype-tagger.tagger": "workspace:*"
+    "@platforma-open/milaboratories.software-mixcr": "catalog:",
+    "@platforma-open/milaboratories.software-ptransform": "catalog:",
+    "@platforma-open/milaboratories.clonotype-browser-2.annotator": "workspace:*",
+    "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/tengo-builder": "catalog:",
-    "@platforma-sdk/workflow-tengo": "catalog:",
-    "@milaboratories/software-pframes-conv": "catalog:",
-    "@platforma-open/milaboratories.software-small-binaries": "catalog:",
-    "@platforma-open/milaboratories.software-mixcr": "catalog:",
-    "@platforma-open/milaboratories.software-ptransform": "catalog:",
     "@platforma-sdk/test": "catalog:",
     "vitest": "catalog:",
     "typescript": "catalog:"

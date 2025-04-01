@@ -1,5 +1,5 @@
 {
-  "name": "@platforma-open/milaboratories.clonotype-tagger.tagger",
+  "name": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
   "version": "1.0.0",
   "scripts": {
     "build": "pl-pkg build",
@@ -11,10 +11,11 @@
   "files": [
     "./dist/**/*"
   ],
-  "dependencies": {},
-  "devDependencies": {
-    "@platforma-sdk/package-builder": "catalog:",
+  "dependencies": {
     "@platforma-open/milaboratories.runenv-python-3": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/package-builder": "catalog:"
   },
   "block-software": {
     "entrypoints": {

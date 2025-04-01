@@ -1,98 +1,138 @@
+import type {
+  BlockArgs as MiXCRClonotypingBlockArgs,
+  BlockOutputs as MiXCRClonotypingBlockOutputs,
+  platforma as mixcrPlatforma } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import {
-  AlignReport,
-  AssembleReport,
-  BlockArgs,
-  BlockOutputs,
-  platforma,
-  Qc,
   SupportedPresetList,
-  uniquePlId
-} from '@platforma-open/milaboratories.clonotype-tagger.model';
+  uniquePlId,
+} from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import { awaitStableState, blockTest } from '@platforma-sdk/test';
 import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaboratories.samples-and-data';
-import { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
-import { blockSpec as myBlockSpec } from 'this-block';
-import { InferBlockState, fromPlRef, wrapOutputs } from '@platforma-sdk/model';
+import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
+import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
+import { blockSpec as annotationBlockSpec } from 'this-block';
+import type { BlockArgs, BlockOutputs, platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import type { InferBlockState } from '@platforma-sdk/model';
+import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
-  { timeout: 55000 },
+  { timeout: 150000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
-    const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', myBlockSpec);
+    const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
+    const annotationBlockId = await project.addBlock('Clonotype Annotation', annotationBlockSpec);
 
-    const sample1Id = uniquePlId();
-    const metaColumn1Id = uniquePlId();
+    const metaColumnDonorId = uniquePlId();
+    const metaColumnTissueId = uniquePlId();
+    const metaColumnDayAfterVaccinationId = uniquePlId();
     const dataset1Id = uniquePlId();
 
-    const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
-    const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
+    const s652_sampleId = uniquePlId();
+    const s652_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233652_sampledBulk_R1.fastq.gz');
+    const s652_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233652_sampledBulk_R2.fastq.gz');
+    const s663_sampleId = uniquePlId();
+    const s663_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233663_sampledBulk_R1.fastq.gz');
+    const s663_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233663_sampledBulk_R2.fastq.gz');
+    const s664_sampleId = uniquePlId();
+    const s664_r1Handle = await helpers.getLocalFileHandle('./assets/SRR11233664_sampledBulk_R1.fastq.gz');
+    const s664_r2Handle = await helpers.getLocalFileHandle('./assets/SRR11233664_sampledBulk_R2.fastq.gz');
 
-    project.setBlockArgs(sndBlockId, {
+    await project.setBlockArgs(sndBlockId, {
       metadata: [
         {
-          id: metaColumn1Id,
-          label: 'MetaColumn1',
+          id: metaColumnDonorId,
+          label: 'Donor',
+          global: false,
+          valueType: 'String',
+          data: {
+            [s652_sampleId]: '321-05',
+            [s663_sampleId]: '321-04',
+            [s664_sampleId]: '321-04',
+          },
+        },
+        {
+          id: metaColumnTissueId,
+          label: 'Tissue',
+          global: true,
+          valueType: 'String',
+          data: {
+            [s652_sampleId]: 'Plasmablasts',
+            [s663_sampleId]: 'PBMC',
+            [s664_sampleId]: 'Plasmablasts',
+          },
+        },
+        {
+          id: metaColumnDayAfterVaccinationId,
+          label: 'Day after vaccination',
           global: false,
           valueType: 'Long',
           data: {
-            [sample1Id]: 2345
-          }
-        }
+            [s652_sampleId]: 5,
+            [s663_sampleId]: 0,
+            [s664_sampleId]: 5,
+          },
+        },
       ],
-      sampleIds: [sample1Id],
+      sampleIds: [s652_sampleId, s663_sampleId, s664_sampleId],
       sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: { [sample1Id]: 'Sample 1' },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Dataset 1',
-          content: {
-            type: 'Fastq',
-            readIndices: ['R1', 'R2'],
-            gzipped: true,
-            data: {
-              [sample1Id]: {
-                R1: r1Handle,
-                R2: r2Handle
-              }
-            }
-          }
-        }
-      ]
+      sampleLabels: { [s652_sampleId]: 'SRR11233652', [s663_sampleId]: 'SRR11233663', [s664_sampleId]: 'SRR11233664' },
+      datasets: [{
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'Fastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          data: {
+            [s652_sampleId]: {
+              R1: s652_r1Handle,
+              R2: s652_r2Handle,
+            },
+            [s663_sampleId]: {
+              R1: s663_r1Handle,
+              R2: s663_r2Handle,
+            },
+            [s664_sampleId]: {
+              R1: s664_r1Handle,
+              R2: s664_r2Handle,
+            },
+          },
+        },
+      }],
     } satisfies SamplesAndDataBlockArgs);
     await project.runBlock(sndBlockId);
-    await helpers.awaitBlockDone(sndBlockId, 8000);
-    const sndBlockState = project.getBlockState(sndBlockId);
+    await helpers.awaitBlockDone(sndBlockId, 100000);
+    // const sndBlockState = project.getBlockState(sndBlockId);
     const clonotypingBlockState = project.getBlockState(clonotypingBlockId);
 
-    const sdnStableState1 = await helpers.awaitBlockDoneAndGetStableBlockState(sndBlockId, 8000);
+    const sdnStableState1 = await helpers.awaitBlockDoneAndGetStableBlockState(sndBlockId, 100000);
     expect(sdnStableState1.outputs).toMatchObject({
-      fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } }
+      fileImports: { ok: true, value: { [s652_r1Handle]: { done: true }, [s652_r2Handle]: { done: true }, [s663_r1Handle]: { done: true }, [s663_r2Handle]: { done: true }, [s664_r1Handle]: { done: true }, [s664_r2Handle]: { done: true } } },
     });
 
     const clonotypingStableState1 = (await awaitStableState(
       clonotypingBlockState,
-      25000
-    )) as InferBlockState<typeof platforma>;
+      100000,
+    )) as InferBlockState<typeof mixcrPlatforma>;
 
     expect(clonotypingStableState1.outputs).toMatchObject({
       inputOptions: {
         ok: true,
         value: [
           {
-            label: 'Dataset 1'
-          }
-        ]
-      }
+            label: 'Dataset 1',
+          },
+        ],
+      },
     });
 
     const presets = SupportedPresetList.parse(
       JSON.parse(
         Buffer.from(
-          await ml.driverKit.blobDriver.getContent(wrapOutputs(clonotypingStableState1.outputs).presets!.handle!)
-        ).toString()
-      )
+          await ml.driverKit.blobDriver.getContent(wrapOutputs(clonotypingStableState1.outputs).presets!.handle),
+        ).toString(),
+      ),
     );
     expect(presets).length.gt(10);
 
@@ -100,78 +140,117 @@ blockTest(
 
     await project.setBlockArgs(clonotypingBlockId, {
       input: clonotypingStableState1Outputs.inputOptions[0].ref,
-      preset: { type: 'name', name: 'milab-human-dna-xcr-7genes-multiplex' }
-    } satisfies BlockArgs);
+      preset: { type: 'name', name: 'neb-human-rna-xcr-umi-nebnext' },
+      chains: ['IGHeavy'],
+    } satisfies MiXCRClonotypingBlockArgs);
 
     const clonotypingStableState2 = (await awaitStableState(
       project.getBlockState(clonotypingBlockId),
-      25000
-    )) as InferBlockState<typeof platforma>;
+      25000,
+    )) as InferBlockState<typeof mixcrPlatforma>;
 
-    const outputs2 = wrapOutputs<BlockOutputs>(clonotypingStableState2.outputs);
-    // console.dir(outputs2.sampleLabels, { depth: 5 });
-    // console.log(JSON.stringify([sample1Id]));
-    expect(outputs2.sampleLabels![sample1Id]).toBeDefined();
+    const outputs2 = wrapOutputs<MiXCRClonotypingBlockOutputs>(clonotypingStableState2.outputs);
+    expect(outputs2.sampleLabels![s652_sampleId]).toBeDefined();
 
     await project.runBlock(clonotypingBlockId);
-    const clonotypingStableState3 = (await helpers.awaitBlockDoneAndGetStableBlockState(
+    const clonotypingStableState3 = (await helpers.awaitBlockDoneAndGetStableBlockState<typeof mixcrPlatforma>(
       clonotypingBlockId,
-      35000
-    )) as InferBlockState<typeof platforma>;
-    const outputs3 = wrapOutputs<BlockOutputs>(clonotypingStableState3.outputs);
-
-    // console.dir(clonotypingStableState3, { depth: 8 });
-
+      100000,
+    ));
+    const outputs3 = wrapOutputs<MiXCRClonotypingBlockOutputs>(clonotypingStableState3.outputs);
     expect(outputs3.reports.isComplete).toEqual(true);
 
-    const qcEntry = outputs3.qc.data[0];
-    expect(qcEntry).toBeDefined();
+    const annotationStableState1 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      100000,
+    )) as InferBlockState<typeof platforma>;
+    const outputs4 = wrapOutputs<BlockOutputs>(annotationStableState1.outputs);
+    expect(outputs4.inputOptions).toBeDefined();
+    expect(outputs4.inputOptions).toHaveLength(1);
 
-    const alignJsonReportEntry = outputs3.reports.data.find(
-      (e: any) => e.key[1] === 'align' && e.key[2] === 'json'
-    );
-    const assembleJsonReportEntry = outputs3.reports.data.find(
-      (e: any) => e.key[1] === 'assemble' && e.key[2] === 'json'
-    );
+    await project.setBlockArgs(annotationBlockId, {
+      inputAnchor: outputs4.inputOptions[0].ref,
+      annotationScript: {
+        steps: [],
+      },
+    } satisfies BlockArgs);
 
-    expect(alignJsonReportEntry).toBeDefined();
-    expect(assembleJsonReportEntry).toBeDefined();
+    const annotationStableState2 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      100000,
+    )) as InferBlockState<typeof platforma>;
 
-    const alignReport = AlignReport.parse(
-      JSON.parse(
-        Buffer.from(
-          await ml.driverKit.blobDriver.getContent(alignJsonReportEntry!.value!.handle)
-        ).toString('utf8')
-      )
-    );
-    const assembledReport = AssembleReport.parse(
-      JSON.parse(
-        Buffer.from(
-          await ml.driverKit.blobDriver.getContent(assembleJsonReportEntry!.value!.handle)
-        ).toString('utf8')
-      )
-    );
+    const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
+    console.dir(outputs5, { depth: 8 });
 
-    const qc = Qc.parse(
-      JSON.parse(
-        Buffer.from(await ml.driverKit.blobDriver.getContent(qcEntry!.value!.handle)).toString(
-          'utf8'
-        )
-      )
-    );
+    // Sort column options for consistent behavior across test runs
+    const sortedAbundanceColumns = [...(outputs5.abundanceColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
+    const sortedClonotypeColumns = [...(outputs5.clonotypeColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
 
-    expect(alignReport.aligned).greaterThan(2);
+    // Extract column values with appropriate casting based on outputs5 structure
+    const readCount652Column = sortedAbundanceColumns.find((col) => col.label.includes('Number Of Reads / SRR11233652'))?.value;
+    const readFraction652Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233652'))?.value;
+    const readFraction664Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233664'))?.value;
+    const vGeneColumn = sortedClonotypeColumns.find((col) => col.label === 'Best V gene')?.value;
 
-    const clonesPfHandle = wrapOutputs(clonotypingStableState3.outputs).clones!;
+    // Ensure all column references are defined before using them
+    expect(readCount652Column).toBeDefined();
+    expect(readFraction652Column).toBeDefined();
+    expect(readFraction664Column).toBeDefined();
+    expect(vGeneColumn).toBeDefined();
 
-    const clonesPfColumnList = await ml.driverKit.pFrameDriver.listColumns(clonesPfHandle);
+    // Type guard to ensure columns are strings
+    if (!readCount652Column || !readFraction652Column || !readFraction664Column || !vGeneColumn) {
+      throw new Error('Required column references are undefined');
+    }
 
-    // console.dir(clonesPfColumnList[0].spec, { depth: 5 });
+    await project.setBlockArgs(annotationBlockId, {
+      inputAnchor: outputs5.inputOptions[0].ref,
+      annotationScript: {
+        steps: [
+          {
+            filter: {
+              type: 'numericalRange',
+              column: readCount652Column,
+              min: 1,
+              max: 1000,
+            },
+            label: 'Medium Read Count',
+          },
+          {
+            filter: {
+              type: 'numericalComparison',
+              column1: readFraction652Column,
+              column2: readFraction664Column,
+              minDiff: 0.01,
+              allowEqual: false,
+            },
+            label: 'More Abundant in Sample 652',
+          },
+          {
+            filter: {
+              type: 'pattern',
+              column: vGeneColumn,
+              predicate: {
+                type: 'containSubsequence',
+                value: 'IGHV3',
+              },
+            },
+            label: 'IGHV3 Family',
+          },
+        ],
+      },
+    } satisfies BlockArgs);
 
-    expect(
-      clonesPfColumnList.map(c => c.spec.axesSpec.find((s: any) => s.name === 'pl7.app/vdj/clonotypeKey')).find(Boolean)?.domain
-    ).toHaveProperty("pl7.app/vdj/clonotypeKey/structure");
+    const annotationStableState3 = (await awaitStableState(
+      project.getBlockState(annotationBlockId),
+      100000,
+    )) as InferBlockState<typeof platforma>;
 
-    expect(clonesPfColumnList).length.to.greaterThanOrEqual(7);
-  }
+    const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
+    console.dir(outputs6, { depth: 8 });
+
+    console.log(JSON.stringify(outputs6.filterColumn));
+    console.log(JSON.stringify(outputs6.fullScript));
+  },
 );
