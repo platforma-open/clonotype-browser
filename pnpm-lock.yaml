@@ -158,7 +158,7 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.13.10)
 
-  software/tagger:
+  software/annotator:
     dependencies:
       '@platforma-open/milaboratories.runenv-python-3':
         specifier: 'catalog:'
@@ -259,9 +259,9 @@ importers:
 
   workflow:
     dependencies:
-      '@platforma-open/milaboratories.clonotype-browser-2.tagger':
+      '@platforma-open/milaboratories.clonotype-browser-2.annotator':
         specifier: workspace:*
-        version: link:../software/tagger
+        version: link:../software/annotator
       '@platforma-open/milaboratories.software-mixcr':
         specifier: 'catalog:'
         version: 4.7.0-147-develop

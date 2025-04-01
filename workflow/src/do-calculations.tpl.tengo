@@ -14,7 +14,7 @@ util := import(":util")
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
-taggerSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.tagger:main")
+annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
 
 self.body(func(inputs) {
 
@@ -45,7 +45,7 @@ self.body(func(inputs) {
 
 	taggerCmd := exec.builder().
 		printErrStreamToStdout().
-		software(taggerSw).
+		software(annotatorSw).
 		addFile("input.tsv", fullTable).
 		arg("input.tsv").
 		writeFile("script.json", json.encode(fullScript)).

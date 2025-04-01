@@ -9,7 +9,7 @@
   "dependencies": {
     "@platforma-open/milaboratories.software-mixcr": "catalog:",
     "@platforma-open/milaboratories.software-ptransform": "catalog:",
-    "@platforma-open/milaboratories.clonotype-browser-2.tagger": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-2.annotator": "workspace:*",
     "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {
