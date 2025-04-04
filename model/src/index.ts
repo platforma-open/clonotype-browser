@@ -112,7 +112,6 @@ export const platforma = BlockModel.create('Heavy')
     const columns = ctx.resultPool.getAnchoredPColumns(
       { main: ctx.args.inputAnchor },
       [{
-        annotations: { 'pl7.app/isAbundance': 'true' },
         domainAnchor: 'main',
         axes: [
           { split: true },
@@ -123,9 +122,6 @@ export const platforma = BlockModel.create('Heavy')
         axes: [
           { anchor: 'main', idx: 1 },
         ],
-        annotations: {
-          'pl7.app/table/visibility': 'default',
-        },
       }],
     );
     if (!columns) return undefined;
