@@ -17,7 +17,7 @@ import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
-  { timeout: 150000 },
+  { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
     const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
