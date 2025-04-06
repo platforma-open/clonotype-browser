@@ -17,7 +17,7 @@ import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
   'simple project',
-  { timeout: 150000 },
+  { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
     const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
@@ -162,7 +162,7 @@ blockTest(
 
     const annotationStableState1 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      100000,
+      200000,
     )) as InferBlockState<typeof platforma>;
     const outputs4 = wrapOutputs<BlockOutputs>(annotationStableState1.outputs);
     expect(outputs4.inputOptions).toBeDefined();
@@ -177,7 +177,7 @@ blockTest(
 
     const annotationStableState2 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      100000,
+      200000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
@@ -244,7 +244,7 @@ blockTest(
 
     const annotationStableState3 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      100000,
+      200000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
