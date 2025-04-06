@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.0.4
+
+### Patch Changes
+
+- 9b05902: Dependency upgrade. Fixes empty option label.
+
 ## 1.0.3
 
 ### Patch Changes
