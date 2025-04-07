@@ -15,7 +15,8 @@
     "@platforma-open/milaboratories.samples-and-data": "catalog:",
     "@platforma-open/milaboratories.mixcr-clonotyping-2.model": "catalog:",
     "@platforma-open/milaboratories.mixcr-clonotyping-2": "catalog:",
-    "@platforma-sdk/model": "catalog:"
+    "@platforma-sdk/model": "catalog:",
+    "remeda": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",

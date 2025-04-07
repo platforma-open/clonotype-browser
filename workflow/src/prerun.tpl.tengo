@@ -26,7 +26,6 @@ wf.body(func(args) {
 			columnBundle: columnBundle
 		})
 		outputs["filterColumn"] = file.exportFile(calculationResult.output("filterColumn"))
-		outputs["fullScript"] = calculationResult.output("fullScript")
 	}
 
 	return {

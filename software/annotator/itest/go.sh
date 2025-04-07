@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-python ../main.py test-input-1.tsv test-script-1.json test-result-1.tsv
+python ../src/main.py \
+    --clonotype-data test_1_clonotype_properties.tsv \
+    --clonotype-schema test_1_clonotype_properties_schema.json \
+    --script test_1_script.json \
+    --output test_1_output.tsv 

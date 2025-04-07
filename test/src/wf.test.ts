@@ -171,6 +171,7 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
       annotationScript: {
+        mode: 'byClonotype',
         steps: [],
       },
     } satisfies BlockArgs);
@@ -184,14 +185,14 @@ blockTest(
     console.dir(outputs5, { depth: 8 });
 
     // Sort column options for consistent behavior across test runs
-    const sortedAbundanceColumns = [...(outputs5.abundanceColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
-    const sortedClonotypeColumns = [...(outputs5.clonotypeColumnOptions || [])].sort((a, b) => a.label.localeCompare(b.label));
+    // const sortedAbundanceColumns = [...(outputs5.bySampleAndClonotypeColumns || [])].sort((a, b) => a.label.localeCompare(b.label));
+    const sortedClonotypeColumns = [...(outputs5.byClonotypeColumns || [])].sort((a, b) => a.label.localeCompare(b.label));
 
     // Extract column values with appropriate casting based on outputs5 structure
-    const readCount652Column = sortedAbundanceColumns.find((col) => col.label.includes('Number Of Reads / SRR11233652'))?.value;
-    const readFraction652Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233652'))?.value;
-    const readFraction664Column = sortedAbundanceColumns.find((col) => col.label.includes('Fraction of reads / SRR11233664'))?.value;
-    const vGeneColumn = sortedClonotypeColumns.find((col) => col.label === 'Best V gene')?.value;
+    const readCount652Column = sortedClonotypeColumns.find((col) => col.label.includes('Number Of Reads / SRR11233652'))?.id;
+    const readFraction652Column = sortedClonotypeColumns.find((col) => col.label.includes('Fraction of reads / SRR11233652'))?.id;
+    const readFraction664Column = sortedClonotypeColumns.find((col) => col.label.includes('Fraction of reads / SRR11233664'))?.id;
+    const vGeneColumn = sortedClonotypeColumns.find((col) => col.label === 'Best V gene')?.id;
 
     // Ensure all column references are defined before using them
     expect(readCount652Column).toBeDefined();
@@ -207,25 +208,34 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
       annotationScript: {
+        mode: 'byClonotype',
         steps: [
           {
             filter: {
-              type: 'numericalRange',
-              column: readCount652Column,
-              min: 1,
-              max: 1000,
+              type: 'and',
+              filters: [
+                {
+                  type: 'numericalComparison',
+                  lhs: 1,
+                  rhs: readCount652Column,
+                },
+                {
+                  type: 'numericalComparison',
+                  lhs: readCount652Column,
+                  rhs: 1000,
+                },
+              ],
             },
-            label: 'Medium Read Count',
+            label: 'Medium Read Count (Sample 652)',
           },
           {
             filter: {
               type: 'numericalComparison',
-              column1: readFraction652Column,
-              column2: readFraction664Column,
+              lhs: readFraction664Column,
+              rhs: readFraction652Column,
               minDiff: 0.01,
-              allowEqual: false,
             },
-            label: 'More Abundant in Sample 652',
+            label: 'Significantly More Abundant in Sample 652',
           },
           {
             filter: {
@@ -237,6 +247,24 @@ blockTest(
               },
             },
             label: 'IGHV3 Family',
+          },
+          {
+            filter: {
+              type: 'numericalComparison',
+              lhs: { transformer: 'rank', column: readCount652Column, descending: true },
+              rhs: 2,
+              allowEqual: true,
+            },
+            label: 'Top 2 by Read Count (Sample 652)',
+          },
+          {
+            filter: {
+              type: 'numericalComparison',
+              lhs: { transformer: 'sortedCumulativeSum', column: readFraction664Column, descending: true },
+              rhs: 0.5,
+              allowEqual: true,
+            },
+            label: 'Top 50% by Read Fraction (Sample 664)',
           },
         ],
       },

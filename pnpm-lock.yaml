@@ -51,9 +51,6 @@ catalogs:
     '@platforma-sdk/ui-vue':
       specifier: ^1.27.8
       version: 1.27.8
-    '@platforma-sdk/workflow-tengo':
-      specifier: ^3.2.1
-      version: 3.2.1
     '@vitejs/plugin-vue':
       specifier: ^5.2.3
       version: 5.2.3
@@ -69,6 +66,9 @@ catalogs:
     eslint:
       specifier: ^9.24.0
       version: 9.24.0
+    remeda:
+      specifier: ^2.21.2
+      version: 2.21.2
     rollup-plugin-sourcemaps2:
       specifier: ^0.5.0
       version: 0.5.0
@@ -96,6 +96,9 @@ catalogs:
     zod:
       specifier: ~3.23.8
       version: 3.23.8
+
+overrides:
+  '@platforma-sdk/workflow-tengo': file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz
 
 importers:
 
@@ -135,6 +138,9 @@ importers:
       '@platforma-sdk/model':
         specifier: 'catalog:'
         version: 1.27.8
+      remeda:
+        specifier: 'catalog:'
+        version: 2.21.2
     devDependencies:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
@@ -188,6 +194,9 @@ importers:
       '@platforma-sdk/model':
         specifier: 'catalog:'
         version: 1.27.8
+      remeda:
+        specifier: 'catalog:'
+        version: 2.21.2
       this-block:
         specifier: workspace:@platforma-open/milaboratories.clonotype-browser-2@*
         version: link:../block
@@ -269,8 +278,8 @@ importers:
         specifier: 'catalog:'
         version: 1.3.1
       '@platforma-sdk/workflow-tengo':
-        specifier: 'catalog:'
-        version: 3.2.1
+        specifier: file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz
+        version: file:../../core/platforma/sdk/workflow-tengo/package.tgz
     devDependencies:
       '@platforma-sdk/tengo-builder':
         specifier: 'catalog:'
@@ -1291,11 +1300,9 @@ packages:
   '@platforma-sdk/ui-vue@1.27.8':
     resolution: {integrity: sha512-kznVNnlmIoBBLUxszGu9HwHsV3ch66bVGtTuUVrY1VuxrNlIkBXDUsvad3JRdl/kH9j7TnMa6qTQ97zo+zmaJA==}
 
-  '@platforma-sdk/workflow-tengo@3.2.0':
-    resolution: {integrity: sha512-0JovNFyd5w4GQnNAy4ps+8v5MDXb7T9KLi0DSGm0Ti2hYtCfXd1WAEZ9hgnV7fnfFc8wdR7M1f0vC7pg/asTOA==}
-
-  '@platforma-sdk/workflow-tengo@3.2.1':
-    resolution: {integrity: sha512-j9ClfQP+BEhNxRH235WavFhhJW4MkTayMxGdU4rFgR72LLj5IassELahys5rVUXPlbs1ysSrz+DZeOoa+i4r0Q==}
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
+    resolution: {integrity: sha512-4WFs6IGxmldMmqF4i1XyLJpIK4jeecjRT3+29LjJJ+Z8TGwFqIidgar/GAL6M/Lofnata6iu2ZhzUnGg/MiCOw==, tarball: file:../../core/platforma/sdk/workflow-tengo/package.tgz}
+    version: 3.2.1
 
   '@protobuf-ts/grpc-transport@2.9.6':
     resolution: {integrity: sha512-MdL6aiIhlEdXn0ZVmMfFtXtNPze21vqUW3w+E3MDqv/hgyPf5jpvQeRz+9+lu2flPfXRf+2w2d+6nWpMv25o6Q==}
@@ -4875,7 +4882,7 @@ snapshots:
       '@milaboratories/ts-helpers': 1.1.5
       '@platforma-sdk/block-tools': 2.5.33
       '@platforma-sdk/model': 1.27.8
-      '@platforma-sdk/workflow-tengo': 3.2.1
+      '@platforma-sdk/workflow-tengo': file:../../core/platforma/sdk/workflow-tengo/package.tgz
       canonicalize: 2.1.0
       denque: 2.1.0
       lru-cache: 11.1.0
@@ -5020,7 +5027,7 @@ snapshots:
   '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow@2.4.0':
     dependencies:
       '@platforma-open/milaboratories.mixcr-clonotyping-2.single-cell-scripts': 1.1.0
-      '@platforma-sdk/workflow-tengo': 3.2.0
+      '@platforma-sdk/workflow-tengo': file:../../core/platforma/sdk/workflow-tengo/package.tgz
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2@2.1.5(typescript@5.5.4)':
     dependencies:
@@ -5208,12 +5215,7 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@platforma-sdk/workflow-tengo@3.2.0':
-    dependencies:
-      '@milaboratories/software-pframes-conv': 2.1.20
-      '@platforma-open/milaboratories.software-small-binaries': 1.15.19
-
-  '@platforma-sdk/workflow-tengo@3.2.1':
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
     dependencies:
       '@milaboratories/software-pframes-conv': 2.1.20
       '@platforma-open/milaboratories.software-small-binaries': 1.15.19

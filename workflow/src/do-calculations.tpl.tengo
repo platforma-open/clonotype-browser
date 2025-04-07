@@ -11,53 +11,128 @@ json := import("json")
 
 util := import(":util")
 
+SAMPLE_KEY_HEADER := "sample_key"
+CLONOTYPE_KEY_HEADER := "clonotype_key"
+
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
 annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
 
 self.body(func(inputs) {
-
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
+	rawAnnotationScript := blockArgs.annotationScript
 
-	columns := util.extractColumnsFromFilter(blockArgs.annotationScript)
-
-	tableBuilder := columnBundle.xsvTableBuilder();
-
-	for column in columns {
-		tableBuilder.add(column)
+	anchorSpec := columnBundle.getColumn(blockArgs.inputAnchor).spec
+	if len(anchorSpec.axesSpec) != 2 {
+		ll.panic("Input anchor must have exactly 2 axes (sample, clonotype), found %d", len(anchorSpec.axesSpec))
 	}
 
-	transformedAnnotationScript := util.transformAnnotationScriptColumns(
-		blockArgs.annotationScript,
+	sampleAxisSpec := anchorSpec.axesSpec[0]
+	clonotypeAxisSpec := anchorSpec.axesSpec[1]
+	mode := rawAnnotationScript.mode
+
+	// Set global header overrides for key columns on the bundle
+	columnBundle.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
+	columnBundle.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
+
+	scriptColumns := util.extractColumnsFromFilter(rawAnnotationScript) // Already returns unique list
+
+	clonoTableBuilder := columnBundle.xsvTableBuilder()
+	sampleTableBuilder := columnBundle.xsvTableBuilder()
+
+	clonoSchemaMap := {}
+	clonoSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
+
+	sampleSchemaMap := {}
+	sampleSchemaMap[SAMPLE_KEY_HEADER] = { column: SAMPLE_KEY_HEADER, type: sampleAxisSpec.type }
+	sampleSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
+
+	headerMap := {}
+
+	needsClonoTable := (mode == "byClonotype")
+	needsSampleTable := (mode == "bySampleAndClonotype")
+
+	for colId in scriptColumns {
+		colSpec := columnBundle.getSpec(colId)
+		numAxes := len(colSpec.axesSpec)
+
+		if numAxes == 1 {
+			// Belongs in clonotype table
+			clonoTableBuilder.add(colId)
+			header := clonoTableBuilder.getHeader(colId)
+			spec := clonoTableBuilder.getSpec(colId)
+			clonoSchemaMap[header] = { column: header, type: spec.valueType }
+			needsClonoTable = true // Mark true if any 1-axis col is used, even in bySample mode
+			headerMap[colId] = header
+		} else if numAxes == 2 {
+			// Belongs in sample-clonotype table
+			if mode == "byClonotype" {
+				ll.panic("Column %s has 2 axes but mode is 'byClonotype'. The script expects only 1-axis columns in this mode.", colId)
+			}
+			sampleTableBuilder.add(colId)
+			header := sampleTableBuilder.getHeader(colId)
+			spec := sampleTableBuilder.getSpec(colId)
+			sampleSchemaMap[header] = { column: header, type: spec.valueType }
+			needsSampleTable = true
+			headerMap[colId] = header
+		} else {
+			ll.panic("Column %s has an unexpected number of axes (%d), expected 1 or 2.", colId, numAxes)
+		}
+	}
+
+	finalAnnotationScript := util.transformAnnotationScriptColumns(
+		rawAnnotationScript,
 		func(column) {
-			return tableBuilder.getHeader(column)
+			return headerMap[column]
 		}
 	)
-	keyColumn := tableBuilder.getHeader(columnBundle.getColumn(blockArgs.inputAnchor).spec.axesSpec[1])
-	fullScript := {
-		keyColumn: keyColumn,
-		steps: transformedAnnotationScript.steps
+
+	// Setting the key columns for the script
+	finalAnnotationScript.clonotypeKeyColumn = CLONOTYPE_KEY_HEADER
+	if mode == "bySampleAndClonotype" {
+		finalAnnotationScript.sampleKeyColumn = SAMPLE_KEY_HEADER
 	}
 
-	fullTable := tableBuilder.build("tsv")
-
-	taggerCmd := exec.builder().
+	cmd := exec.builder().
 		printErrStreamToStdout().
-		software(annotatorSw).
-		addFile("input.tsv", fullTable).
-		arg("input.tsv").
-		writeFile("script.json", json.encode(fullScript)).
-		arg("script.json").
-		saveFile("output.tsv").
-		arg("output.tsv").
-		run()
+		software(annotatorSw)
 
-	processedResult := taggerCmd.getFile("output.tsv")
+	cmd.writeFile("script.json", json.encode(finalAnnotationScript))
+	cmd.arg("--script").arg("script.json")
 
-    return {
-        filterColumn: processedResult,
-        fullScript: fullScript
-    }
+	if needsClonoTable {
+		clonoTable := clonoTableBuilder.build("tsv")
+		clonoSchema := maps.getValues(clonoSchemaMap)
+		if len(clonoSchema) == 0 {
+			ll.panic("Clonotype table is required by mode or columns, but the resulting table is empty.")
+		}
+		cmd.addFile("clonotype_properties.tsv", clonoTable)
+		cmd.arg("--clonotype-data").arg("clonotype_properties.tsv")
+		cmd.writeFile("clonotype_properties_schema.json", json.encode(clonoSchema))
+		cmd.arg("--clonotype-schema").arg("clonotype_properties_schema.json")
+	}
+
+	if needsSampleTable {
+		sampleTable := sampleTableBuilder.build("tsv")
+		sampleSchema := maps.getValues(sampleSchemaMap)
+		if len(sampleSchema) == 0 {
+			ll.panic("Sample-clonotype table is required by mode, but the resulting table is empty.")
+		}
+		cmd.addFile("sample_clonotype_properties.tsv", sampleTable)
+		cmd.arg("--sample-clonotype-data").arg("sample_clonotype_properties.tsv")
+		cmd.writeFile("sample_clonotype_properties_schema.json", json.encode(sampleSchema))
+		cmd.arg("--sample-clonotype-schema").arg("sample_clonotype_properties_schema.json")
+	}
+
+	cmd.saveFile("output.tsv")
+	cmd.arg("--output").arg("output.tsv")
+
+	taggerResult := cmd.run()
+	processedResult := taggerResult.getFile("output.tsv")
+
+	return {
+		filterColumn: processedResult
+	}
 })
