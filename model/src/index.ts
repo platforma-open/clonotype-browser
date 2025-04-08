@@ -5,6 +5,9 @@ import type {
   PlTableFiltersModel,
   UniversalPColumnEntry,
   PColumnSpec,
+  DataInfo,
+  TreeNodeAccessor,
+  PColumn,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
@@ -202,18 +205,27 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 1 },
         ],
       }],
-    );
+    ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
     if (!columns) return undefined;
+
+    const labelsPf = ctx.prerun?.resolve({ field: 'result', assertFieldType: 'Input', allowPermanentAbsence: true })
+    if(labelsPf && labelsPf.getIsFinal()){
+      const labelColumns = labelsPf.getPColumns();
+      if(labelColumns){
+        columns.push(...labelColumns)
+      }
+    }
+
     return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
       filters: ctx.uiState.filterModel?.filters,
     });
   })
 
-  .output('filterColumn', (ctx) =>
-    ctx.prerun?.resolve({ field: 'filterColumn', assertFieldType: 'Input', allowPermanentAbsence: true })?.getFileContentAsString())
+  // .output('filterColumn', (ctx) =>
+  //   ctx.prerun?.resolve({ field: 'filterColumn', assertFieldType: 'Input', allowPermanentAbsence: true })?.getFileContentAsString())
 
-  .output('fullScript', (ctx) =>
-    ctx.prerun?.resolve({ field: 'fullScript', assertFieldType: 'Input', allowPermanentAbsence: true })?.getDataAsJson())
+  // .output('fullScript', (ctx) =>
+  //   ctx.prerun?.resolve({ field: 'fullScript', assertFieldType: 'Input', allowPermanentAbsence: true })?.getDataAsJson())
 
   .sections((_ctx) => {
     return [{ type: 'link', href: '/', label: 'Main' }];

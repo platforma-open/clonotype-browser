@@ -4,6 +4,7 @@ smart := import("@platforma-sdk/workflow-tengo:smart")
 file := import("@platforma-sdk/workflow-tengo:file")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 render := import("@platforma-sdk/workflow-tengo:render")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 util := import(":util")
 
@@ -17,15 +18,19 @@ wf.body(func(args) {
 		}
 	}
 
+	blockId := wf.blockId().getDataAsJson()
+
 	outputs := {}
 
 	if len(args.annotationScript.steps) > 0 {
 		columnBundle := util.createColumnBundle(wf, args)
 		calculationResult := render.createEphemeral(doCalculations, {
+			blockId: blockId,
 			blockArgs: args,
 			columnBundle: columnBundle
 		})
-		outputs["filterColumn"] = file.exportFile(calculationResult.output("filterColumn"))
+
+		outputs["result"] = pFrames.exportFrame(calculationResult.output("result"))
 	}
 
 	return {

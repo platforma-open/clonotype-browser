@@ -712,7 +712,7 @@ def main(
     print(f"Writing output to: {output_path}")
     try:
         df_final = final_lf.collect(streaming=True)
-        df_final.write_csv(output_path, separator='\t', null_value=NA_STRING_VALUE)
+        df_final.write_csv(output_path, separator='\t', quote_style='never')
         print(f"Output successfully written to {output_path}")
         print(f"Number of labeled rows written: {len(df_final)}")
     except ColumnNotFoundError as e: # Use imported exception

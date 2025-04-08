@@ -2,6 +2,7 @@ self := import("@platforma-sdk/workflow-tengo:tpl")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 file := import("@platforma-sdk/workflow-tengo:file")
 pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
@@ -20,6 +21,7 @@ self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
 
 self.body(func(inputs) {
+	blockId := inputs.blockId
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
 	rawAnnotationScript := blockArgs.annotationScript
@@ -132,7 +134,61 @@ self.body(func(inputs) {
 	taggerResult := cmd.run()
 	processedResult := taggerResult.getFile("output.tsv")
 
+	//
+	// Converting result to PColumn
+	//
+
+	fullAxesSpec := [clonotypeAxisSpec]
+	importAxesSpec := [{
+		column: CLONOTYPE_KEY_HEADER,
+		spec: { type: clonotypeAxisSpec.type }
+	}]
+	partitionKeyLength := 0
+
+	if mode == "bySampleAndClonotype" {
+		importAxesSpec = [{
+			column: SAMPLE_KEY_HEADER,
+			spec: { type: sampleAxisSpec.type }
+		}] + importAxesSpec
+		fullAxesSpec = [sampleAxisSpec] + fullAxesSpec
+		partitionKeyLength = 1
+	}
+
+	importedDataMap := xsv.importFile(processedResult, "tsv", {
+		axes: importAxesSpec,
+		columns: [ {
+			column: "label",
+			spec: { valueType: "String" }
+		} ],
+		partitionKeyLength: partitionKeyLength,
+		storageFormat: "Binary"
+	}, { dataOnly: true })
+
+	filterData := importedDataMap.getFutureInputField("label")
+
+	pfBuilder := pFrames.pFrameBuilder()
+
+	annotationSpec := {
+		kind: "PColumn",
+		name: "pl7.app/vdj/annotation",
+		valueType: "String",
+		axesSpec: fullAxesSpec,
+		annotations: {
+			"pl7.app/label": "Clonotype Annotations"
+		}
+	}
+
+	trace := pSpec.makeTrace(anchorSpec, {
+		type: "milaboratories.clonotype-browser-2",
+		label: "Clonotype Annotation",
+		importance: 20,
+		id: blockId
+	})
+	annotationSpec = trace.inject(annotationSpec)
+
+	pfBuilder.add("annotation", annotationSpec, filterData)
+
 	return {
-		filterColumn: processedResult
+		result: pfBuilder.build()
 	}
 })
