@@ -29,6 +29,10 @@ export type UiState = {
   settingsOpen: boolean;
   filterModel: PlTableFiltersModel;
   tableState: PlDataTableState;
+  statsTable: {
+    tableState: PlDataTableState;
+    filterModel: PlTableFiltersModel;
+  }
 };
 
 type SimplifiedPColumnSpec = Pick<PColumnSpec, 'valueType' | 'annotations'>;
@@ -81,6 +85,12 @@ export const platforma = BlockModel.create('Heavy')
     filterModel: {},
     tableState: {
       gridState: {},
+    },
+    statsTable: {
+      tableState: {
+        gridState: {},
+      },
+      filterModel: {},
     },
   })
 
@@ -208,9 +218,9 @@ export const platforma = BlockModel.create('Heavy')
     ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
     if (!columns) return undefined;
 
-    const labelsPf = ctx.prerun?.resolve({ field: 'result', assertFieldType: 'Input', allowPermanentAbsence: true })
-    if(labelsPf && labelsPf.getIsFinal()){
-      const labelColumns = labelsPf.getPColumns();
+    const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })
+    if(annotationPf && annotationPf.getIsFinal()){
+      const labelColumns = annotationPf.getPColumns();
       if(labelColumns){
         columns.push(...labelColumns)
       }
@@ -219,6 +229,19 @@ export const platforma = BlockModel.create('Heavy')
     return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
       filters: ctx.uiState.filterModel?.filters,
     });
+  })
+
+  .output('statsTable', (ctx) => {
+    const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true })
+    if(statsPf && statsPf.getIsFinal()){
+      const columns = statsPf.getPColumns();
+      if(!columns) return undefined;
+
+      return createPlDataTable(ctx, columns, ctx.uiState.statsTable.tableState, {
+        filters: ctx.uiState.statsTable.filterModel?.filters,
+      });
+    }
+    return undefined
   })
 
   // .output('filterColumn', (ctx) =>

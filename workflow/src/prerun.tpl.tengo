@@ -30,7 +30,8 @@ wf.body(func(args) {
 			columnBundle: columnBundle
 		})
 
-		outputs["result"] = pFrames.exportFrame(calculationResult.output("result"))
+		outputs["annotationPf"] = pFrames.exportFrame(calculationResult.output("annotationPf"))
+		outputs["statsPf"] = pFrames.exportFrame(calculationResult.output("statsPf"))
 	}
 
 	return {

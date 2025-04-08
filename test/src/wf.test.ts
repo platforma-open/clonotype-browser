@@ -277,6 +277,9 @@ blockTest(
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
 
+    expect(outputs6.table).toBeDefined();
+    expect(outputs6.statsTable).toBeDefined();
+
     const columnSpecs = await ml.driverKit.pFrameDriver.getSpec(outputs6.table!);
     console.dir(columnSpecs, { depth: 8 });
     const annotationIdx = columnSpecs.findIndex((col) => col.spec.name === 'pl7.app/vdj/annotation');
@@ -287,5 +290,9 @@ blockTest(
     expect(annotationData[0].data.length).toBeGreaterThan(0);
     expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.startsWith('Top 2')))).toBe(true);
     console.dir(annotationData, { depth: 8 });
+
+    const statsShape = await ml.driverKit.pFrameDriver.getShape(outputs6.statsTable!);
+    const statsTable = await ml.driverKit.pFrameDriver.getData(outputs6.statsTable!, [...Array(statsShape.columns).keys()]);
+    console.dir(statsTable, { depth: 8 });
   },
 );
