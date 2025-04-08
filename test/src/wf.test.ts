@@ -276,9 +276,16 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
-    console.dir(outputs6, { depth: 8 });
 
-    console.log(JSON.stringify(outputs6.filterColumn));
-    console.log(JSON.stringify(outputs6.fullScript));
+    const columnSpecs = await ml.driverKit.pFrameDriver.getSpec(outputs6.table!);
+    console.dir(columnSpecs, { depth: 8 });
+    const annotationIdx = columnSpecs.findIndex((col) => col.spec.name === 'pl7.app/vdj/annotation');
+    expect(annotationIdx).toBeGreaterThanOrEqual(0);
+
+    const annotationData = await ml.driverKit.pFrameDriver.getData(outputs6.table!, [annotationIdx]);
+    expect(annotationData[0].data).toBeDefined();
+    expect(annotationData[0].data.length).toBeGreaterThan(0);
+    expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.startsWith('Top 2')))).toBe(true);
+    console.dir(annotationData, { depth: 8 });
   },
 );

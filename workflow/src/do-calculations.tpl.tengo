@@ -31,6 +31,11 @@ self.body(func(inputs) {
 		ll.panic("Input anchor must have exactly 2 axes (sample, clonotype), found %d", len(anchorSpec.axesSpec))
 	}
 
+	mainFraction := columnBundle.getColumn(util.mainAbundanceFractionColumn)
+	if is_undefined(mainFraction) {
+		ll.panic("Main abundance fraction column is required, but not found.")
+	}
+
 	sampleAxisSpec := anchorSpec.axesSpec[0]
 	clonotypeAxisSpec := anchorSpec.axesSpec[1]
 	mode := rawAnnotationScript.mode
@@ -164,7 +169,7 @@ self.body(func(inputs) {
 		storageFormat: "Binary"
 	}, { dataOnly: true })
 
-	filterData := importedDataMap.getFutureInputField("label")
+	annotationData := importedDataMap.getFutureInputField("label")
 
 	pfBuilder := pFrames.pFrameBuilder()
 
@@ -186,7 +191,13 @@ self.body(func(inputs) {
 	})
 	annotationSpec = trace.inject(annotationSpec)
 
-	pfBuilder.add("annotation", annotationSpec, filterData)
+	pfBuilder.add("annotation", annotationSpec, annotationData)
+
+	//
+	// Calculating result statistics
+	//
+
+
 
 	return {
 		result: pfBuilder.build()
