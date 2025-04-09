@@ -16,7 +16,7 @@ import type { InferBlockState } from '@platforma-sdk/model';
 import { wrapOutputs } from '@platforma-sdk/model';
 
 blockTest(
-  'simple project',
+  'simple project byClonotype mode',
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
@@ -291,10 +291,13 @@ blockTest(
     expect(annotationData[0].data).toBeDefined();
     expect(annotationData[0].data.length).toBeGreaterThan(0);
     expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.startsWith('Top 2')))).toBe(true);
-    console.dir(annotationData, { depth: 8 });
+    // console.dir(annotationData, { depth: 8 });
 
     const statsShape = await ml.driverKit.pFrameDriver.getShape(outputs6.statsTable!);
-    const statsTable = await ml.driverKit.pFrameDriver.getData(outputs6.statsTable!, [...Array(statsShape.columns).keys()]);
-    console.dir(statsTable, { depth: 8 });
+    const statsData = await ml.driverKit.pFrameDriver.getData(outputs6.statsTable!, [...Array(statsShape.columns).keys()]);
+    // console.dir(statsData, { depth: 8 });
+
+    expect(statsData[0].data).toBeDefined();
+    expect(statsData[0].data.length).toBeGreaterThan(0);
   },
 );

@@ -280,7 +280,10 @@ export const platforma = BlockModel.create('Heavy')
         .addColumns(columns)
         .getColumns({ axes: [{ split: true }, { }] });
 
-      return columnsAfterSplitting?.map((a) => a.spec);
+      return {
+        a: columnsAfterSplitting?.map((a) => a.spec),
+        b: columns?.map((a) => a.spec),
+      };
     }
     return undefined;
   })
