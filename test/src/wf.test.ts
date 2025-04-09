@@ -277,6 +277,8 @@ blockTest(
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
 
+    console.dir(outputs6, { depth: 8 });
+
     expect(outputs6.table).toBeDefined();
     expect(outputs6.statsTable).toBeDefined();
 

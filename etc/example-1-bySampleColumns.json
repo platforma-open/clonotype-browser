@@ -1,0 +1,159 @@
+[
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeFraction\"}",
+        "label": "Fraction of UMIs",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of UMIs",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readFraction\"}",
+        "label": "Fraction of reads",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of reads",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality CDR1",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality CDR2",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality CDR3",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality FR1",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality FR2",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality FR3",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR4\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality FR4",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR4",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"VDJRegion\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}",
+        "label": "Min quality VDJRegion",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality VDJRegion",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readCount\"}",
+        "label": "Number Of Reads",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Number Of Reads",
+                "pl7.app/min": "1"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeCount\"}",
+        "label": "Number of UMIs",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/isAnchor": "true",
+                "pl7.app/label": "Number of UMIs",
+                "pl7.app/min": "1"
+            }
+        }
+    }
+]

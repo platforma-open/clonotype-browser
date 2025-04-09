@@ -296,6 +296,7 @@ self.body(func(inputs) {
 			{ column: TOTAL_FRACTION_HEADER, spec: { valueType: mainFractionSpec.valueType } }, // Sum keeps the original type
 			{ column: CLONOTYPE_COUNT_HEADER, spec: { valueType: "Long" } }                 // Count is always Long
 		],
+		partitionKeyLength: 1,
 		storageFormat: "Binary"
 	}
 

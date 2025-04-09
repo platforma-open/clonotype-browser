@@ -32,6 +32,8 @@
   },
   "pnpm": {
     "overrides": {
+      "@milaboratories/pl-model-common": "file:/Users/dbolotin/mi/core/platforma/lib/model/common/package.tgz",
+      "@platforma-sdk/model": "file:/Users/dbolotin/mi/core/platforma/sdk/model/package.tgz",
       "@platforma-sdk/workflow-tengo": "file:/Users/dbolotin/mi/core/platforma/sdk/workflow-tengo/package.tgz"
     }
   },

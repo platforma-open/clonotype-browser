@@ -1,0 +1,789 @@
+[
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutationsCount\"}",
+        "label": "AA mutations count in J gene",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "AA mutations count in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutationsCount\"}",
+        "label": "AA mutations count in V gene",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "AA mutations count in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutations\"}",
+        "label": "AA mutations in J gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "AA mutations in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutations\"}",
+        "label": "AA mutations in V gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "AA mutations in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutationsRate\"}",
+        "label": "AA mutations rate in J gene",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/label": "AA mutations rate in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/aaMutationsRate\"}",
+        "label": "AA mutations rate in V gene",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/label": "AA mutations rate in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"CGene\"},\"name\":\"pl7.app/vdj/geneHit\"}",
+        "label": "Best C gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best C gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"CGene\"},\"name\":\"pl7.app/vdj/geneHitWithAllele\"}",
+        "label": "Best C hit with allele",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best C hit with allele"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"DGene\"},\"name\":\"pl7.app/vdj/geneHit\"}",
+        "label": "Best D gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best D gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"DGene\"},\"name\":\"pl7.app/vdj/geneHitWithAllele\"}",
+        "label": "Best D hit with allele",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best D hit with allele"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"JGene\"},\"name\":\"pl7.app/vdj/geneHit\"}",
+        "label": "Best J gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"JGene\"},\"name\":\"pl7.app/vdj/geneHitWithAllele\"}",
+        "label": "Best J hit with allele",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best J hit with allele"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"VGene\"},\"name\":\"pl7.app/vdj/geneHit\"}",
+        "label": "Best V gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/reference\":\"VGene\"},\"name\":\"pl7.app/vdj/geneHitWithAllele\"}",
+        "label": "Best V hit with allele",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Best V hit with allele"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"CDR1\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR1 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR1 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"CDR1\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR1 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR1 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"CDR2\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR2 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR2 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"CDR2\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR2 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR2 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"CDR3\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR3 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR3 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"CDR3\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "CDR3 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "CDR3 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/chain\"}",
+        "label": "Chain",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/discreteValues": "['TRA','TRB','TRG','TRD','IGH','IGK','IGL']",
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Chain"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/containsOOF\"}",
+        "label": "Contains OOF",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/discreteValues": "[\"True\",\"False\"]",
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Contains OOF"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/containsStopCodons\"}",
+        "label": "Contains stop codons",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/discreteValues": "[\"True\",\"False\"]",
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Contains stop codons"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"DRegion\"},\"name\":\"pl7.app/vdj/germlineSequence\"}",
+        "label": "D germline",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "D germline"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"FR1\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR1 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR1 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"FR1\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR1 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR1 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"FR2\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR2 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR2 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"FR2\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR2 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR2 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"FR3\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR3 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR3 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"FR3\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR3 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR3 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"FR4\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR4 aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR4 aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"FR4\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "FR4 nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "FR4 nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeFraction\"}}",
+        "label": "Fraction of UMIs / SRR11233621",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of UMIs",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeFraction\"}}",
+        "label": "Fraction of UMIs / SRR11233630",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of UMIs",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readFraction\"}}",
+        "label": "Fraction of reads / SRR11233621",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of reads",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readFraction\"}}",
+        "label": "Fraction of reads / SRR11233630",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/abundance/normalized": "true",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Fraction of reads",
+                "pl7.app/max": "1",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/isotype\"}",
+        "label": "IG isotype",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "IG isotype"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"JRegion\"},\"name\":\"pl7.app/vdj/germlineSequence\"}",
+        "label": "J germline",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "J germline"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR1 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR1 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR2 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR2 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR3 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"CDR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality CDR3 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality CDR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR1 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR1\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR1 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR1",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR2 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR2\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR2 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR2",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR3 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR3\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR3 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR3",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR4\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR4 / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR4",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"FR4\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality FR4 / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality FR4",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"VDJRegion\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality VDJRegion / SRR11233621",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality VDJRegion",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/vdj/feature\":\"VDJRegion\",\"pl7.app/vdj/quality\":\"minQuality\"},\"name\":\"pl7.app/vdj/sequenceQuality\"}}",
+        "label": "Min quality VDJRegion / SRR11233630",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Min quality VDJRegion",
+                "pl7.app/max": "60",
+                "pl7.app/min": "0"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutationsCount\"}",
+        "label": "Nt mutations count in J gene",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Nt mutations count in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutationsCount\"}",
+        "label": "Nt mutations count in V gene",
+        "obj": {
+            "valueType": "Int",
+            "annotations": {
+                "pl7.app/label": "Nt mutations count in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutations\"}",
+        "label": "Nt mutations in J gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "Nt mutations in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutations\"}",
+        "label": "Nt mutations in V gene",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "Nt mutations in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutationsRate\"}",
+        "label": "Nt mutations rate in J gene",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/label": "Nt mutations rate in J gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/nMutationsRate\"}",
+        "label": "Nt mutations rate in V gene",
+        "obj": {
+            "valueType": "Double",
+            "annotations": {
+                "pl7.app/label": "Nt mutations rate in V gene"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readCount\"}}",
+        "label": "Number Of Reads / SRR11233621",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Number Of Reads",
+                "pl7.app/min": "1"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/readCount\"}}",
+        "label": "Number Of Reads / SRR11233630",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "reads",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/label": "Number Of Reads",
+                "pl7.app/min": "1"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"S47TR7TIY2RXAXWHIHE7ZLTC\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeCount\"}}",
+        "label": "Number of UMIs / SRR11233621",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/isAnchor": "true",
+                "pl7.app/label": "Number of UMIs",
+                "pl7.app/min": "1"
+            }
+        }
+    },
+    {
+        "id": "{\"axisFilters\":[[0,\"7XZRMCG7QEIU3E64JE6OOMZ5\"]],\"source\":{\"axes\":[{\"anchor\":\"main\",\"idx\":0},{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/uniqueMoleculeCount\"}}",
+        "label": "Number of UMIs / SRR11233630",
+        "obj": {
+            "valueType": "Long",
+            "annotations": {
+                "pl7.app/abundance/isPrimary": "true",
+                "pl7.app/abundance/normalized": "false",
+                "pl7.app/abundance/unit": "molecules",
+                "pl7.app/isAbundance": "true",
+                "pl7.app/isAnchor": "true",
+                "pl7.app/label": "Number of UMIs",
+                "pl7.app/min": "1"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"name\":\"pl7.app/vdj/sequence/productive\"}",
+        "label": "Productive",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/discreteValues": "[\"True\",\"False\"]",
+                "pl7.app/isDiscreteFilter": "true",
+                "pl7.app/label": "Productive"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"VRegion\"},\"name\":\"pl7.app/vdj/germlineSequence\"}",
+        "label": "V germline",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "V germline"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"aminoacid\",\"pl7.app/vdj/feature\":\"VDJRegion\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "VDJRegion aa",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "VDJRegion aa",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    },
+    {
+        "id": "{\"axes\":[{\"anchor\":\"main\",\"idx\":1}],\"domain\":{\"pl7.app/alphabet\":\"nucleotide\",\"pl7.app/vdj/feature\":\"VDJRegion\"},\"name\":\"pl7.app/vdj/sequence\"}",
+        "label": "VDJRegion nt",
+        "obj": {
+            "valueType": "String",
+            "annotations": {
+                "pl7.app/label": "VDJRegion nt",
+                "pl7.app/vdj/imputed": "false"
+            }
+        }
+    }
+]
