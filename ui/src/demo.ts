@@ -137,3 +137,53 @@ function generateDemo1(
     steps: steps,
   };
 }
+
+export function generateDemo2Aging(
+  mainAbundanceId: SUniversalPColumnId,
+): AnnotationScript {
+  return {
+    mode: 'bySampleAndClonotype',
+    steps: [
+      {
+        label: 'Hyperexpanded',
+        filter: {
+          type: 'numericalComparison',
+          lhs: mainAbundanceId,
+          rhs: 1.0, // Equivalent to just true
+        },
+      },
+      {
+        label: 'Large',
+        filter: {
+          type: 'numericalComparison',
+          lhs: mainAbundanceId,
+          rhs: 0.01,
+        },
+      },
+      {
+        label: 'Medium',
+        filter: {
+          type: 'numericalComparison',
+          lhs: mainAbundanceId,
+          rhs: 0.001,
+        },
+      },
+      {
+        label: 'Small',
+        filter: {
+          type: 'numericalComparison',
+          lhs: mainAbundanceId,
+          rhs: 0.0001,
+        },
+      },
+      {
+        label: 'Rare',
+        filter: {
+          type: 'numericalComparison',
+          lhs: mainAbundanceId, // TODO change to counts
+          rhs: 0.00001,
+        },
+      },
+    ],
+  };
+}

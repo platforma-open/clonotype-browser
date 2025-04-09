@@ -180,21 +180,26 @@ export const platforma = BlockModel.create('Heavy')
     return simplifyColumnEntries(entries);
   })
 
-  .output('abundanceColumnOptions', (ctx) => {
+  .output('mainAbundanceColumn', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
-    return ctx.resultPool.getCanonicalOptions(
+    const ops = ctx.resultPool.getCanonicalOptions(
       { main: ctx.args.inputAnchor },
       {
-        annotations: { 'pl7.app/isAbundance': 'true' },
-        domainAnchor: 'main',
         axes: [
-          { split: true },
+          { anchor: 'main', idx: 0 },
           { anchor: 'main', idx: 1 },
         ],
+        annotations: {
+          'pl7.app/isAbundance': 'true',
+          'pl7.app/abundance/normalized': 'true',
+          'pl7.app/abundance/isPrimary': 'true',
+        },
       },
     );
+    if (ops === undefined || ops.length === 0) return undefined;
+    return ops[0];
   })
 
   .output('clonotypeColumnOptions', (ctx) => {
@@ -269,25 +274,6 @@ export const platforma = BlockModel.create('Heavy')
     return undefined;
   })
 
-  .output('statsTable1', (ctx) => {
-    const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (statsPf && statsPf.getIsReadyOrError()) {
-      const columns = statsPf.getPColumns();
-      if (!columns) return undefined;
-
-      const columnsAfterSplitting = new PColumnCollection()
-        .addAxisLabelProvider(ctx.resultPool)
-        .addColumns(columns)
-        .getColumns({ axes: [{ split: true }, { }] });
-
-      return {
-        a: columnsAfterSplitting?.map((a) => a.spec),
-        b: columns?.map((a) => a.spec),
-      };
-    }
-    return undefined;
-  })
-
   // .output('filterColumn', (ctx) =>
   //   ctx.prerun?.resolve({ field: 'filterColumn', assertFieldType: 'Input', allowPermanentAbsence: true })?.getFileContentAsString())
 
@@ -303,9 +289,9 @@ export const platforma = BlockModel.create('Heavy')
     ];
   })
 
-  .argsValid((ctx) => false)
+  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationScript.steps.length > 0)
 
-  .title((ctx) => 'Clonotype Browser')
+  .title((_ctx) => 'Clonotype Browser')
 
   .done();
 
