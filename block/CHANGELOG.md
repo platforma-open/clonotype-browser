@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.1.0
+
+### Minor Changes
+
+- 4d91e09: Major refactoring of annotation code.
+
+### Patch Changes
+
+- Updated dependencies [4d91e09]
+  - @platforma-open/milaboratories.clonotype-browser-2.workflow@1.1.0
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.1.0
+  - @platforma-open/milaboratories.clonotype-browser-2.ui@1.1.0
+
 ## 1.0.4
 
 ### Patch Changes
