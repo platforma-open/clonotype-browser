@@ -8,6 +8,18 @@ json := import("json")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
+mainAbundanceFractionColumn := {
+	axes: [
+		{ anchor: "main", idx: 0 },
+		{ anchor: "main", idx: 1 }
+	],
+	annotations: {
+		"pl7.app/isAbundance": "true",
+		"pl7.app/abundance/normalized": "true",
+		"pl7.app/abundance/isPrimary": "true"
+	}
+}
+
 // Extracts all columns from a filter recursively and adds them to the columnsSet
 addColumnsFromFilters := func(filter, columnsSet) {
 	if is_undefined(filter) {
@@ -15,6 +27,18 @@ addColumnsFromFilters := func(filter, columnsSet) {
 	}
 
 	ll.assert(is_map(filter), "filter must be a map")
+
+	maybeAddColumn := func(maybeColumn) {
+		if is_string(maybeColumn) {
+			// It's a direct SUniversalPColumnId
+			sets.add(columnsSet, maybeColumn)
+		} else if is_map(maybeColumn) && maybeColumn.transformer {
+			// It's a TransformedColumn, like ValueRank, SortedCumulativeSum, Log10
+			ll.assert(!is_undefined(maybeColumn.column), "TransformedColumn must have a 'column' field")
+			sets.add(columnsSet, maybeColumn.column)
+		}
+		// Ignore if it's a number (constant value in NumericalComparisonFilter)
+	}
 
 	if filter.type == "or" || filter.type == "and" {
 		// Handle logical OR and AND filters by processing each contained filter
@@ -24,13 +48,20 @@ addColumnsFromFilters := func(filter, columnsSet) {
 	} else if filter.type == "not" {
 		// Handle NOT filter by processing the contained filter
 		addColumnsFromFilters(filter.filter, columnsSet)
-	} else if !is_undefined(filter.column) {
-		// Handle PatternFilter, UnaryNumericalFilter
+	} else if filter.type == "pattern" {
+		// Handle PatternFilter
+		ll.assert(!is_undefined(filter.column), "PatternFilter must have a 'column' field")
 		sets.add(columnsSet, filter.column)
-	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
-		// Handle GtNumericalFilter
-		sets.add(columnsSet, filter.column1)
-		sets.add(columnsSet, filter.column2)
+	} else if filter.type == "numericalComparison" {
+		// Handle NumericalComparisonFilter
+		ll.assert(!is_undefined(filter.lhs), "NumericalComparisonFilter must have an 'lhs' field")
+		ll.assert(!is_undefined(filter.rhs), "NumericalComparisonFilter must have an 'rhs' field")
+		maybeAddColumn(filter.lhs)
+		maybeAddColumn(filter.rhs)
+	} else if filter.type == "isNA" {
+		// Handle IsNA filter
+		ll.assert(!is_undefined(filter.column), "IsNA filter must have a 'column' field")
+		sets.add(columnsSet, filter.column)
 	}
 }
 
@@ -61,6 +92,8 @@ createColumnBundle := func(wf, args) {
 		bundleBuilder.addById(column)
 	}
 
+	bundleBuilder.addById(mainAbundanceFractionColumn)
+
 	return bundleBuilder.build()
 }
 
@@ -71,6 +104,20 @@ transformFilterColumns := func(filter, transformFn) {
 	}
 
 	ll.assert(is_map(filter), "filter must be a map")
+
+	transformMaybeColumn := func(maybeColumn) {
+		if is_string(maybeColumn) {
+			// It's a direct SUniversalPColumnId
+			return transformFn(maybeColumn)
+		} else if is_map(maybeColumn) && maybeColumn.transformer {
+			// It's a TransformedColumn
+			return maps.deepTransform(maybeColumn, {
+				column: transformFn
+			})
+		}
+		// If it's a number or something else, return as is
+		return maybeColumn
+	}
 
 	if filter.type == "or" || filter.type == "and" {
 		return maps.deepTransform(filter, {
@@ -88,14 +135,25 @@ transformFilterColumns := func(filter, transformFn) {
 				return transformFilterColumns(subFilter, transformFn)
 			}
 		})
-	} else if !is_undefined(filter.column) {
+	} else if filter.type == "pattern" {
+		// Handle PatternFilter
+		ll.assert(!is_undefined(filter.column), "PatternFilter must have a 'column' field")
 		return maps.deepTransform(filter, {
 			column: transformFn
 		})
-	} else if !is_undefined(filter.column1) && !is_undefined(filter.column2) {
+	} else if filter.type == "numericalComparison" {
+		// Handle NumericalComparisonFilter
+		ll.assert(!is_undefined(filter.lhs), "NumericalComparisonFilter must have an 'lhs' field")
+		ll.assert(!is_undefined(filter.rhs), "NumericalComparisonFilter must have an 'rhs' field")
 		return maps.deepTransform(filter, {
-			column1: transformFn,
-			column2: transformFn
+			lhs: transformMaybeColumn,
+			rhs: transformMaybeColumn
+		})
+	} else if filter.type == "isNA" {
+		// Handle IsNA filter
+		ll.assert(!is_undefined(filter.column), "IsNA filter must have a 'column' field")
+		return maps.deepTransform(filter, {
+			column: transformFn
 		})
 	}
 
@@ -124,6 +182,7 @@ transformAnnotationScriptColumns := func(annotationScript, transformFn) {
 }
 
 export ll.toStrict({
+	mainAbundanceFractionColumn: mainAbundanceFractionColumn,
 	extractColumnsFromFilter: extractColumnsFromFilter,
 	createColumnBundle: createColumnBundle,
 	transformFilterColumns: transformFilterColumns,

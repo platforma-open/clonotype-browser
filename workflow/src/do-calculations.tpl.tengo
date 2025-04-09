@@ -2,62 +2,336 @@ self := import("@platforma-sdk/workflow-tengo:tpl")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
 file := import("@platforma-sdk/workflow-tengo:file")
 pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
+pBuilder := import("@platforma-sdk/workflow-tengo:pframes.builder")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 json := import("json")
+text := import("text")
 
 util := import(":util")
 
+SAMPLE_KEY_HEADER := "sample_key"
+CLONOTYPE_KEY_HEADER := "clonotype_key"
+
+// Import ptransform software
+ptransformSw := assets.importSoftware("@platforma-open/milaboratories.software-ptransform:main")
+
+self.awaitState("columnBundle", { wildcard: "*" }, "ref", "ResourceReady")
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
 annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
 
 self.body(func(inputs) {
-
+	blockId := inputs.blockId
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
+	rawAnnotationScript := blockArgs.annotationScript
 
-	columns := util.extractColumnsFromFilter(blockArgs.annotationScript)
-
-	tableBuilder := columnBundle.xsvTableBuilder();
-
-	for column in columns {
-		tableBuilder.add(column)
+	anchorSpec := columnBundle.getColumn(blockArgs.inputAnchor).spec
+	if len(anchorSpec.axesSpec) != 2 {
+		ll.panic("Input anchor must have exactly 2 axes (sample, clonotype), found %d", len(anchorSpec.axesSpec))
 	}
 
-	transformedAnnotationScript := util.transformAnnotationScriptColumns(
-		blockArgs.annotationScript,
+	mainFraction := columnBundle.getColumn(util.mainAbundanceFractionColumn)
+	if is_undefined(mainFraction) {
+		ll.panic("Main abundance fraction column is required, but not found.")
+	}
+
+	mainFractionSpec := mainFraction.spec
+	mainFractionData := mainFraction.data
+
+	sampleAxisSpec := anchorSpec.axesSpec[0]
+	clonotypeAxisSpec := anchorSpec.axesSpec[1]
+	mode := rawAnnotationScript.mode
+
+	// Set global header overrides for key columns on the bundle
+	columnBundle.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
+	columnBundle.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
+
+	scriptColumns := util.extractColumnsFromFilter(rawAnnotationScript) // Already returns unique list
+
+	clonoTableBuilder := columnBundle.xsvTableBuilder()
+	sampleTableBuilder := columnBundle.xsvTableBuilder()
+
+	clonoSchemaMap := {}
+	clonoSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
+
+	sampleSchemaMap := {}
+	sampleSchemaMap[SAMPLE_KEY_HEADER] = { column: SAMPLE_KEY_HEADER, type: sampleAxisSpec.type }
+	sampleSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
+
+	headerMap := {}
+
+	needsClonoTable := (mode == "byClonotype")
+	needsSampleTable := (mode == "bySampleAndClonotype")
+
+	for colId in scriptColumns {
+		colSpec := columnBundle.getSpec(colId)
+		numAxes := len(colSpec.axesSpec)
+
+		if numAxes == 1 {
+			// Belongs in clonotype table
+			clonoTableBuilder.add(colId)
+			header := clonoTableBuilder.getHeader(colId)
+			spec := clonoTableBuilder.getSpec(colId)
+			clonoSchemaMap[header] = { column: header, type: spec.valueType }
+			needsClonoTable = true // Mark true if any 1-axis col is used, even in bySample mode
+			headerMap[colId] = header
+		} else if numAxes == 2 {
+			// Belongs in sample-clonotype table
+			if mode == "byClonotype" {
+				ll.panic("Column %s has 2 axes but mode is 'byClonotype'. The script expects only 1-axis columns in this mode.", colId)
+			}
+			sampleTableBuilder.add(colId)
+			header := sampleTableBuilder.getHeader(colId)
+			spec := sampleTableBuilder.getSpec(colId)
+			sampleSchemaMap[header] = { column: header, type: spec.valueType }
+			needsSampleTable = true
+			headerMap[colId] = header
+		} else {
+			ll.panic("Column %s has an unexpected number of axes (%d), expected 1 or 2.", colId, numAxes)
+		}
+	}
+
+	finalAnnotationScript := util.transformAnnotationScriptColumns(
+		rawAnnotationScript,
 		func(column) {
-			return tableBuilder.getHeader(column)
+			return headerMap[column]
 		}
 	)
-	keyColumn := tableBuilder.getHeader(columnBundle.getColumn(blockArgs.inputAnchor).spec.axesSpec[1])
-	fullScript := {
-		keyColumn: keyColumn,
-		steps: transformedAnnotationScript.steps
+
+	// Setting the key columns for the script
+	finalAnnotationScript.clonotypeKeyColumn = CLONOTYPE_KEY_HEADER
+	if mode == "bySampleAndClonotype" {
+		finalAnnotationScript.sampleKeyColumn = SAMPLE_KEY_HEADER
 	}
 
-	fullTable := tableBuilder.build("tsv")
-
-	taggerCmd := exec.builder().
+	cmd := exec.builder().
 		printErrStreamToStdout().
-		software(annotatorSw).
-		addFile("input.tsv", fullTable).
+		software(annotatorSw)
+
+	cmd.writeFile("script.json", json.encode(finalAnnotationScript))
+	cmd.arg("--script").arg("script.json")
+
+	if needsClonoTable {
+		clonoTable := clonoTableBuilder.build("tsv")
+		clonoSchema := maps.getValues(clonoSchemaMap)
+		if len(clonoSchema) == 0 {
+			ll.panic("Clonotype table is required by mode or columns, but the resulting table is empty.")
+		}
+		cmd.addFile("clonotype_properties.tsv", clonoTable)
+		cmd.arg("--clonotype-data").arg("clonotype_properties.tsv")
+		cmd.writeFile("clonotype_properties_schema.json", json.encode(clonoSchema))
+		cmd.arg("--clonotype-schema").arg("clonotype_properties_schema.json")
+	}
+
+	if needsSampleTable {
+		sampleTable := sampleTableBuilder.build("tsv")
+		sampleSchema := maps.getValues(sampleSchemaMap)
+		if len(sampleSchema) == 0 {
+			ll.panic("Sample-clonotype table is required by mode, but the resulting table is empty.")
+		}
+		cmd.addFile("sample_clonotype_properties.tsv", sampleTable)
+		cmd.arg("--sample-clonotype-data").arg("sample_clonotype_properties.tsv")
+		cmd.writeFile("sample_clonotype_properties_schema.json", json.encode(sampleSchema))
+		cmd.arg("--sample-clonotype-schema").arg("sample_clonotype_properties_schema.json")
+	}
+
+	cmd.saveFile("output.tsv")
+	cmd.arg("--output").arg("output.tsv")
+
+	taggerResult := cmd.run()
+	processedResult := taggerResult.getFile("output.tsv")
+
+	//
+	// Converting result to PColumn
+	//
+
+	fullAxesSpec := [clonotypeAxisSpec]
+	importAxesSpec := [{
+		column: CLONOTYPE_KEY_HEADER,
+		spec: { type: clonotypeAxisSpec.type }
+	}]
+	partitionKeyLength := 0
+
+	if mode == "bySampleAndClonotype" {
+		importAxesSpec = [{
+			column: SAMPLE_KEY_HEADER,
+			spec: { type: sampleAxisSpec.type }
+		}] + importAxesSpec
+		fullAxesSpec = [sampleAxisSpec] + fullAxesSpec
+		partitionKeyLength = 1
+	}
+
+	ANNOTATION_COLUMN_NAME := "label" // Column name in the annotator output tsv
+	ANNOTATION_PCOLUMN_KEY := "annotation" // Key for the pcolumn in maps
+
+	importedDataMap := xsv.importFile(processedResult, "tsv", {
+		axes: importAxesSpec,
+		columns: [ {
+			column: ANNOTATION_COLUMN_NAME,
+			spec: { valueType: "String" }
+		} ],
+		partitionKeyLength: partitionKeyLength,
+		storageFormat: "Binary"
+	}, { dataOnly: true })
+
+	annotationData := importedDataMap.getFutureInputField(ANNOTATION_COLUMN_NAME)
+
+	annotationPfBuilder := pFrames.pFrameBuilder()
+
+	trace := pSpec.makeTrace(anchorSpec, {
+		type: "milaboratories.clonotype-browser-2",
+		label: "Clonotype Annotation",
+		importance: 20,
+		id: blockId
+	})
+	annotationsColumnSpec := trace.inject({
+		kind: "PColumn",
+		valueType: "String",
+		name: "pl7.app/vdj/annotation",
+		domain: {
+			"pl7.app/vdj/clonotypeAnnotationRunId": blockId
+		},
+		axesSpec: fullAxesSpec,
+		annotations: {
+			"pl7.app/label": "Clonotype Annotations"
+		}
+	})
+	annotationsAxisSpec := {
+		type: "String",
+		name: "pl7.app/vdj/annotation",
+		domain: {
+			"pl7.app/vdj/clonotypeAnnotationRunId": blockId
+		},
+		annotations: {
+			"pl7.app/label": "Clonotype Annotations"
+		}
+	}
+
+	annotationPfBuilder.add(ANNOTATION_PCOLUMN_KEY, annotationsColumnSpec, annotationData)
+
+	//
+	// Calculating result statistics
+	//
+
+	FRACTION_VALUE_HEADER := "FractionValue"
+	ANNOTATION_LABEL_HEADER := "Label"
+
+	relabelAxes := func(spec) {
+		return maps.deepTransform(spec, {
+			axesSpec: func(axes) {
+				return slices.map(axes, func(axis) {
+					if text.has_suffix(axis.name, "lonotypeKey") {
+						return maps.deepMerge(axis, {
+							annotations: {
+								"pl7.app/label": CLONOTYPE_KEY_HEADER
+							}
+						})
+					}
+					if axis.name == "pl7.app/sampleId" {
+						return maps.deepMerge(axis, {
+							annotations: {
+								"pl7.app/label": SAMPLE_KEY_HEADER
+							}
+						})
+					}
+					ll.panic("Unexpected axis name: %s", axis.name)
+				})
+			}
+		})
+	}
+
+	statsInputData := [
+		{ spec: relabelAxes(maps.deepMerge(mainFractionSpec, {
+			annotations: { "pl7.app/label": FRACTION_VALUE_HEADER }
+		})), data: mainFractionData },
+		{ spec: relabelAxes(maps.deepMerge(annotationsColumnSpec, {
+			annotations: { "pl7.app/label": ANNOTATION_LABEL_HEADER }
+		})), data: annotationData }
+	]
+
+	statsTsv := xsv.exportFrame(statsInputData, "tsv", { naStr: "NaN", nullStr: "null" })
+
+	TOTAL_FRACTION_HEADER := FRACTION_VALUE_HEADER + "_sum"
+	CLONOTYPE_COUNT_HEADER := FRACTION_VALUE_HEADER + "_count"
+
+	transformParams := {
+		steps: [{
+			type: "aggregate",
+			groupBy: [SAMPLE_KEY_HEADER, ANNOTATION_LABEL_HEADER],
+			aggregations: [
+				{ type: "sum", src: FRACTION_VALUE_HEADER, dst: TOTAL_FRACTION_HEADER },
+				{ type: "count", src: FRACTION_VALUE_HEADER, dst: CLONOTYPE_COUNT_HEADER }
+			]
+		}]
+	}
+
+	transformCmd := exec.builder().
+		printErrStreamToStdout().
+		software(ptransformSw).
+		writeFile("wf.json", json.encode(transformParams)).
+		arg("--workflow").arg("wf.json").
+		addFile("input.tsv", statsTsv).
 		arg("input.tsv").
-		writeFile("script.json", json.encode(fullScript)).
-		arg("script.json").
-		saveFile("output.tsv").
-		arg("output.tsv").
-		run()
+		arg("aggregated_stats.tsv").
+		saveFile("aggregated_stats.tsv")
 
-	processedResult := taggerCmd.getFile("output.tsv")
+	transformResult := transformCmd.run()
+	aggregatedTsv := transformResult.getFile("aggregated_stats.tsv")
 
-    return {
-        filterColumn: processedResult,
-        fullScript: fullScript
-    }
+	statsAxesSpec := [sampleAxisSpec, annotationsAxisSpec]
+
+	statsImportSpec := {
+		axes: [
+			{ column: SAMPLE_KEY_HEADER, spec: { type: sampleAxisSpec.type } },
+			{ column: ANNOTATION_LABEL_HEADER, spec: { type: annotationsAxisSpec.type } }
+		],
+		columns: [
+			{ column: TOTAL_FRACTION_HEADER, spec: { valueType: mainFractionSpec.valueType } }, // Sum keeps the original type
+			{ column: CLONOTYPE_COUNT_HEADER, spec: { valueType: "Long" } }                 // Count is always Long
+		],
+		partitionKeyLength: 1,
+		storageFormat: "Binary"
+	}
+
+	statsImportedMap := xsv.importFile(aggregatedTsv, "tsv", statsImportSpec, { dataOnly: true })
+
+	totalFractionData := statsImportedMap.getFutureInputField(TOTAL_FRACTION_HEADER)
+	numberOfClonotypesData := statsImportedMap.getFutureInputField(CLONOTYPE_COUNT_HEADER)
+
+	totalFractionSpec := trace.inject({
+		kind: "PColumn",
+		name: "pl7.app/vdj/stats/totalFraction",
+		valueType: mainFractionSpec.valueType,
+		axesSpec: statsAxesSpec,
+		annotations: {
+			"pl7.app/label": "Total Fraction per Label"
+		}
+	})
+
+	numberOfClonotypesSpec := trace.inject({
+		kind: "PColumn",
+		name: "pl7.app/vdj/stats/numberOfClonotypes",
+		valueType: "Long",
+		axesSpec: statsAxesSpec,
+		annotations: {
+			"pl7.app/label": "Number of Clonotypes per Label"
+		}
+	})
+
+	statsPfBuilder := pFrames.pFrameBuilder()
+	statsPfBuilder.add("totalFraction", totalFractionSpec, totalFractionData)
+	statsPfBuilder.add("numberOfClonotypes", numberOfClonotypesSpec, numberOfClonotypesData)
+
+	return {
+		annotationPf: annotationPfBuilder.build(),
+		statsPf: statsPfBuilder.build()
+	}
 })

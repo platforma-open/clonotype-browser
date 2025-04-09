@@ -1,11 +1,38 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+util := import(":util")
+
+doCalculations := assets.importTemplate(":do-calculations")
 
 wf.setPreRun(assets.importTemplate(":prerun"))
 
 wf.body(func(args) {
+	if is_undefined(args.inputAnchor) {
+		return {
+			outputs: {},
+			exports: {}
+		}
+	}
+
+	blockId := wf.blockId().getDataAsJson()
+
+	exports := {}
+
+	if len(args.annotationScript.steps) > 0 {
+		columnBundle := util.createColumnBundle(wf, args)
+		calculationResult := render.createEphemeral(doCalculations, {
+			blockId: blockId,
+			blockArgs: args,
+			columnBundle: columnBundle
+		})
+
+		exports["annotationPf"] = calculationResult.output("annotationPf")
+		exports["statsPf"] = calculationResult.output("statsPf")
+	}
+
 	return {
 		outputs: {},
-		exports: {}
+		exports: exports
 	}
 })

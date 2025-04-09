@@ -14,13 +14,9 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
+import { generateAnnotationScript, generateDemo2Aging } from './demo';
 
 const app = useApp();
-
-/** UI state upgrader */ (() => {
-  if ('filtersOpen' in app.model.ui) delete app.model.ui.filtersOpen;
-  if (app.model.ui.filterModel === undefined) app.model.ui.filterModel = {};
-})();
 
 function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
@@ -40,6 +36,24 @@ const tableSettings = computed<PlDataTableSettings | undefined>(() =>
     : undefined,
 );
 const columns = ref<PTableColumnSpec[]>([]);
+
+function setDemoAnnotationScript1() {
+  const byClonotypeColumns = app.model.outputs.byClonotypeColumns;
+  const bySampleAndClonotypeColumns = app.model.outputs.bySampleAndClonotypeColumns;
+  if (!byClonotypeColumns || !bySampleAndClonotypeColumns) return;
+
+  console.dir(byClonotypeColumns, { depth: null });
+  console.dir(bySampleAndClonotypeColumns, { depth: null });
+
+  app.model.args.annotationScript = generateAnnotationScript(byClonotypeColumns, bySampleAndClonotypeColumns);
+}
+
+function setDemoAnnotationScript2() {
+  const mainAbundance = app.model.outputs.mainAbundanceColumn;
+  if (!mainAbundance) return;
+
+  app.model.args.annotationScript = generateDemo2Aging(mainAbundance.value);
+}
 </script>
 
 <template>
@@ -51,7 +65,7 @@ const columns = ref<PTableColumnSpec[]>([]);
       <PlAgDataTableToolsPanel>
         <PlTableFilters v-model="app.model.ui.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
-      <PlBtnGhost @click.stop="() => (app.model.ui.settingsOpen = true)">
+      <PlBtnGhost @click.shift.stop="setDemoAnnotationScript2" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
         Settings
         <template #append>
           <PlMaskIcon24 name="settings" />
