@@ -31,7 +31,10 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@platforma-sdk/model": "file:/Users/dbolotin/mi/core/platforma/sdk/model/package.tgz",
+      "@milaboratories/pl-middle-layer": "file:/Users/dbolotin/mi/core/platforma/lib/node/pl-middle-layer/package.tgz"
+    }
   },
   "///": {
     "pnpm": {

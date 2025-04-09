@@ -21,6 +21,7 @@ CLONOTYPE_KEY_HEADER := "clonotype_key"
 // Import ptransform software
 ptransformSw := assets.importSoftware("@platforma-open/milaboratories.software-ptransform:main")
 
+self.awaitState("columnBundle", { wildcard: "*" }, "ref", "ResourceReady")
 self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 

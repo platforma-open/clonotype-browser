@@ -5,5 +5,15 @@ export default defineConfig({
     watch: false,
     testTimeout: 10000,
     // retry: 2,
+
+    // pool: 'forks',
+    // poolOptions: {
+    //   forks: {
+    //     execArgv: [
+    //       '--prof',
+    //     ],
+    //     singleFork: true,
+    //   },
+    // },
   }
 });

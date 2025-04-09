@@ -5,6 +5,6 @@ export default defineConfig({
     watch: false,
     maxConcurrency: 3,
     testTimeout: 10000,
-    retry: 2
-  }
+    retry: 2,
+  },
 });
