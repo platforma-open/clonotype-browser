@@ -237,7 +237,7 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (annotationPf && annotationPf.getIsFinal()) {
+    if (annotationPf && annotationPf.getIsReadyOrError()) {
       const labelColumns = annotationPf.getPColumns();
       if (labelColumns) {
         columns.push(...labelColumns);
@@ -251,7 +251,7 @@ export const platforma = BlockModel.create('Heavy')
 
   .output('statsTable', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (statsPf && statsPf.getIsFinal()) {
+    if (statsPf && statsPf.getIsReadyOrError()) {
       const columns = statsPf.getPColumns();
       if (!columns) return undefined;
 
@@ -271,7 +271,7 @@ export const platforma = BlockModel.create('Heavy')
 
   .output('statsTable1', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (statsPf && statsPf.getIsFinal()) {
+    if (statsPf && statsPf.getIsReadyOrError()) {
       const columns = statsPf.getPColumns();
       if (!columns) return undefined;
 
