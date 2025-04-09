@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     watch: false,
     testTimeout: 10000,
-    // retry: 2,
+    retry: 2,
 
     // pool: 'forks',
     // poolOptions: {
