@@ -183,7 +183,7 @@ export interface NotFilter {
 /**
  * Union type for all supported annotation filters.
  */
-export type AnnotationFilter = PatternFilter | NumericalComparisonFilter | OrFilter | AndFilter | NotFilter;
+export type AnnotationFilter = IsNA | PatternFilter | NumericalComparisonFilter | OrFilter | AndFilter | NotFilter;
 
 //
 // Annotation
