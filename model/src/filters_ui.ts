@@ -1,8 +1,15 @@
 import type { PColumnSpec, SUniversalPColumnId } from '@platforma-sdk/model';
-import type { AnnotationMode, AnnotationScript, IsNA, AndFilter } from './filter';
-import type { Lens } from './lens';
+import type { AnnotationMode, AnnotationScript, IsNA, AndFilter, NumericalComparisonFilter } from './filter';
+import type { GetLens, Lens } from './lens';
 
-export type UIFilterHelperSingleColumn<T> = {
+/**
+ * This file create an abstraction level between generic {@link AnnotationFilter} and UI-specific {@link FilterUI}.
+ * Each filter in {@link FilterUI} is a special case of {@link AnnotationFilter}.
+ *
+ * This file also provides helper functions to create and manipulate {@link FilterUI} objects.
+ */
+
+export type UIFilterHelperSingleColumn<T extends FilterUI = FilterUI> = {
   name: string;
   /**
    * Check if the filter is supported for the given column specification
@@ -12,9 +19,18 @@ export type UIFilterHelperSingleColumn<T> = {
   supportedFor: (spec: PColumnSpec) => boolean;
   guard: (filter: unknown) => filter is T;
   create: (column: SUniversalPColumnId) => T;
+  column: GetLens<T, SUniversalPColumnId>;
+  /**
+   * Convert the filter to a string representation
+   * @param filter - The filter to convert
+   * @param columnLabelDeriver - A function that derives the label for a column from its ID
+   * @returns A string representation of the filter
+   */
+  asString(filter: T, columnLabelDeriver: (column: SUniversalPColumnId) => string): string;
 };
 
 export type UIFilterHelperDoubleColumn<T> = {
+  name: string;
   /**
    * Check if the filter is supported for the given column specifications
    * @param spec1 - The first column specification
@@ -24,6 +40,9 @@ export type UIFilterHelperDoubleColumn<T> = {
   supportedFor: (spec1: PColumnSpec, spec2: PColumnSpec | undefined) => boolean;
   guard: (filter: unknown) => filter is T;
   create: (column1: SUniversalPColumnId, column2: SUniversalPColumnId) => T;
+  column1: GetLens<T, SUniversalPColumnId>;
+  column2: GetLens<T, SUniversalPColumnId>;
+  asString: (filter: T, columnLabelDeriver: (column: SUniversalPColumnId) => string) => string;
 };
 
 function isNumericValueType(spec: PColumnSpec): boolean {
@@ -37,6 +56,12 @@ export const IsNAUI = {
   supportedFor: () => true,
   guard: (filter: unknown): filter is IsNAUI => typeof filter === 'object' && filter !== null && 'type' in filter && filter.type === 'isNA' && 'column' in filter,
   create: (column: SUniversalPColumnId): IsNAUI => ({ type: 'isNA', column }),
+  column: {
+    get: (filter: IsNAUI) => filter.column,
+  },
+  asString: (filter: IsNAUI, columnLabelDeriver: (column: SUniversalPColumnId) => string) => {
+    return `${columnLabelDeriver(filter.column)} is NA`;
+  },
 };
 
 /** Filters for records where a specific column is *not* NA */
@@ -50,6 +75,12 @@ export const IsNotNAUI = {
   supportedFor: () => true,
   guard: (filter: unknown): filter is IsNotNAUI => typeof filter === 'object' && filter !== null && 'type' in filter && filter.type === 'not' && 'filter' in filter && IsNAUI.guard(filter.filter),
   create: (column: SUniversalPColumnId): IsNotNAUI => ({ type: 'not', filter: IsNAUI.create(column) }),
+  column: {
+    get: (filter: IsNotNAUI) => filter.filter.column,
+  } as GetLens<IsNotNAUI, SUniversalPColumnId>,
+  asString(filter: IsNotNAUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    return `${columnLabelDeriver(IsNotNAUI.column.get(filter))} is not NA`;
+  },
 };
 
 /** Filters for values less than a constant */
@@ -69,10 +100,18 @@ export const LessThenUI = {
     lhs: column,
     rhs: threshold,
   }),
+  column: {
+    get: (filter: LessThenUI) => filter.lhs,
+  } as GetLens<LessThenUI, SUniversalPColumnId>,
   threshold: {
     get: (filter: LessThenUI) => filter.rhs,
     set: (filter: LessThenUI, threshold: number): LessThenUI => ({ ...filter, rhs: threshold }),
   } as Lens<LessThenUI, number>,
+  asString(filter: LessThenUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const threshold = LessThenUI.threshold.get(filter);
+    const columnLabel = columnLabelDeriver(LessThenUI.column.get(filter));
+    return `${threshold} > ${columnLabel}`;
+  },
 };
 
 /** Filters for values less than or equal to a constant */
@@ -94,10 +133,18 @@ export const LessThenOrEqualUI = {
     rhs: threshold,
     allowEqual: true,
   }),
+  column: {
+    get: (filter: LessThenOrEqualUI) => filter.lhs,
+  } as GetLens<LessThenOrEqualUI, SUniversalPColumnId>,
   threshold: {
     get: (filter: LessThenOrEqualUI) => filter.rhs,
     set: (filter: LessThenOrEqualUI, threshold: number): LessThenOrEqualUI => ({ ...filter, rhs: threshold }),
   } as Lens<LessThenOrEqualUI, number>,
+  asString(filter: LessThenOrEqualUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const threshold = LessThenOrEqualUI.threshold.get(filter);
+    const columnLabel = columnLabelDeriver(LessThenOrEqualUI.column.get(filter));
+    return `${threshold} >= ${columnLabel}`;
+  },
 };
 
 /** Filters for values greater than a constant */
@@ -117,10 +164,18 @@ export const GreaterThenUI = {
     lhs: threshold,
     rhs: column,
   }),
+  column: {
+    get: (filter: GreaterThenUI) => filter.rhs,
+  } as GetLens<GreaterThenUI, SUniversalPColumnId>,
   threshold: {
     get: (filter: GreaterThenUI) => filter.lhs,
     set: (filter: GreaterThenUI, threshold: number): GreaterThenUI => ({ ...filter, lhs: threshold }),
   } as Lens<GreaterThenUI, number>,
+  asString(filter: GreaterThenUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const threshold = GreaterThenUI.threshold.get(filter);
+    const columnLabel = columnLabelDeriver(GreaterThenUI.column.get(filter));
+    return `${threshold} < ${columnLabel}`;
+  },
 };
 
 /** Filters for values greater than or equal to a constant */
@@ -142,10 +197,18 @@ export const GreaterThenOrEqualUI = {
     rhs: column,
     allowEqual: true,
   }),
+  column: {
+    get: (filter: GreaterThenOrEqualUI) => filter.rhs,
+  } as GetLens<GreaterThenOrEqualUI, SUniversalPColumnId>,
   threshold: {
     get: (filter: GreaterThenOrEqualUI) => filter.lhs,
     set: (filter: GreaterThenOrEqualUI, threshold: number): GreaterThenOrEqualUI => ({ ...filter, lhs: threshold }),
   } as Lens<GreaterThenOrEqualUI, number>,
+  asString(filter: GreaterThenOrEqualUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const threshold = GreaterThenOrEqualUI.threshold.get(filter);
+    const columnLabel = columnLabelDeriver(GreaterThenOrEqualUI.column.get(filter));
+    return `${threshold} <= ${columnLabel}`;
+  },
 };
 
 /** Filters for the top N values in a column */
@@ -166,20 +229,28 @@ export const TopNUI = {
   name: 'Top N',
   supportedFor: isNumericValueType,
   guard: (filter: unknown): filter is TopNUI => typeof filter === 'object' && filter !== null && 'type' in filter && filter.type === 'numericalComparison' && 'lhs' in filter && typeof filter.lhs === 'object' && filter.lhs !== null && 'transformer' in filter.lhs && filter.lhs.transformer === 'rank' && 'column' in filter.lhs && 'descending' in filter.lhs && filter.lhs.descending === true && 'rhs' in filter && typeof filter.rhs === 'number' && 'allowEqual' in filter && filter.allowEqual === true,
-  create: (column: SUniversalPColumnId, rank: number = 0): TopNUI => ({
+  create: (column: SUniversalPColumnId, n: number = 0): TopNUI => ({
     type: 'numericalComparison',
     lhs: {
       transformer: 'rank',
       column,
       descending: true,
     },
-    rhs: rank,
+    rhs: n,
     allowEqual: true,
   }),
-  rank: {
+  column: {
+    get: (filter: TopNUI) => filter.lhs.column,
+  } as GetLens<TopNUI, SUniversalPColumnId>,
+  n: {
     get: (filter: TopNUI) => filter.rhs,
-    set: (filter: TopNUI, rank: number): TopNUI => ({ ...filter, rhs: rank }),
+    set: (filter: TopNUI, n: number): TopNUI => ({ ...filter, rhs: n }),
   } as Lens<TopNUI, number>,
+  asString(filter: TopNUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const n = TopNUI.n.get(filter);
+    const columnLabel = columnLabelDeriver(TopNUI.column.get(filter));
+    return `Top ${n} by ${columnLabel}`;
+  },
 };
 
 /** Filters for values contributing to the top cumulative share of a column */
@@ -210,10 +281,18 @@ export const TopCumulativeShareUI = {
     rhs: share,
     allowEqual: true,
   }),
+  column: {
+    get: (filter: TopCumulativeShareUI) => filter.lhs.column,
+  } as GetLens<TopCumulativeShareUI, SUniversalPColumnId>,
   share: {
     get: (filter: TopCumulativeShareUI) => filter.rhs,
     set: (filter: TopCumulativeShareUI, share: number): TopCumulativeShareUI => ({ ...filter, rhs: share }),
   } as Lens<TopCumulativeShareUI, number>,
+  asString(filter: TopCumulativeShareUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const share = TopCumulativeShareUI.share.get(filter);
+    const columnLabel = columnLabelDeriver(TopCumulativeShareUI.column.get(filter));
+    return `Top ${share * 100}% cumulative share by ${columnLabel}`;
+  },
 };
 
 /** Filters for values between a minimum and maximum constant */
@@ -248,19 +327,11 @@ export const BetweenUI = {
   },
   column: {
     get: (filter: BetweenUI): SUniversalPColumnId => {
-        // Both filters guaranteed to have the same column by the guard
+      // Both filters guaranteed to have the same column by the guard
       const f1 = filter.filters[0] as GreaterThenOrEqualUI | GreaterThenUI;
       return f1.rhs;
     },
-    // Setting column requires recreating the filter
-    set: (filter: BetweenUI, column: SUniversalPColumnId): BetweenUI => {
-      const min = BetweenUI.min.get(filter);
-      const max = BetweenUI.max.get(filter);
-      const minInclusive = BetweenUI.minInclusive.get(filter);
-      const maxInclusive = BetweenUI.maxInclusive.get(filter);
-      return BetweenUI.create(column, min, max, minInclusive, maxInclusive);
-    },
-  } as Lens<BetweenUI, SUniversalPColumnId>,
+  } as GetLens<BetweenUI, SUniversalPColumnId>,
   min: {
     get: (filter: BetweenUI): number => {
       const f1 = filter.filters[0] as GreaterThenOrEqualUI | GreaterThenUI;
@@ -311,6 +382,90 @@ export const BetweenUI = {
       return BetweenUI.create(column, min, max, minInclusive, inclusive);
     },
   } as Lens<BetweenUI, boolean>,
+  asString(filter: BetweenUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string {
+    const column = columnLabelDeriver(BetweenUI.column.get(filter));
+    const min = BetweenUI.min.get(filter);
+    const max = BetweenUI.max.get(filter);
+    const minOp = BetweenUI.minInclusive.get(filter) ? '>=' : '>';
+    const maxOp = BetweenUI.maxInclusive.get(filter) ? '<=' : '<';
+    return `${min} ${minOp} ${column} ${maxOp} ${max}`;
+  },
+};
+
+/** Compare two columns numerically */
+export type CompareColumnsUI = NumericalComparisonFilter & {
+  lhs: SUniversalPColumnId; // Override to ensure lhs is a column
+  rhs: SUniversalPColumnId; // Override to ensure rhs is a column
+  __brand: 'CompareColumnsUI';
+};
+export const CompareColumnsUI = {
+  name: 'Compare Columns',
+  supportedFor: (spec1: PColumnSpec, spec2: PColumnSpec | undefined): boolean => {
+    return isNumericValueType(spec1) && (spec2 === undefined || isNumericValueType(spec2));
+  },
+  guard: (filter: unknown): filter is CompareColumnsUI => {
+    return (
+      typeof filter === 'object'
+      && filter !== null
+      && 'type' in filter
+      && filter.type === 'numericalComparison'
+      && 'lhs' in filter
+      && typeof filter.lhs === 'string' // Ensure lhs is a column ID
+      && 'rhs' in filter
+      && typeof filter.rhs === 'string' // Ensure rhs is a column ID
+      // Removed '!('transformer' in ...)' checks as typeof === 'string' is sufficient
+      // We don't strictly need a brand check if the conditions above are sufficient,
+      // but it can prevent accidental matches if NumericalComparisonFilter structure changes.
+      // && '__brand' in filter && filter.__brand === 'CompareColumnsUI'
+    );
+  },
+  create: (column1: SUniversalPColumnId, column2: SUniversalPColumnId, allowEqual: boolean = false, minDiff?: number): CompareColumnsUI => ({
+    type: 'numericalComparison',
+    lhs: column1,
+    rhs: column2,
+    ...(allowEqual && { allowEqual: true }),
+    ...(minDiff !== undefined && { minDiff }),
+    __brand: 'CompareColumnsUI', // Add brand for clarity
+  }),
+  column1: {
+    get: (filter: CompareColumnsUI) => filter.lhs,
+    // No setter provided as changing one column might invalidate the filter's context or require changing the other column too.
+  } as GetLens<CompareColumnsUI, SUniversalPColumnId>,
+  column2: {
+    get: (filter: CompareColumnsUI) => filter.rhs,
+    // No setter provided.
+  } as GetLens<CompareColumnsUI, SUniversalPColumnId>,
+  allowEqual: {
+    get: (filter: CompareColumnsUI) => filter.allowEqual === true,
+    set: (filter: CompareColumnsUI, allowEqual: boolean): CompareColumnsUI => {
+      const newFilter = { ...filter };
+      if (allowEqual) {
+        newFilter.allowEqual = true;
+      } else {
+        delete newFilter.allowEqual;
+      }
+      return newFilter as CompareColumnsUI;
+    },
+  } as Lens<CompareColumnsUI, boolean>,
+  minDiff: {
+    get: (filter: CompareColumnsUI) => filter.minDiff,
+    set: (filter: CompareColumnsUI, minDiff: number | undefined): CompareColumnsUI => {
+      const newFilter = { ...filter };
+      if (minDiff !== undefined) {
+        newFilter.minDiff = minDiff;
+      } else {
+        delete newFilter.minDiff;
+      }
+      return newFilter as CompareColumnsUI;
+    },
+  } as Lens<CompareColumnsUI, number | undefined>,
+  asString: (filter: CompareColumnsUI, columnLabelDeriver: (column: SUniversalPColumnId) => string): string => {
+    const col1Label = columnLabelDeriver(filter.lhs);
+    const col2Label = columnLabelDeriver(filter.rhs);
+    const op = filter.allowEqual ? '<=' : '<';
+    const diffStr = filter.minDiff !== undefined && filter.minDiff !== 0 ? ` + ${filter.minDiff}` : '';
+    return `${col1Label}${diffStr} ${op} ${col2Label}`;
+  },
 };
 
 /** Union type for all supported UI-level annotation filters */
@@ -337,7 +492,7 @@ export const SingleColumnFilters: UIFilterHelperSingleColumn<FilterUI>[] = [
   BetweenUI,
 ];
 
-export const DoubleColumnFilters: UIFilterHelperDoubleColumn<FilterUI>[] = [];
+export const DoubleColumnFilters: UIFilterHelperDoubleColumn<CompareColumnsUI>[] = [CompareColumnsUI];
 
 /** Represents a list of UI filters combined using AND logic */
 export interface AnnotationFilterList {
