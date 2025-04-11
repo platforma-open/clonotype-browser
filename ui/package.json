@@ -15,13 +15,17 @@
     "@platforma-open/milaboratories.clonotype-browser-2.model": "workspace:*",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",
+    "canonicalize": "catalog:",
     "vue": "catalog:",
     "@vueuse/core": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@milaboratories/helpers": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "@platforma-sdk/eslint-config": "catalog:",
+    "@types/lodash": "catalog:",
+    "lodash": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",

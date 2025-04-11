@@ -9,15 +9,17 @@ import type {
   PColumn,
   SUniversalPColumnId,
   PColumnEntryUniversal,
+  InferOutputsType,
+  RenderCtx,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
   createPlDataTable,
   PColumnCollection,
-  type InferOutputsType,
 } from '@platforma-sdk/model';
 import * as R from 'remeda';
 import type { AnnotationScript } from './filter';
+import { createPlDataTableSpec, createPlDataTableData } from './join_helpers';
 
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
@@ -76,6 +78,40 @@ const simplifyColumnEntries = (
   ret.sort((a, b) => a.label.localeCompare(b.label));
 
   return ret;
+};
+
+const getTableColumns = (
+  ctx: RenderCtx<BlockArgs, UiState>,
+): (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[] | undefined => {
+  if (ctx.args.inputAnchor === undefined)
+    return undefined;
+
+  const columns = ctx.resultPool.getAnchoredPColumns(
+    { main: ctx.args.inputAnchor },
+    [{
+      domainAnchor: 'main',
+      axes: [
+        { split: true },
+        { anchor: 'main', idx: 1 },
+      ],
+    }, {
+      domainAnchor: 'main',
+      axes: [
+        { anchor: 'main', idx: 1 },
+      ],
+    }],
+  ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
+  if (!columns) return undefined;
+
+  const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
+  if (annotationPf && annotationPf.getIsReadyOrError()) {
+    const labelColumns = annotationPf.getPColumns();
+    if (labelColumns) {
+      columns.push(...labelColumns);
+    }
+  }
+
+  return columns;
 };
 
 export const platforma = BlockModel.create('Heavy')
@@ -220,39 +256,58 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('table', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-
-    const columns = ctx.resultPool.getAnchoredPColumns(
-      { main: ctx.args.inputAnchor },
-      [{
-        domainAnchor: 'main',
-        axes: [
-          { split: true },
-          { anchor: 'main', idx: 1 },
-        ],
-      }, {
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 1 },
-        ],
-      }],
-    ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
+  .output('tableSpec', (ctx) => {
+    const columns = getTableColumns(ctx);
     if (!columns) return undefined;
 
-    const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (annotationPf && annotationPf.getIsReadyOrError()) {
-      const labelColumns = annotationPf.getPColumns();
-      if (labelColumns) {
-        columns.push(...labelColumns);
-      }
-    }
-
-    return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
-      filters: ctx.uiState.filterModel?.filters,
-    });
+    return createPlDataTableSpec(ctx, columns);
   })
+
+  .output('table', (ctx) => {
+    const columns = getTableColumns(ctx);
+    if (!columns) return undefined;
+
+    return createPlDataTableData(
+      ctx,
+      columns,
+      ctx.uiState.tableState,
+      ctx.uiState.filterModel?.filters,
+    );
+  })
+
+  // .output('table', (ctx) => {
+  //   if (ctx.args.inputAnchor === undefined)
+  //     return undefined;
+
+  //   const columns = ctx.resultPool.getAnchoredPColumns(
+  //     { main: ctx.args.inputAnchor },
+  //     [{
+  //       domainAnchor: 'main',
+  //       axes: [
+  //         { split: true },
+  //         { anchor: 'main', idx: 1 },
+  //       ],
+  //     }, {
+  //       domainAnchor: 'main',
+  //       axes: [
+  //         { anchor: 'main', idx: 1 },
+  //       ],
+  //     }],
+  //   ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
+  //   if (!columns) return undefined;
+
+  //   const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
+  //   if (annotationPf && annotationPf.getIsReadyOrError()) {
+  //     const labelColumns = annotationPf.getPColumns();
+  //     if (labelColumns) {
+  //       columns.push(...labelColumns);
+  //     }
+  //   }
+
+  //   return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
+  //     filters: ctx.uiState.filterModel?.filters,
+  //   });
+  // })
 
   .output('statsTable', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
