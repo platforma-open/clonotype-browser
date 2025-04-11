@@ -235,3 +235,10 @@ export type AnnotationScript = {
   /** Ordered list of annotation steps to apply */
   steps: AnnotationStep[];
 };
+
+export type AnnotationScript2<S extends AnnotationStep> = {
+  /** The mode of annotation to apply */
+  mode: AnnotationMode;
+  /** Ordered list of annotation steps to apply */
+  steps: S[];
+};

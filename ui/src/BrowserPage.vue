@@ -6,7 +6,6 @@ import {
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
-  PlMaskIcon24,
   PlSlideModal,
   PlTableFilters,
   type PlDataTableSettings,
@@ -14,7 +13,8 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
-import { generateAnnotationScript, generateDemo2Aging } from './demo';
+import { generateAnnotationScript, generateDemo2Aging, generateDemo3Aging } from './demo';
+import AnnotationsModal from './Annotations/AnnotationsModal.vue';
 
 const app = useApp();
 
@@ -48,11 +48,18 @@ function setDemoAnnotationScript1() {
   app.model.args.annotationScript = generateAnnotationScript(byClonotypeColumns, bySampleAndClonotypeColumns);
 }
 
-function setDemoAnnotationScript2() {
+function _setDemoAnnotationScript2() {
   const mainAbundance = app.model.outputs.mainAbundanceColumn;
   if (!mainAbundance) return;
 
   app.model.args.annotationScript = generateDemo2Aging(mainAbundance.value);
+}
+
+function setDemoAnnotationScript3() {
+  const mainAbundance = app.model.outputs.mainAbundanceColumn;
+  if (!mainAbundance) return;
+
+  app.model.args.annotationScript = generateDemo3Aging(mainAbundance.value);
 }
 </script>
 
@@ -65,11 +72,11 @@ function setDemoAnnotationScript2() {
       <PlAgDataTableToolsPanel>
         <PlTableFilters v-model="app.model.ui.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
-      <PlBtnGhost @click.shift.stop="setDemoAnnotationScript2" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
+      <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
+        Annotations
+      </PlBtnGhost>
+      <PlBtnGhost icon="settings" @click.shift.stop="setDemoAnnotationScript3" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
         Settings
-        <template #append>
-          <PlMaskIcon24 name="settings" />
-        </template>
       </PlBtnGhost>
     </template>
     <div style="flex: 1">
@@ -93,4 +100,5 @@ function setDemoAnnotationScript2() {
       @update:model-value="setAnchorColumn"
     />
   </PlSlideModal>
+  <AnnotationsModal />
 </template>
