@@ -15,8 +15,13 @@ text := import("text")
 
 util := import(":util")
 
+// Input headers
 SAMPLE_KEY_HEADER := "sample_key"
 CLONOTYPE_KEY_HEADER := "clonotype_key"
+
+// Result headers
+SAMPLE_COUNT_HEADER := "sample_count"
+ANNOTATION_LABEL_HEADER := "label"
 
 // Import ptransform software
 ptransformSw := assets.importSoftware("@platforma-open/milaboratories.software-ptransform:main")
@@ -37,8 +42,11 @@ self.body(func(inputs) {
 	if len(anchorSpec.axesSpec) != 2 {
 		ll.panic("Input anchor must have exactly 2 axes (sample, clonotype), found %d", len(anchorSpec.axesSpec))
 	}
+	sampleAxisSpec := anchorSpec.axesSpec[0]
+	clonotypeAxisSpec := anchorSpec.axesSpec[1]
 
-	mainFraction := columnBundle.getColumn(util.mainAbundanceFractionColumn)
+
+	mainFraction := columnBundle.getColumn(util.mainFractionColumn)
 	if is_undefined(mainFraction) {
 		ll.panic("Main abundance fraction column is required, but not found.")
 	}
@@ -46,13 +54,99 @@ self.body(func(inputs) {
 	mainFractionSpec := mainFraction.spec
 	mainFractionData := mainFraction.data
 
-	sampleAxisSpec := anchorSpec.axesSpec[0]
-	clonotypeAxisSpec := anchorSpec.axesSpec[1]
-	mode := rawAnnotationScript.mode
+	mainCount := columnBundle.getColumn(util.mainCountColumn)
+	if is_undefined(mainCount) {
+		ll.panic("Main count column is required, but not found.")
+	}
+
+	mainCountSpec := mainCount.spec
+	mainCountData := mainCount.data
 
 	// Set global header overrides for key columns on the bundle
 	columnBundle.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
 	columnBundle.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
+
+	outputs := {}
+
+	//
+	// Calculating main aggregation stats
+	//
+
+	aggTrace := pSpec.makeTrace(anchorSpec, {
+		type: "milaboratories.clonotype-browser-2",
+		label: "Main Aggregation", // Changed label
+		importance: 10, // Lowered importance vs annotation
+		id: blockId + "-main" // Changed ID slightly
+	})
+
+	//
+	// Calculating number of samples per clonotype
+	//
+
+	countTableBuilder := columnBundle.xsvTableBuilder()
+	countTableBuilder.add(util.mainCountColumn, { header: "count" })
+	countTsv := countTableBuilder.build("tsv")
+
+	aggregateSamplesParams := {
+		steps: [{
+			type: "aggregate",
+			// Use the constant defined earlier for axis headers
+			groupBy: [CLONOTYPE_KEY_HEADER],
+			aggregations: [
+				// Use the header obtained from the builder
+				{ type: "count", src: "count", dst: SAMPLE_COUNT_HEADER }
+			]
+		}]
+	}
+
+	aggregateSamplesCmd := exec.builder().
+		printErrStreamToStdout().
+		software(ptransformSw).
+		writeFile("wf.json", json.encode(aggregateSamplesParams)).
+		arg("--workflow").arg("wf.json").
+		addFile("count_input.tsv", countTsv).
+		arg("count_input.tsv").
+		arg("result.tsv").
+		saveFile("result.tsv")
+
+	aggregateSamplesResult := aggregateSamplesCmd.run()
+	aggregatedSamplesTsv := aggregateSamplesResult.getFile("result.tsv")
+
+	aggregatesImportSpec := {
+		axes: [
+			{ column: CLONOTYPE_KEY_HEADER, spec: { type: clonotypeAxisSpec.type } }
+		],
+		columns: [
+			{ column: SAMPLE_COUNT_HEADER, spec: { valueType: "Long" } }
+		],
+		storageFormat: "Binary"
+	}
+
+	aggregatesImportedMap := xsv.importFile(aggregatedSamplesTsv, "tsv", aggregatesImportSpec, { dataOnly: true })
+	numberOfSamplesData := aggregatesImportedMap.getFutureInputField(SAMPLE_COUNT_HEADER)
+
+	numberOfSamplesSpec := aggTrace.inject({
+		kind: "PColumn",
+		name: "pl7.app/vdj/stats/countOfSamples",
+		valueType: "Long",
+		axesSpec: [clonotypeAxisSpec],
+		annotations: {
+			"pl7.app/label": "Number of Samples per Clonotype"
+		}
+	})
+
+	aggregatesPfBuilder := pFrames.pFrameBuilder()
+	aggregatesPfBuilder.add("numberOfSamples", numberOfSamplesSpec, numberOfSamplesData)
+
+	outputs["aggregatesPf"] = aggregatesPfBuilder.build()
+
+	if len(rawAnnotationScript.steps) == 0 {
+		return outputs
+	}
+
+	// Preparing annotation script inputs
+
+	mode := rawAnnotationScript.mode
 
 	scriptColumns := util.extractColumnsFromFilter(rawAnnotationScript) // Already returns unique list
 
@@ -169,20 +263,17 @@ self.body(func(inputs) {
 		partitionKeyLength = 1
 	}
 
-	ANNOTATION_COLUMN_NAME := "label" // Column name in the annotator output tsv
-	ANNOTATION_PCOLUMN_KEY := "annotation" // Key for the pcolumn in maps
-
 	importedDataMap := xsv.importFile(processedResult, "tsv", {
 		axes: importAxesSpec,
 		columns: [ {
-			column: ANNOTATION_COLUMN_NAME,
+			column: ANNOTATION_LABEL_HEADER,
 			spec: { valueType: "String" }
 		} ],
 		partitionKeyLength: partitionKeyLength,
 		storageFormat: "Binary"
 	}, { dataOnly: true })
 
-	annotationData := importedDataMap.getFutureInputField(ANNOTATION_COLUMN_NAME)
+	annotationData := importedDataMap.getFutureInputField(ANNOTATION_LABEL_HEADER)
 
 	annotationPfBuilder := pFrames.pFrameBuilder()
 
@@ -215,14 +306,13 @@ self.body(func(inputs) {
 		}
 	}
 
-	annotationPfBuilder.add(ANNOTATION_PCOLUMN_KEY, annotationsColumnSpec, annotationData)
+	annotationPfBuilder.add("annotation", annotationsColumnSpec, annotationData)
 
 	//
 	// Calculating result statistics
 	//
 
 	FRACTION_VALUE_HEADER := "FractionValue"
-	ANNOTATION_LABEL_HEADER := "Label"
 
 	relabelAxes := func(spec) {
 		return maps.deepTransform(spec, {
@@ -294,8 +384,8 @@ self.body(func(inputs) {
 			{ column: ANNOTATION_LABEL_HEADER, spec: { type: annotationsAxisSpec.type } }
 		],
 		columns: [
-			{ column: TOTAL_FRACTION_HEADER, spec: { valueType: mainFractionSpec.valueType } }, // Sum keeps the original type
-			{ column: CLONOTYPE_COUNT_HEADER, spec: { valueType: "Long" } }                 // Count is always Long
+			{ column: TOTAL_FRACTION_HEADER, spec: { valueType: mainFractionSpec.valueType } },
+			{ column: CLONOTYPE_COUNT_HEADER, spec: { valueType: "Long" } }
 		],
 		partitionKeyLength: 1,
 		storageFormat: "Binary"
@@ -330,8 +420,8 @@ self.body(func(inputs) {
 	statsPfBuilder.add("totalFraction", totalFractionSpec, totalFractionData)
 	statsPfBuilder.add("numberOfClonotypes", numberOfClonotypesSpec, numberOfClonotypesData)
 
-	return {
-		annotationPf: annotationPfBuilder.build(),
-		statsPf: statsPfBuilder.build()
-	}
+	outputs["annotationPf"] = annotationPfBuilder.build()
+	outputs["statsPf"] = statsPfBuilder.build()
+
+	return outputs
 })
