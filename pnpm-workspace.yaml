@@ -1,5 +1,6 @@
 packages:
   - software/annotator
+  - software/annotation2filters
   - workflow
   - model
   - ui

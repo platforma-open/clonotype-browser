@@ -12,6 +12,7 @@ exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 json := import("json")
 text := import("text")
+strings := import("@platforma-sdk/workflow-tengo:strings")
 
 util := import(":util")
 
@@ -31,6 +32,7 @@ self.awaitState("columnBundle", { wildcard: "*" }, "data", "InputsLocked")
 self.awaitState("columnBundle", { wildcard: "*" }, "spec", "ResourceReady")
 
 annotatorSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotator:main")
+annotation2filtersSw := assets.importSoftware("@platforma-open/milaboratories.clonotype-browser-2.annotation2filters:main")
 
 self.body(func(inputs) {
 	blockId := inputs.blockId
@@ -307,6 +309,88 @@ self.body(func(inputs) {
 	}
 
 	annotationPfBuilder.add("annotation", annotationsColumnSpec, annotationData)
+
+	//
+	// Generating Filter PColumns from Annotations
+	//
+
+	uniqueLabels := util.extractAnnotationLabels(finalAnnotationScript)
+
+	filterInputSchema := [{ column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }]
+	if mode == "bySampleAndClonotype" {
+		// Prepend sample key if it exists
+		filterInputSchema = [{ column: SAMPLE_KEY_HEADER, type: sampleAxisSpec.type }] + filterInputSchema
+	}
+	filterInputSchema = append(filterInputSchema, { column: ANNOTATION_LABEL_HEADER, type: "String" })
+
+	filterChannels := []
+	filterOutputFiles := {}
+	filterOutputSafeLabels := {}
+
+	for label in uniqueLabels {
+		safeLabel := strings.substituteSpecialCharacters(label)
+		filename := "filter_" + safeLabel + ".tsv"
+		filterChannels = append(filterChannels, { label: label, file: filename })
+		filterOutputFiles[label] = filename
+		filterOutputSafeLabels[label] = safeLabel
+	}
+
+	filterCmd := exec.builder().
+		printErrStreamToStdout().
+		software(annotation2filtersSw).
+		addFile("input.tsv", processedResult).
+		arg("--input").arg("input.tsv").
+		writeFile("input_schema.json", json.encode(filterInputSchema)).
+		arg("--schema").arg("input_schema.json").
+		arg("--label-column").arg(ANNOTATION_LABEL_HEADER).
+		writeFile("filter_channels.json", json.encode(filterChannels)).
+		arg("--filter-channels").arg("filter_channels.json")
+
+	for filename in maps.getValues(filterOutputFiles) {
+		filterCmd.saveFile(filename)
+	}
+
+	filterResult := filterCmd.run()
+
+	filtersPfBuilder := pFrames.pFrameBuilder()
+
+	for label in uniqueLabels {
+		filename := filterOutputFiles[label]
+		safeLabel := filterOutputSafeLabels[label]
+
+		filterTsv := filterResult.getFile(filename)
+
+		filterImportSpec := {
+			axes: importAxesSpec,
+			columns: [{ column: "one", spec: { valueType: "Int" } }],
+			partitionKeyLength: 0,
+			storageFormat: "Binary"
+		}
+
+		filterImportMap := xsv.importFile(filterTsv, "tsv", filterImportSpec, { dataOnly: true })
+		filterData := filterImportMap.getFutureInputField("one")
+
+		filterColumnSpec := {
+			kind: "PColumn",
+			name: "pl7.app/vdj/filter",
+			valueType: "Int",
+			axesSpec: fullAxesSpec,
+			domain: {
+				"pl7.app/vdj/clonotypeAnnotationRunId": blockId,
+				"pl7.app/vdj/filterLabel": label
+			},
+			annotations: {
+				"pl7.app/label": label,
+				"pl7.app/isSubset": "true"
+			}
+		}
+
+		finalFilterSpec := trace.inject(filterColumnSpec)
+
+		filtersPfBuilder.add(safeLabel, finalFilterSpec, filterData)
+	}
+
+	outputs["filtersPf"] = filtersPfBuilder.build()
 
 	//
 	// Calculating result statistics

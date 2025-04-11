@@ -194,11 +194,27 @@ transformAnnotationScriptColumns := func(annotationScript, transformFn) {
 	})
 }
 
+// Extracts all unique annotation labels from an annotation script
+extractAnnotationLabels := func(annotationScript) {
+	if is_undefined(annotationScript) || is_undefined(annotationScript.steps) {
+		return []
+	}
+
+	labelsSet := {}
+	for _, step in annotationScript.steps {
+		if is_map(step) && !is_undefined(step.label) {
+			sets.add(labelsSet, step.label)
+		}
+	}
+	return sets.toSlice(labelsSet)
+}
+
 export ll.toStrict({
 	mainFractionColumn: mainFractionColumn,
 	mainCountColumn: mainCountColumn,
 	extractColumnsFromFilter: extractColumnsFromFilter,
 	createColumnBundle: createColumnBundle,
 	transformFilterColumns: transformFilterColumns,
-	transformAnnotationScriptColumns: transformAnnotationScriptColumns
+	transformAnnotationScriptColumns: transformAnnotationScriptColumns,
+	extractAnnotationLabels: extractAnnotationLabels
 })
