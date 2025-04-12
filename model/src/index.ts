@@ -96,6 +96,9 @@ function getTableColumns(
   const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
   if (aggregates) collection.addColumns(aggregates);
 
+  const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+  if (annotation) collection.addColumns(annotation);
+
   const columns = collection.getColumns(
     [{
       // @TODO: uncomment this to add per-sample columns to the list
