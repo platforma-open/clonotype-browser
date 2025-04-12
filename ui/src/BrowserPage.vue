@@ -2,7 +2,6 @@
 import type { PlRef, PTableColumnSpec } from '@platforma-sdk/model';
 import { plRefsEqual } from '@platforma-sdk/model';
 import {
-  PlAgDataTable,
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
@@ -15,6 +14,7 @@ import {
 import { computed, ref } from 'vue';
 import { useApp } from './app';
 import { generateAnnotationScript, generateDemo2Aging } from './demo';
+import { default as PlAgDataTable } from './PlAgDataTable/PlAgDataTable.vue';
 
 const app = useApp();
 

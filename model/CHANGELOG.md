@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.1.1
+
+### Patch Changes
+
+- 7cfb415: PlAgDataTable cloned and fixed
+
 ## 1.1.0
 
 ### Minor Changes
