@@ -19,7 +19,7 @@ import type {
   AnnotationScript,
   SimplifiedUniversalPColumnEntry,
 } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import type { InferBlockState, SUniversalPColumnId, PDataColumnSpec } from '@platforma-sdk/model';
+import type { InferBlockState, SUniversalPColumnId } from '@platforma-sdk/model';
 import { wrapOutputs } from '@platforma-sdk/model';
 import type { ML } from '@platforma-sdk/test';
 import type { expect as vitestExpect } from 'vitest';
@@ -320,7 +320,7 @@ blockTest(
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const {
-      annotationBlockId, outputs4, s652_sampleId, s664_sampleId,
+      annotationBlockId, outputs4, // s652_sampleId, s664_sampleId,
     } = await setupProject({ rawPrj: project, ml, helpers, expect });
 
     // Initial annotation block state set to trigger column calculation

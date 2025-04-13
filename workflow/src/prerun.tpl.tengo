@@ -29,7 +29,7 @@ wf.body(func(args) {
 		columnBundle: columnBundle
 	})
 
-	outputs["aggregatesPf"] = pFrames.exportFrame(calculationResult.output("aggregatesPf"))
+	// outputs["aggregatesPf"] = pFrames.exportFrame(calculationResult.output("aggregatesPf"))
 
 	if len(args.annotationScript.steps) > 0 {
 		outputs["annotationPf"] = pFrames.exportFrame(calculationResult.output("annotationPf"))
