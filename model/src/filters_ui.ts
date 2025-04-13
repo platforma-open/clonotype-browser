@@ -510,7 +510,7 @@ export type AnnotationStepUI = {
 };
 
 /** Represents a complete annotation configuration from the UI perspective */
-export type AnnotationScriptUI = {
+type AnnotationScriptUI = {
   /** The mode of annotation to apply */
   mode: AnnotationMode;
   /** Ordered list of annotation steps to apply */

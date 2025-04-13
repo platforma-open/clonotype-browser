@@ -1,36 +1,43 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref, watch } from 'vue';
 import {
   PlSlideModal,
   PlBtnGroup,
   PlBtnPrimary,
-  PlTextField,
   listToOptions,
-  PlBtnSecondary,
 } from '@platforma-sdk/ui-vue';
-import type { AndFilter, AnnotationStep } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import type { AnnotationScriptUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { useApp } from '../app';
 import Step from './Step.vue';
-import FilterForm from './FilterForm.vue';
+import { parseAnnotationScript, compileAnnotationScript } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { getDefaultAnnotationScript } from './temp';
+import { watchDebounced } from '@vueuse/core';
 
 const app = useApp();
 
-const currentStep = ref<{
-  label: string;
-  filter: AndFilter;
-} | null>(null);
+const form = ref<AnnotationScriptUi>();
 
-const a = computed({
-  get() {
-    return app.model.args.annotationScript;
-  },
-  set(value) {
-    app.model.args.annotationScript = value;
-  },
-});
+watch(() => app.model.ui.annotationScript, (annotationScript) => {
+  if (annotationScript === undefined) {
+    annotationScript = getDefaultAnnotationScript();
+  }
+  form.value = JSON.parse(JSON.stringify(parseAnnotationScript(annotationScript)));
+  console.log('got form');
+}, { immediate: true, deep: true });
+
+watchDebounced(form, (value, oldValue) => {
+  if (value && (value === oldValue)) { // same ref
+    console.log('form debounced');
+    app.model.ui.annotationScript = compileAnnotationScript(value);
+  }
+}, { deep: true, debounce: 2000 });
 
 const addStep = () => {
-  a.value.steps.push({
+  if (!form.value) {
+    return;
+  }
+
+  form.value.steps.push({
     label: 'New step',
     filter: {
       type: 'and',
@@ -40,41 +47,20 @@ const addStep = () => {
 };
 
 const removeStep = (index: number) => {
-  a.value.steps = a.value.steps.filter((_, i) => i !== index);
-};
-
-const setCurrentStep = (step: AnnotationStep) => {
-  if (step.filter.type === 'and') {
-    currentStep.value = {
-      label: step.label,
-      filter: step.filter,
-    };
-  } else {
-    alert('Not implemented');
+  if (!form.value) {
+    return;
   }
-};
-
-const addFilter = () => {
-  // if (currentStep.value) {
-
-  // }
-  alert('Not implemented');
+  form.value.steps = form.value.steps.filter((_, i) => i !== index);
 };
 </script>
 
 <template>
   <PlSlideModal v-model="app.isAnnotationModalOpen" :close-on-outside-click="false">
     <template #title>Annotations</template>
-    <PlBtnGroup v-model="a.mode" :options="listToOptions(['byClonotype', 'bySampleAndClonotype'])" />
-    <Step v-for="(step, i) in a.steps" :key="i" :step="step" @click.stop="setCurrentStep(step)" @delete="removeStep(i)" />
-    <PlBtnPrimary @click="addStep">Add step</PlBtnPrimary>
-  </PlSlideModal>
-  <PlSlideModal :model-value="currentStep !== null" @update:model-value="currentStep = null">
-    <template #title>Edit step</template>
-    <template v-if="currentStep">
-      <PlTextField v-model="currentStep.label" label="Label" />
-      <FilterForm v-for="(filter, i) in currentStep.filter.filters" :key="i" :filter="filter" />
-      <PlBtnSecondary icon="add" @click="addFilter">Add filter</PlBtnSecondary>
+    <template v-if="form">
+      <PlBtnGroup v-model="form.mode" :options="listToOptions(['byClonotype', 'bySampleAndClonotype'])" />
+      <Step v-for="(step, i) in form.steps" :key="i" :step="step" @delete="removeStep(i)" />
+      <PlBtnPrimary @click="addStep">Add step</PlBtnPrimary>
     </template>
   </PlSlideModal>
 </template>

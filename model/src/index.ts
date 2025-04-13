@@ -35,6 +35,7 @@ export type UiState = {
     tableState: PlDataTableState;
     filterModel: PlTableFiltersModel;
   };
+  annotationScript?: AnnotationScript;
 };
 
 export type SimplifiedPColumnSpec = Pick<PColumnSpec, 'valueType' | 'annotations'>;
@@ -300,3 +301,4 @@ export type Href = InferHrefType<typeof platforma>;
 export { BlockArgs };
 
 export * from './filter';
+export * from './ui_simple';
