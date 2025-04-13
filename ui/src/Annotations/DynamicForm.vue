@@ -1,16 +1,54 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { watch } from 'vue';
-import { PlTextField, PlDropdown } from '@platforma-sdk/ui-vue';
-import type { FormField } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { computed, watch } from 'vue';
+import type { SUniversalPColumnId } from '@platforma-sdk/model';
+import { PlTextField, PlDropdown, PlNumberField, PlCheckbox } from '@platforma-sdk/ui-vue';
+import type { AnyForm, FilterUiType } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { getFilterUiTypeOptions, getFilterUiMetadata } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { useApp } from '../app';
 
 const app = useApp();
 
-const formData = defineModel<Record<string, any>>({ default: () => ({}) });
+const formData = defineModel<{
+  column?: SUniversalPColumnId | undefined;
+  type?: FilterUiType | undefined;
+  [key: string]: any;
+}>({ default: () => ({}) });
+
+const columnSpecRef = computed(() => {
+  const value = formData.value;
+  if ('column' in value) {
+    return app.columns.find((c) => c.id === value.column)?.obj;
+  }
+  return undefined;
+});
+
+const typeMetadataRef = computed(() => {
+  const value = formData.value;
+  if (value.type && typeof value.type === 'string') {
+    return getFilterUiMetadata(value.type);
+  }
+  return undefined;
+});
+
+const filterUiTypeOptions = computed(() => {
+  return getFilterUiTypeOptions(columnSpecRef.value);
+});
+
+const secondColumnOptions = computed(() => {
+  const typeMetadata = typeMetadataRef.value;
+  const columnSpec = columnSpecRef.value;
+  if (typeMetadata && columnSpec) {
+    return app.columns.filter((c) => typeMetadata.supportedFor(columnSpec, c.obj)).map((c) => ({
+      label: c.label,
+      value: c.id,
+    }));
+  }
+  return [];
+});
 
 const props = defineProps<{
-  form: Record<string, FormField>;
+  form: AnyForm;
 }>();
 
 const setFieldValue = (fieldName: string, value: any) => {
@@ -25,7 +63,9 @@ watch(() => props.form, (newForm) => {
       formData.value[fieldName] = field.defaultValue();
     }
   }
-}, { immediate: true });
+},
+{ immediate: true, deep: true },
+);
 </script>
 
 <template>
@@ -38,20 +78,52 @@ watch(() => props.form, (newForm) => {
           @update:model-value="setFieldValue(fieldName, $event)"
         />
       </template>
+      <template v-else-if="field.fieldType === 'FilterUiType'">
+        <PlDropdown
+          :model-value="formData[fieldName] as string"
+          :label="field.label ?? fieldName"
+          :options="filterUiTypeOptions"
+          @update:model-value="setFieldValue(fieldName, $event)"
+        />
+      </template>
       <template v-else-if="field.fieldType === 'string'">
         <PlTextField
           :model-value="formData[fieldName] as string"
-          :label="fieldName"
+          :label="field.label ?? fieldName"
           @update:model-value="setFieldValue(fieldName, $event)"
         />
       </template>
       <template v-else-if="field.fieldType === 'SUniversalPColumnId'">
         <PlDropdown
           :model-value="formData[fieldName] as string"
-          :label="fieldName"
-          :options="app.columnsOptions"
+          :label="field.label ?? fieldName"
+          :options="fieldName === 'column' ? app.columnsOptions : secondColumnOptions"
           @update:model-value="setFieldValue(fieldName, $event)"
         />
+      </template>
+      <template v-else-if="field.fieldType === 'number'">
+        <PlNumberField
+          :model-value="formData[fieldName] as number"
+          :label="field.label ?? fieldName"
+          @update:model-value="setFieldValue(fieldName, $event)"
+        />
+      </template>
+      <template v-else-if="field.fieldType === 'number?'">
+        <PlNumberField
+          :model-value="formData[fieldName]"
+          :label="field.label ?? fieldName"
+          :clearable="true"
+          @update:model-value="setFieldValue(fieldName, $event)"
+        />
+      </template>
+      <template v-else-if="field.fieldType === 'boolean' || field.fieldType === 'boolean?'">
+        <PlCheckbox
+          :model-value="formData[fieldName] as boolean"
+          :label="field.label ?? fieldName"
+          @update:model-value="setFieldValue(fieldName, $event)"
+        >
+          {{ field.label ?? fieldName }}
+        </PlCheckbox>
       </template>
       <template v-else>
         <pre>TODO:{{ field.fieldType }}</pre>

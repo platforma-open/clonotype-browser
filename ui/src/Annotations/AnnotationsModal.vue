@@ -3,8 +3,9 @@ import { ref, watch } from 'vue';
 import {
   PlSlideModal,
   PlBtnGroup,
-  PlBtnPrimary,
+  PlBtnSecondary,
   listToOptions,
+  PlIcon16,
 } from '@platforma-sdk/ui-vue';
 import type { AnnotationScriptUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { useApp } from '../app';
@@ -22,12 +23,10 @@ watch(() => app.model.ui.annotationScript, (annotationScript) => {
     annotationScript = getDefaultAnnotationScript();
   }
   form.value = JSON.parse(JSON.stringify(parseAnnotationScript(annotationScript)));
-  console.log('got form');
 }, { immediate: true, deep: true });
 
 watchDebounced(form, (value, oldValue) => {
   if (value && (value === oldValue)) { // same ref
-    console.log('form debounced');
     app.model.ui.annotationScript = compileAnnotationScript(value);
   }
 }, { deep: true, debounce: 2000 });
@@ -59,8 +58,21 @@ const removeStep = (index: number) => {
     <template #title>Annotations</template>
     <template v-if="form">
       <PlBtnGroup v-model="form.mode" :options="listToOptions(['byClonotype', 'bySampleAndClonotype'])" />
-      <Step v-for="(step, i) in form.steps" :key="i" :step="step" @delete="removeStep(i)" />
-      <PlBtnPrimary @click="addStep">Add step</PlBtnPrimary>
+      <div :class="$style.steps">
+        <Step v-for="(step, i) in form.steps" :key="i" :step="step" @delete="removeStep(i)" />
+        <PlBtnSecondary @click="addStep">
+          <PlIcon16 name="add" style="margin-right: 8px;" />
+          Add annotation
+        </PlBtnSecondary>
+      </div>
     </template>
   </PlSlideModal>
 </template>
+
+<style module>
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+</style>

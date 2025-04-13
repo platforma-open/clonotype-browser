@@ -301,4 +301,4 @@ export type Href = InferHrefType<typeof platforma>;
 export { BlockArgs };
 
 export * from './filter';
-export * from './ui_simple';
+export * from './filters_simple';
