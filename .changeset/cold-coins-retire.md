@@ -3,4 +3,4 @@
 "@platforma-open/milaboratories.clonotype-browser-2.model": minor
 ---
 
-Adding columns aggregated over samples to the overlap view
+Adds filter column output
