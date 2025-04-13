@@ -29,6 +29,7 @@ wf.body(func(args) {
 
 		exports["annotationPf"] = calculationResult.output("annotationPf")
 		exports["statsPf"] = calculationResult.output("statsPf")
+		exports["filtersPf"] = calculationResult.output("filtersPf")
 	}
 
 	return {

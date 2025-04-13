@@ -80,36 +80,41 @@ const simplifyColumnEntries = (
   return ret;
 };
 
-const getTableColumns = (
+function getTableColumns(
   ctx: RenderCtx<BlockArgs, UiState>,
-): (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[] | undefined => {
+): (PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>)[] | undefined {
   if (ctx.args.inputAnchor === undefined)
     return undefined;
 
-  const columns = ctx.resultPool.getAnchoredPColumns(
-    { main: ctx.args.inputAnchor },
+  const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+  if (!anchorCtx) return undefined;
+
+  const collection = new PColumnCollection()
+    .addColumnProvider(ctx.resultPool)
+    .addAxisLabelProvider(ctx.resultPool);
+
+  const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+  if (aggregates) collection.addColumns(aggregates);
+
+  const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+  if (annotation) collection.addColumns(annotation);
+
+  const columns = collection.getColumns(
     [{
-      domainAnchor: 'main',
-      axes: [
-        { split: true },
-        { anchor: 'main', idx: 1 },
-      ],
-    }, {
+      // @TODO: uncomment this to add per-sample columns to the list
+      //   domainAnchor: 'main',
+      //   axes: [
+      //     { split: true },
+      //     { anchor: 'main', idx: 1 },
+      //   ],
+      // }, {
       domainAnchor: 'main',
       axes: [
         { anchor: 'main', idx: 1 },
       ],
     }],
-  ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
-  if (!columns) return undefined;
-
-  const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-  if (annotationPf && annotationPf.getIsReadyOrError()) {
-    const labelColumns = annotationPf.getPColumns();
-    if (labelColumns) {
-      columns.push(...labelColumns);
-    }
-  }
+    { anchorCtx, labelOps: { includeNativeLabel: false } },
+  );
 
   return columns;
 };
