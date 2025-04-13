@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.2.0
+
+### Minor Changes
+
+- 0561b2e: Adding columns aggregated over samples to the overlap view
+
 ## 1.1.0
 
 ### Minor Changes
