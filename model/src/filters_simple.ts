@@ -1,5 +1,5 @@
 import type { SUniversalPColumnId } from '@platforma-sdk/model';
-import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate } from './filter';
+import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate, TransformedColumn } from './filter';
 import type { SimplifiedPColumnSpec } from './';
 
 export function unreachable(x: never): never {
@@ -17,6 +17,10 @@ function isStringValueType(spec: SimplifiedPColumnSpec): boolean {
 
 const isUniversalPColumnId = (x: unknown): x is SUniversalPColumnId => typeof x === 'string';
 
+const isTransformedColumn = (x: unknown): x is TransformedColumn => typeof x === 'object' && x !== null && 'transformer' in x;
+
+// const isUniversalPColumnIdOrTransformedColumn = (x: unknown): x is SUniversalPColumnId | TransformedColumn => isUniversalPColumnId(x) || isTransformedColumn(x);
+
 // Define recursive type explicitly
 export type FilterUi =
   | { type: 'or'; filters: FilterUi[] }
@@ -26,8 +30,11 @@ export type FilterUi =
   | { type: 'patternEquals'; column: SUniversalPColumnId; value: string }
   | { type: 'patternContainSubsequence'; column: SUniversalPColumnId; value: string }
   | { type: 'lessThan'; column: SUniversalPColumnId; rhs: number; minDiff?: number }
+  | { type: 'greaterThan'; column: SUniversalPColumnId; lhs: number; minDiff?: number }
   | { type: 'lessThanOrEqual'; column: SUniversalPColumnId; rhs: number; minDiff?: number }
-  | { type: 'DoubleColumns'; column: SUniversalPColumnId; rhs: SUniversalPColumnId; minDiff?: number; allowEqual?: true };
+  | { type: 'greaterThanOrEqual'; column: SUniversalPColumnId; lhs: number; minDiff?: number }
+  | { type: 'lessThanColumn'; column: SUniversalPColumnId; rhs: SUniversalPColumnId; minDiff?: number }
+  | { type: 'lessThanColumnOrEqual'; column: SUniversalPColumnId; rhs: SUniversalPColumnId; minDiff?: number };
 
 export type FilterUiType = FilterUi['type'];
 
@@ -211,6 +218,28 @@ export const filterUiMetadata = {
     },
     supportedFor: isNumericValueType,
   },
+  greaterThan: {
+    label: 'Greater Than Number',
+    form: {
+      column: {
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'greaterThan',
+      },
+      lhs: {
+        fieldType: 'number',
+        defaultValue: () => 0,
+      },
+      minDiff: {
+        fieldType: 'number?',
+        defaultValue: () => undefined,
+      },
+    },
+    supportedFor: isNumericValueType,
+  },
   lessThanOrEqual: {
     label: 'Less Than or Equal to Number',
     form: {
@@ -233,7 +262,29 @@ export const filterUiMetadata = {
     },
     supportedFor: isNumericValueType,
   },
-  DoubleColumns: {
+  greaterThanOrEqual: {
+    label: 'Greater Than or Equal to Number',
+    form: {
+      column: {
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'greaterThanOrEqual',
+      },
+      lhs: {
+        fieldType: 'number',
+        defaultValue: () => 0,
+      },
+      minDiff: {
+        fieldType: 'number?',
+        defaultValue: () => undefined,
+      },
+    },
+    supportedFor: isNumericValueType,
+  },
+  lessThanColumn: {
     label: 'Less than Column',
     form: {
       column: {
@@ -242,7 +293,7 @@ export const filterUiMetadata = {
       },
       type: {
         fieldType: 'FilterUiType',
-        defaultValue: () => 'DoubleColumns',
+        defaultValue: () => 'lessThanColumn',
       },
       rhs: {
         fieldType: 'SUniversalPColumnId',
@@ -252,8 +303,28 @@ export const filterUiMetadata = {
         fieldType: 'number?',
         defaultValue: () => undefined,
       },
-      allowEqual: {
-        fieldType: 'boolean?',
+    },
+    supportedFor: (spec1: SimplifiedPColumnSpec, spec2?: SimplifiedPColumnSpec): boolean => {
+      return isNumericValueType(spec1) && (spec2 === undefined || isNumericValueType(spec2));
+    },
+  },
+  lessThanColumnOrEqual: {
+    label: 'Less than or equal to Column',
+    form: {
+      column: {
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'lessThanColumnOrEqual',
+      },
+      rhs: {
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      minDiff: {
+        fieldType: 'number?',
         defaultValue: () => undefined,
       },
     },
@@ -301,7 +372,10 @@ export function parseAnnotationFilter(f: AnnotationFilter): FilterUi {
   }
 
   if (f.type === 'isNA') {
-    return f;
+    return {
+      type: 'isNA' as const,
+      column: f.column,
+    };
   }
 
   if (f.type === 'pattern') {
@@ -326,34 +400,104 @@ export function parseAnnotationFilter(f: AnnotationFilter): FilterUi {
 
   if (f.type === 'numericalComparison') {
     if (isUniversalPColumnId(f.lhs) && isUniversalPColumnId(f.rhs)) {
-      return {
-        column: f.lhs,
-        type: 'DoubleColumns' as const,
-        rhs: f.rhs,
-        minDiff: f.minDiff,
-        allowEqual: f.allowEqual || undefined,
-      };
-    }
+      if (f.allowEqual) {
+        return {
+          column: f.lhs,
+          type: 'lessThanColumnOrEqual' as const,
+          rhs: f.rhs,
+          minDiff: f.minDiff,
+        };
+      }
 
-    if (isUniversalPColumnId(f.lhs) && typeof f.rhs === 'number' && typeof f.allowEqual === 'undefined') {
       return {
-        type: 'lessThan' as const,
         column: f.lhs,
-        rhs: f.rhs,
-        minDiff: f.minDiff,
-      };
-    }
-
-    if (isUniversalPColumnId(f.lhs) && typeof f.rhs === 'number' && typeof f.allowEqual === 'boolean') {
-      return {
-        type: 'lessThanOrEqual' as const,
-        column: f.lhs,
+        type: 'lessThanColumn' as const,
         rhs: f.rhs,
         minDiff: f.minDiff,
       };
     }
 
-    throw Error('unimplemented');
+    if (isUniversalPColumnId(f.lhs)) {
+      if (isUniversalPColumnId(f.rhs)) {
+        throw Error('impossible');
+      }
+
+      if (typeof f.rhs === 'number') {
+        if (typeof f.allowEqual === 'undefined') {
+          return {
+            type: 'lessThan' as const,
+            column: f.lhs,
+            rhs: f.rhs,
+            minDiff: f.minDiff,
+          };
+        }
+
+        if (typeof f.allowEqual === 'boolean') {
+          return {
+            type: 'lessThanOrEqual' as const,
+            column: f.lhs,
+            rhs: f.rhs,
+            minDiff: f.minDiff,
+          };
+        }
+
+        throw Error('unimplemented');
+      }
+
+      if (isTransformedColumn(f.rhs)) {
+        throw Error('unimplemented');
+      }
+
+      unreachable(f.rhs);
+    }
+
+    if (isUniversalPColumnId(f.rhs)) {
+      if (isUniversalPColumnId(f.lhs)) {
+        throw Error('impossible');
+      }
+
+      if (typeof f.lhs === 'number') {
+        if (typeof f.allowEqual === 'undefined') {
+          return {
+            type: 'greaterThan' as const,
+            column: f.rhs,
+            lhs: f.lhs,
+            minDiff: f.minDiff,
+          };
+        }
+
+        if (typeof f.allowEqual === 'boolean') {
+          return {
+            type: 'greaterThanOrEqual' as const,
+            column: f.rhs,
+            lhs: f.lhs,
+            minDiff: f.minDiff,
+          };
+        }
+
+        throw Error('unimplemented');
+      }
+
+      if (isTransformedColumn(f.rhs)) {
+        throw Error('unimplemented');
+      }
+
+      if (isTransformedColumn(f.lhs)) {
+        throw Error('unimplemented');
+      }
+
+      unreachable(f.lhs);
+    }
+
+    if (typeof f.rhs === 'number' || typeof f.lhs === 'number') {
+      throw Error('Impossible comparison');
+    }
+
+    if (isTransformedColumn(f.rhs) || isTransformedColumn(f.lhs)) {
+      throw Error('unimplemented');
+    }
+
+    unreachable(f.lhs);
   }
 
   unreachable(f);
@@ -382,7 +526,10 @@ export function compileFilter(ui: FilterUi): AnnotationFilter {
   }
 
   if (ui.type === 'isNA') {
-    return ui;
+    return {
+      type: 'isNA' as const,
+      column: ui.column,
+    };
   }
 
   if (ui.type === 'lessThan') {
@@ -390,6 +537,24 @@ export function compileFilter(ui: FilterUi): AnnotationFilter {
       type: 'numericalComparison' as const,
       lhs: ui.column,
       rhs: ui.rhs,
+      minDiff: ui.minDiff,
+    };
+  }
+
+  if (ui.type === 'greaterThan') {
+    return {
+      type: 'numericalComparison' as const,
+      rhs: ui.column,
+      lhs: ui.lhs,
+      minDiff: ui.minDiff,
+    };
+  }
+
+  if (ui.type === 'greaterThanOrEqual') {
+    return {
+      type: 'numericalComparison' as const,
+      rhs: ui.column,
+      lhs: ui.lhs,
       minDiff: ui.minDiff,
     };
   }
@@ -426,13 +591,23 @@ export function compileFilter(ui: FilterUi): AnnotationFilter {
     };
   }
 
-  if (ui.type === 'DoubleColumns') {
+  if (ui.type === 'lessThanColumn') {
     return {
       type: 'numericalComparison' as const,
       lhs: ui.column,
       rhs: ui.rhs,
       minDiff: ui.minDiff,
-      allowEqual: ui.allowEqual ? true : undefined,
+      allowEqual: undefined,
+    };
+  }
+
+  if (ui.type === 'lessThanColumnOrEqual') {
+    return {
+      type: 'numericalComparison' as const,
+      lhs: ui.column,
+      rhs: ui.rhs,
+      minDiff: ui.minDiff,
+      allowEqual: true,
     };
   }
 
