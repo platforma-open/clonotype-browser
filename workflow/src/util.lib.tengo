@@ -8,7 +8,7 @@ json := import("json")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
-mainAbundanceFractionColumn := {
+mainFractionColumn := {
 	axes: [
 		{ anchor: "main", idx: 0 },
 		{ anchor: "main", idx: 1 }
@@ -16,6 +16,18 @@ mainAbundanceFractionColumn := {
 	annotations: {
 		"pl7.app/isAbundance": "true",
 		"pl7.app/abundance/normalized": "true",
+		"pl7.app/abundance/isPrimary": "true"
+	}
+}
+
+mainCountColumn := {
+	axes: [
+		{ anchor: "main", idx: 0 },
+		{ anchor: "main", idx: 1 }
+	],
+	annotations: {
+		"pl7.app/isAbundance": "true",
+		"pl7.app/abundance/normalized": "false",
 		"pl7.app/abundance/isPrimary": "true"
 	}
 }
@@ -92,7 +104,8 @@ createColumnBundle := func(wf, args) {
 		bundleBuilder.addById(column)
 	}
 
-	bundleBuilder.addById(mainAbundanceFractionColumn)
+	bundleBuilder.addById(mainFractionColumn)
+	bundleBuilder.addById(mainCountColumn)
 
 	return bundleBuilder.build()
 }
@@ -181,10 +194,27 @@ transformAnnotationScriptColumns := func(annotationScript, transformFn) {
 	})
 }
 
+// Extracts all unique annotation labels from an annotation script
+extractAnnotationLabels := func(annotationScript) {
+	if is_undefined(annotationScript) || is_undefined(annotationScript.steps) {
+		return []
+	}
+
+	labelsSet := {}
+	for _, step in annotationScript.steps {
+		if is_map(step) && !is_undefined(step.label) {
+			sets.add(labelsSet, step.label)
+		}
+	}
+	return sets.toSlice(labelsSet)
+}
+
 export ll.toStrict({
-	mainAbundanceFractionColumn: mainAbundanceFractionColumn,
+	mainFractionColumn: mainFractionColumn,
+	mainCountColumn: mainCountColumn,
 	extractColumnsFromFilter: extractColumnsFromFilter,
 	createColumnBundle: createColumnBundle,
 	transformFilterColumns: transformFilterColumns,
-	transformAnnotationScriptColumns: transformAnnotationScriptColumns
+	transformAnnotationScriptColumns: transformAnnotationScriptColumns,
+	extractAnnotationLabels: extractAnnotationLabels
 })

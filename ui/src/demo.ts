@@ -187,33 +187,3 @@ export function generateDemo2Aging(
     ],
   };
 }
-
-export function generateDemo3Aging(
-  mainAbundanceId: SUniversalPColumnId,
-): AnnotationScript {
-  return {
-    mode: 'bySampleAndClonotype',
-    steps: [
-      {
-        label: 'Aging',
-        filter: {
-          type: 'and',
-          filters: [
-            {
-              type: 'isNA',
-              column: mainAbundanceId,
-            },
-            {
-              type: 'pattern',
-              column: mainAbundanceId,
-              predicate: {
-                type: 'containSubsequence',
-                value: 'IGHV3',
-              },
-            },
-          ],
-        },
-      },
-    ],
-  };
-}

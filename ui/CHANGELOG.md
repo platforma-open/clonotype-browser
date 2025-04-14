@@ -1,5 +1,27 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.1.3
+
+### Patch Changes
+
+- Updated dependencies [0561b2e]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.3.0
+
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [0561b2e]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.2.0
+
+## 1.1.1
+
+### Patch Changes
+
+- 7cfb415: PlAgDataTable cloned and fixed
+- Updated dependencies [7cfb415]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes

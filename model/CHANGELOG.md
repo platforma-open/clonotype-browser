@@ -1,5 +1,23 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.3.0
+
+### Minor Changes
+
+- 0561b2e: Adds filter column output
+
+## 1.2.0
+
+### Minor Changes
+
+- 0561b2e: Adding columns aggregated over samples to the overlap view
+
+## 1.1.1
+
+### Patch Changes
+
+- 7cfb415: PlAgDataTable cloned and fixed
+
 ## 1.1.0
 
 ### Minor Changes

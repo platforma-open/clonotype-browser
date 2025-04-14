@@ -9,16 +9,19 @@ import type {
   PColumn,
   SUniversalPColumnId,
   PColumnEntryUniversal,
+  InferOutputsType,
+  RenderCtx,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
   createPlDataTable,
   PColumnCollection,
-  type InferOutputsType,
 } from '@platforma-sdk/model';
 import * as R from 'remeda';
 import type { AnnotationScript } from './filter';
 import type { AnnotationScriptUi } from './filters_ui';
+import { createPlDataTableSpec, createPlDataTableData } from './join_helpers';
+
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
@@ -77,6 +80,45 @@ const simplifyColumnEntries = (
   ret.sort((a, b) => a.label.localeCompare(b.label));
 
   return ret;
+};
+
+function getTableColumns(
+  ctx: RenderCtx<BlockArgs, UiState>,
+): (PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>)[] | undefined {
+  if (ctx.args.inputAnchor === undefined)
+    return undefined;
+
+  const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+  if (!anchorCtx) return undefined;
+
+  const collection = new PColumnCollection()
+    .addColumnProvider(ctx.resultPool)
+    .addAxisLabelProvider(ctx.resultPool);
+
+  const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+  if (aggregates) collection.addColumns(aggregates);
+
+  const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+  if (annotation) collection.addColumns(annotation);
+
+  const columns = collection.getColumns(
+    [{
+      // @TODO: uncomment this to add per-sample columns to the list
+      //   domainAnchor: 'main',
+      //   axes: [
+      //     { split: true },
+      //     { anchor: 'main', idx: 1 },
+      //   ],
+      // }, {
+      domainAnchor: 'main',
+      axes: [
+        { anchor: 'main', idx: 1 },
+      ],
+    }],
+    { anchorCtx, labelOps: { includeNativeLabel: false } },
+  );
+
+  return columns;
 };
 
 export const platforma = BlockModel.create('Heavy')
@@ -221,39 +263,58 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('table', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-
-    const columns = ctx.resultPool.getAnchoredPColumns(
-      { main: ctx.args.inputAnchor },
-      [{
-        domainAnchor: 'main',
-        axes: [
-          { split: true },
-          { anchor: 'main', idx: 1 },
-        ],
-      }, {
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 1 },
-        ],
-      }],
-    ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
+  .output('tableSpec', (ctx) => {
+    const columns = getTableColumns(ctx);
     if (!columns) return undefined;
 
-    const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-    if (annotationPf && annotationPf.getIsReadyOrError()) {
-      const labelColumns = annotationPf.getPColumns();
-      if (labelColumns) {
-        columns.push(...labelColumns);
-      }
-    }
-
-    return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
-      filters: ctx.uiState.filterModel?.filters,
-    });
+    return createPlDataTableSpec(ctx, columns);
   })
+
+  .output('table', (ctx) => {
+    const columns = getTableColumns(ctx);
+    if (!columns) return undefined;
+
+    return createPlDataTableData(
+      ctx,
+      columns,
+      ctx.uiState.tableState,
+      ctx.uiState.filterModel?.filters,
+    );
+  })
+
+  // .output('table', (ctx) => {
+  //   if (ctx.args.inputAnchor === undefined)
+  //     return undefined;
+
+  //   const columns = ctx.resultPool.getAnchoredPColumns(
+  //     { main: ctx.args.inputAnchor },
+  //     [{
+  //       domainAnchor: 'main',
+  //       axes: [
+  //         { split: true },
+  //         { anchor: 'main', idx: 1 },
+  //       ],
+  //     }, {
+  //       domainAnchor: 'main',
+  //       axes: [
+  //         { anchor: 'main', idx: 1 },
+  //       ],
+  //     }],
+  //   ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
+  //   if (!columns) return undefined;
+
+  //   const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
+  //   if (annotationPf && annotationPf.getIsReadyOrError()) {
+  //     const labelColumns = annotationPf.getPColumns();
+  //     if (labelColumns) {
+  //       columns.push(...labelColumns);
+  //     }
+  //   }
+
+  //   return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
+  //     filters: ctx.uiState.filterModel?.filters,
+  //   });
+  // })
 
   .output('statsTable', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });

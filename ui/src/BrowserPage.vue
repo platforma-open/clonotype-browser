@@ -2,7 +2,6 @@
 import type { PlRef, PTableColumnSpec } from '@platforma-sdk/model';
 import { plRefsEqual } from '@platforma-sdk/model';
 import {
-  PlAgDataTable,
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
@@ -13,8 +12,9 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
-import { generateAnnotationScript, generateDemo2Aging, generateDemo3Aging } from './demo';
 import AnnotationsModal from './Annotations/AnnotationsModal.vue';
+import { generateAnnotationScript, generateDemo2Aging } from './demo';
+import { default as PlAgDataTable } from './PlAgDataTable/PlAgDataTable.vue';
 
 const app = useApp();
 
@@ -48,18 +48,11 @@ function setDemoAnnotationScript1() {
   app.model.args.annotationScript = generateAnnotationScript(byClonotypeColumns, bySampleAndClonotypeColumns);
 }
 
-function _setDemoAnnotationScript2() {
+function setDemoAnnotationScript2() {
   const mainAbundance = app.model.outputs.mainAbundanceColumn;
   if (!mainAbundance) return;
 
   app.model.args.annotationScript = generateDemo2Aging(mainAbundance.value);
-}
-
-function setDemoAnnotationScript3() {
-  const mainAbundance = app.model.outputs.mainAbundanceColumn;
-  if (!mainAbundance) return;
-
-  app.model.args.annotationScript = generateDemo3Aging(mainAbundance.value);
 }
 </script>
 
@@ -75,7 +68,7 @@ function setDemoAnnotationScript3() {
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
         Annotations
       </PlBtnGhost>
-      <PlBtnGhost icon="settings" @click.shift.stop="setDemoAnnotationScript3" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
+      <PlBtnGhost icon="settings" @click.shift.stop="setDemoAnnotationScript2" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
         Settings
       </PlBtnGhost>
     </template>
