@@ -1,5 +1,5 @@
 import type { SUniversalPColumnId } from '@platforma-sdk/model';
-import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate, TransformedColumn, IsNA, NotFilter, PatternFilter } from './filter';
+import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate, TransformedColumn, IsNA, NotFilter, PatternFilter, NumericalComparisonFilter, ValueRank } from './filter';
 import type { SimplifiedPColumnSpec } from './';
 
 export function unreachable(x: never): never {
@@ -32,6 +32,7 @@ export type FilterUi =
   | { type: 'patternNotEquals'; column: SUniversalPColumnId; value: string }
   | { type: 'patternContainSubsequence'; column: SUniversalPColumnId; value: string }
   | { type: 'patternNotContainSubsequence'; column: SUniversalPColumnId; value: string }
+  | { type: 'topN'; column: SUniversalPColumnId; n: number; descending: boolean }
   | { type: 'lessThan'; column: SUniversalPColumnId; rhs: number; minDiff?: number }
   | { type: 'greaterThan'; column: SUniversalPColumnId; lhs: number; minDiff?: number }
   | { type: 'lessThanOrEqual'; column: SUniversalPColumnId; rhs: number; minDiff?: number }
@@ -256,6 +257,31 @@ export const filterUiMetadata = {
     },
     supportedFor: isStringValueType,
   },
+  topN: {
+    label: 'Top/Bottom N',
+    form: {
+      column: {
+        label: 'Rank By Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'topN',
+      },
+      n: {
+        label: 'N',
+        fieldType: 'number',
+        defaultValue: () => 10,
+      },
+      descending: {
+        label: 'Order (checked = Top N)',
+        fieldType: 'boolean',
+        defaultValue: () => true,
+      },
+    },
+    supportedFor: isNumericValueType,
+  },
   lessThan: {
     label: 'Less Than Number',
     form: {
@@ -444,43 +470,6 @@ export function compileFilter(ui: FilterUi): AnnotationFilter {
     return notFilter;
   }
 
-  if (ui.type === 'lessThan') {
-    return {
-      type: 'numericalComparison' as const,
-      lhs: ui.column,
-      rhs: ui.rhs,
-      minDiff: ui.minDiff,
-    };
-  }
-
-  if (ui.type === 'greaterThan') {
-    return {
-      type: 'numericalComparison' as const,
-      rhs: ui.column,
-      lhs: ui.lhs,
-      minDiff: ui.minDiff,
-    };
-  }
-
-  if (ui.type === 'greaterThanOrEqual') {
-    return {
-      type: 'numericalComparison' as const,
-      rhs: ui.column,
-      lhs: ui.lhs,
-      minDiff: ui.minDiff,
-    };
-  }
-
-  if (ui.type === 'lessThanOrEqual') {
-    return {
-      type: 'numericalComparison' as const,
-      lhs: ui.column,
-      rhs: ui.rhs,
-      minDiff: ui.minDiff,
-      allowEqual: true,
-    };
-  }
-
   if (ui.type === 'patternEquals') {
     return {
       type: 'pattern' as const,
@@ -521,6 +510,59 @@ export function compileFilter(ui: FilterUi): AnnotationFilter {
     };
     const notFilter: NotFilter = { type: 'not', filter: patternFilter };
     return notFilter;
+  }
+
+  if (ui.type === 'topN') {
+    const rankTransform: ValueRank = {
+      transformer: 'rank',
+      column: ui.column,
+      ...(ui.descending ? { descending: true } : {}),
+    };
+    const comparisonFilter: NumericalComparisonFilter = {
+      type: 'numericalComparison',
+      lhs: rankTransform,
+      rhs: ui.n,
+      allowEqual: true,
+    };
+    return comparisonFilter;
+  }
+
+  if (ui.type === 'lessThan') {
+    return {
+      type: 'numericalComparison' as const,
+      lhs: ui.column,
+      rhs: ui.rhs,
+      minDiff: ui.minDiff,
+    };
+  }
+
+  if (ui.type === 'greaterThan') {
+    return {
+      type: 'numericalComparison' as const,
+      rhs: ui.column,
+      lhs: ui.lhs,
+      minDiff: ui.minDiff,
+    };
+  }
+
+  if (ui.type === 'greaterThanOrEqual') {
+    return {
+      type: 'numericalComparison' as const,
+      rhs: ui.column,
+      lhs: ui.lhs,
+      minDiff: ui.minDiff,
+      allowEqual: true,
+    };
+  }
+
+  if (ui.type === 'lessThanOrEqual') {
+    return {
+      type: 'numericalComparison' as const,
+      lhs: ui.column,
+      rhs: ui.rhs,
+      minDiff: ui.minDiff,
+      allowEqual: true,
+    };
   }
 
   if (ui.type === 'lessThanColumn') {

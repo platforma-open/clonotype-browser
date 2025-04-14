@@ -17,7 +17,7 @@ const model = defineModel<FilterUi>({ default: () => ({}) });
 const isExpanded = ref(false);
 
 const columnLabel = computed(() => {
-  return app.columnsOptions.find((c) => {
+  return app.filterColumnsOptions.find((c) => {
     if ('column' in model.value) {
       return c.value === model.value.column;
     }

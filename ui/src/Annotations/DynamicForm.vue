@@ -18,7 +18,7 @@ const formData = defineModel<{
 const columnSpecRef = computed(() => {
   const value = formData.value;
   if ('column' in value) {
-    return app.columns.find((c) => c.id === value.column)?.obj;
+    return app.filterColumns.find((c) => c.id === value.column)?.obj;
   }
   return undefined;
 });
@@ -39,7 +39,7 @@ const secondColumnOptions = computed(() => {
   const typeMetadata = typeMetadataRef.value;
   const columnSpec = columnSpecRef.value;
   if (typeMetadata && columnSpec) {
-    return app.columns.filter((c) => typeMetadata.supportedFor(columnSpec, c.obj)).map((c) => ({
+    return app.filterColumns.filter((c) => typeMetadata.supportedFor(columnSpec, c.obj)).map((c) => ({
       label: c.label,
       value: c.id,
     }));
@@ -97,7 +97,7 @@ watch(() => props.form, (newForm) => {
         <PlDropdown
           :model-value="formData[fieldName] as string"
           :label="field.label ?? fieldName"
-          :options="fieldName === 'column' ? app.columnsOptions : secondColumnOptions"
+          :options="fieldName === 'column' ? app.filterColumnsOptions : secondColumnOptions"
           @update:model-value="setFieldValue(fieldName, $event)"
         />
       </template>

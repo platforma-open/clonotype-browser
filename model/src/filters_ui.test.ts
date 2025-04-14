@@ -1,6 +1,6 @@
 import { describe, it, expect, test } from 'vitest';
 import { compileAnnotationScript, compileFilter, type FilterUi } from './filters_ui';
-import type { AnnotationFilter, AnnotationScript, NotFilter, IsNA, PatternFilter } from './filter';
+import type { AnnotationFilter, AnnotationScript, NotFilter, IsNA, PatternFilter, NumericalComparisonFilter, ValueRank } from './filter';
 import type { SUniversalPColumnId } from '@platforma-sdk/model';
 
 describe('compileAnnotationScript', () => {
@@ -131,6 +131,30 @@ describe('compileFilter', () => {
       predicate: { type: 'containSubsequence', value: 'sub' },
     };
     const expectedFilter: NotFilter = { type: 'not', filter: expectedPatternFilter };
+    expect(compileFilter(uiFilter)).toEqual(expectedFilter);
+  });
+
+  it('should compile "topN" filter (Top 5)', () => {
+    const uiFilter: FilterUi = { type: 'topN', column: 'colNum' as unknown as SUniversalPColumnId, n: 5, descending: true };
+    const expectedRank: ValueRank = { transformer: 'rank', column: 'colNum' as unknown as SUniversalPColumnId, descending: true };
+    const expectedFilter: NumericalComparisonFilter = {
+      type: 'numericalComparison',
+      lhs: expectedRank,
+      rhs: 5,
+      allowEqual: true,
+    };
+    expect(compileFilter(uiFilter)).toEqual(expectedFilter);
+  });
+
+  it('should compile "topN" filter (Bottom 3)', () => {
+    const uiFilter: FilterUi = { type: 'topN', column: 'colNum' as unknown as SUniversalPColumnId, n: 3, descending: false };
+    const expectedRank: ValueRank = { transformer: 'rank', column: 'colNum' as unknown as SUniversalPColumnId }; // descending: false is default, omitted
+    const expectedFilter: NumericalComparisonFilter = {
+      type: 'numericalComparison',
+      lhs: expectedRank,
+      rhs: 3,
+      allowEqual: true,
+    };
     expect(compileFilter(uiFilter)).toEqual(expectedFilter);
   });
 

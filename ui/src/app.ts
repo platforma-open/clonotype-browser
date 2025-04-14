@@ -7,16 +7,20 @@ import { ref, computed } from 'vue';
 export const sdkPlugin = defineApp(platforma, (_app) => {
   const isAnnotationModalOpen = ref(false);
 
-  const columns = computed(() => {
+  const filterColumns = computed(() => {
+    if (_app.model.args.annotationScript.mode === 'bySampleAndClonotype') {
+      return _app.model.outputs.bySampleAndClonotypeColumns ?? [];
+    }
+
     return _app.model.outputs.byClonotypeColumns ?? [];
   });
 
-  const columnsOptions = computed(() => columns.value.map((c) => ({ label: c.label, value: c.id })));
+  const filterColumnsOptions = computed(() => filterColumns.value.map((c) => ({ label: c.label, value: c.id })));
 
   return {
     isAnnotationModalOpen,
-    columns,
-    columnsOptions,
+    filterColumns,
+    filterColumnsOptions,
     routes: {
       '/': () => BrowserPage,
       '/stats': () => AnnotationStatsPage,
