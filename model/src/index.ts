@@ -18,7 +18,7 @@ import {
 } from '@platforma-sdk/model';
 import * as R from 'remeda';
 import type { AnnotationScript } from './filter';
-
+import type { AnnotationScriptUi } from './filters_ui';
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
@@ -35,7 +35,7 @@ export type UiState = {
     tableState: PlDataTableState;
     filterModel: PlTableFiltersModel;
   };
-  annotationScript?: AnnotationScript;
+  annotationScript?: AnnotationScriptUi;
 };
 
 export type SimplifiedPColumnSpec = Pick<PColumnSpec, 'valueType' | 'annotations'>;
@@ -301,4 +301,4 @@ export type Href = InferHrefType<typeof platforma>;
 export { BlockArgs };
 
 export * from './filter';
-export * from './filters_simple';
+export * from './filters_ui';

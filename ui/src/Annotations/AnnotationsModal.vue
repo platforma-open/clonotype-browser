@@ -10,8 +10,8 @@ import {
 import type { AnnotationScriptUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { useApp } from '../app';
 import Step from './Step.vue';
-import { parseAnnotationScript, compileAnnotationScript } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import { getDefaultAnnotationScript } from './temp';
+import { compileAnnotationScript } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { getDefaultAnnotationScript } from './getDefaultAnnotationScript';
 import { watchDebounced } from '@vueuse/core';
 
 const app = useApp();
@@ -22,12 +22,18 @@ watch(() => app.model.ui.annotationScript, (annotationScript) => {
   if (annotationScript === undefined) {
     annotationScript = getDefaultAnnotationScript();
   }
-  form.value = JSON.parse(JSON.stringify(parseAnnotationScript(annotationScript)));
+  form.value = JSON.parse(JSON.stringify(annotationScript));
 }, { immediate: true, deep: true });
 
 watchDebounced(form, (value, oldValue) => {
   if (value && (value === oldValue)) { // same ref
-    app.model.ui.annotationScript = compileAnnotationScript(value);
+    try {
+      const compiled = compileAnnotationScript(value);
+      app.model.ui.annotationScript = value;
+      app.model.args.annotationScript = compiled;
+    } catch (e) {
+      console.error(e);
+    }
   }
 }, { deep: true, debounce: 2000 });
 
