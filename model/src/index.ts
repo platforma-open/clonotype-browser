@@ -31,11 +31,17 @@ type BlockArgs = {
 export type UiState = {
   title?: string;
   settingsOpen: boolean;
-  filterModel: PlTableFiltersModel;
-  tableState: PlDataTableState;
   statsTable: {
     tableState: PlDataTableState;
     filterModel: PlTableFiltersModel;
+  };
+  overlapTable: {
+    filterModel: PlTableFiltersModel;
+    tableState: PlDataTableState;
+  };
+  perSampleTable: {
+    filterModel: PlTableFiltersModel;
+    tableState: PlDataTableState;
   };
 };
 
@@ -80,45 +86,6 @@ const simplifyColumnEntries = (
   return ret;
 };
 
-function getTableColumns(
-  ctx: RenderCtx<BlockArgs, UiState>,
-): (PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>)[] | undefined {
-  if (ctx.args.inputAnchor === undefined)
-    return undefined;
-
-  const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
-  if (!anchorCtx) return undefined;
-
-  const collection = new PColumnCollection()
-    .addColumnProvider(ctx.resultPool)
-    .addAxisLabelProvider(ctx.resultPool);
-
-  const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
-  if (aggregates) collection.addColumns(aggregates);
-
-  const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
-  if (annotation) collection.addColumns(annotation);
-
-  const columns = collection.getColumns(
-    [{
-      // @TODO: uncomment this to add per-sample columns to the list
-      //   domainAnchor: 'main',
-      //   axes: [
-      //     { split: true },
-      //     { anchor: 'main', idx: 1 },
-      //   ],
-      // }, {
-      domainAnchor: 'main',
-      axes: [
-        { anchor: 'main', idx: 1 },
-      ],
-    }],
-    { anchorCtx, labelOps: { includeNativeLabel: false } },
-  );
-
-  return columns;
-};
-
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
@@ -131,15 +98,23 @@ export const platforma = BlockModel.create('Heavy')
   .withUiState<UiState>({
     title: 'Clonotype Browser V2',
     settingsOpen: true,
-    filterModel: {},
-    tableState: {
-      gridState: {},
+    overlapTable: {
+      filterModel: {},
+      tableState: {
+        gridState: {},
+      },
     },
     statsTable: {
       tableState: {
         gridState: {},
       },
       filterModel: {},
+    },
+    perSampleTable: {
+      filterModel: {},
+      tableState: {
+        gridState: {},
+      },
     },
   })
 
@@ -158,19 +133,6 @@ export const platforma = BlockModel.create('Heavy')
       annotations: { 'pl7.app/isAnchor': 'true' },
     }]),
   )
-
-  // .output('metaColumnOptions', (ctx) => {
-  //   if (ctx.args.inputAnchor === undefined)
-  //     return undefined;
-
-  //   return ctx.resultPool.getCanonicalOptions(
-  //     { main: ctx.args.inputAnchor },
-  //     {
-  //       type: ['String', 'Int', 'Long'],
-  //       axes: [{ anchor: 'main', name: 'pl7.app/sampleId' }],
-  //     },
-  //   );
-  // })
 
   .output('byClonotypeColumns', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
@@ -268,16 +230,50 @@ export const platforma = BlockModel.create('Heavy')
     return createPlDataTableSpec(ctx, columns);
   })
 
-  .output('table', (ctx) => {
-    const columns = getTableColumns(ctx);
+  .output('overlapTable', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    if (!anchorCtx) return undefined;
+
+    const collection = new PColumnCollection()
+      .addColumnProvider(ctx.resultPool)
+      .addAxisLabelProvider(ctx.resultPool);
+
+    const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    if (aggregates) collection.addColumns(aggregates);
+
+    const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    if (annotation) collection.addColumns(annotation);
+
+    const columns = collection.getColumns(
+      [{
+        domainAnchor: 'main',
+        axes: [
+          { split: true },
+          { anchor: 'main', idx: 1 },
+        ],
+      }, {
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 1 },
+        ],
+      }],
+      { anchorCtx, labelOps: { includeNativeLabel: false } },
+    );
+
     if (!columns) return undefined;
 
-    return createPlDataTableData(
-      ctx,
-      columns,
-      ctx.uiState.tableState,
-      ctx.uiState.filterModel?.filters,
-    );
+    return {
+      table: createPlDataTableData(
+        ctx,
+        columns,
+        ctx.uiState.overlapTable.tableState,
+        ctx.uiState.overlapTable.filterModel?.filters,
+      ),
+      tableSpec: createPlDataTableSpec(ctx, columns),
+    } satisfies UITableData;
   })
 
   // .output('table', (ctx) => {
@@ -333,12 +329,6 @@ export const platforma = BlockModel.create('Heavy')
     }
     return undefined;
   })
-
-  // .output('filterColumn', (ctx) =>
-  //   ctx.prerun?.resolve({ field: 'filterColumn', assertFieldType: 'Input', allowPermanentAbsence: true })?.getFileContentAsString())
-
-  // .output('fullScript', (ctx) =>
-  //   ctx.prerun?.resolve({ field: 'fullScript', assertFieldType: 'Input', allowPermanentAbsence: true })?.getDataAsJson())
 
   .sections((ctx) => {
     return [

@@ -8,12 +8,12 @@ import type {
   PTableHandle,
   PTableRecordSingleValueFilterV2 } from '@platforma-sdk/model';
 import {
+  PColumnCollection,
   TreeNodeAccessor,
 } from '@platforma-sdk/model';
 import {
   selectorsToPredicate,
   getAxisId,
-  isPColumn,
   matchAxisId,
 } from '@platforma-sdk/model';
 
@@ -30,15 +30,24 @@ function getMainColumn(
   return columns.find((c) => mainColumnPredicate(c.spec));
 }
 
+export type UITableData = {
+  tableSpec: PTableColumnSpec[];
+  table: PTableHandle | undefined;
+};
+
 function getLabelColumns<BlockArgs, UiState>(
   ctx: RenderCtx<BlockArgs, UiState>,
   columns: PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>[],
 ): PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>[] {
-  const allLabelCols = ctx.resultPool
-    .getData()
-    .entries.map((d) => d.obj)
-    .filter(isPColumn)
-    .filter((p) => p.spec.name === 'pl7.app/label' && p.spec.axesSpec.length === 1);
+  const allLabelCols = new PColumnCollection()
+    .addAxisLabelProvider(ctx.resultPool)
+    .addColumnProvider(ctx.resultPool)
+    .getColumns({
+      name: 'pl7.app/label',
+      axes: [{}], // exactly one axis
+    }, { dontWaitAllData: true });
+
+  if (!allLabelCols) return [];
 
   const colId = (id: PObjectId, domain?: Record<string, string>) => {
     let wid = id.toString();
@@ -51,7 +60,7 @@ function getLabelColumns<BlockArgs, UiState>(
     return wid;
   };
 
-  const labelColumns = new Map<string, PColumn<TreeNodeAccessor>>();
+  const labelColumns = new Map<string, PColumn<TreeNodeAccessor | DataInfo<TreeNodeAccessor>>>();
   for (const col of columns) {
     for (const axis of col.spec.axesSpec) {
       const axisId = getAxisId(axis);
