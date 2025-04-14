@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.3.1
+
+### Patch Changes
+
+- 578646f: SDK upgrade
+
 ## 1.3.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.1.1
+
+### Patch Changes
+
+- 578646f: SDK upgrade
+
 ## 1.1.0
 
 ### Minor Changes
