@@ -11,7 +11,9 @@ import type {
 import {
   BlockModel,
   createPlDataTable,
+  createPlDataTableSheet,
   createPlDataTableV2,
+  getUniquePartitionKeys,
   PColumnCollection,
   selectorsToPredicate,
 } from '@platforma-sdk/model';
@@ -277,6 +279,66 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('perSampleTableSheets', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+
+    const anchor = ctx.resultPool.getPColumnByRef(ctx.args.inputAnchor);
+    if (!anchor) return undefined;
+
+    const samples = getUniquePartitionKeys(anchor.data)?.[0];
+    if (!samples) return undefined;
+
+    return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
+  })
+
+  .output('perSampleTable', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    if (!anchorCtx) return undefined;
+
+    const collection = new PColumnCollection()
+      .addColumnProvider(ctx.resultPool)
+      .addAxisLabelProvider(ctx.resultPool);
+
+    const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    if (annotation) collection.addColumns(annotation);
+
+    const columns = collection.getColumns(
+      [{
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 0 },
+          { anchor: 'main', idx: 1 },
+        ],
+      }, {
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 1 },
+        ],
+      }],
+      { anchorCtx },
+    );
+
+    if (!columns) return undefined;
+
+    return createPlDataTableV2(
+      ctx,
+      columns,
+      selectorsToPredicate({
+        name: 'pl7.app/vdj/sequence',
+        domain: {
+          'pl7.app/vdj/feature': 'CDR3',
+          'pl7.app/alphabet': 'nucleotide',
+        },
+      }),
+      ctx.uiState.perSampleTable.tableState,
+      { filters: ctx.uiState.perSampleTable.filterModel?.filters },
+    );
+  })
+
   .output('statsTable', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
     if (statsPf && statsPf.getIsReadyOrError()) {
@@ -299,9 +361,10 @@ export const platforma = BlockModel.create('Heavy')
 
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Main' } as const,
+      { type: 'link', href: '/', label: 'Per Sample ' } as const,
+      { type: 'link', href: '/overlap', label: 'Overlap' } as const,
       ...(ctx.args.annotationScript.steps.length > 0
-        ? [{ type: 'link', href: '/stats', label: 'Stats' } as const]
+        ? [{ type: 'link', href: '/stats', label: 'Annotation Stats' } as const]
         : []),
     ];
   })

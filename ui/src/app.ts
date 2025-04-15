@@ -1,8 +1,9 @@
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { defineApp } from '@platforma-sdk/ui-vue';
-import BrowserPage from './BrowserPage.vue';
 import AnnotationStatsPage from './AnnotationStatsPage.vue';
 import { ref, computed } from 'vue';
+import PerSamplePage from './PerSamplePage.vue';
+import OverlapPage from './OverlapPage.vue';
 
 export const sdkPlugin = defineApp(platforma, (_app) => {
   const isAnnotationModalOpen = ref(false);
@@ -28,7 +29,8 @@ export const sdkPlugin = defineApp(platforma, (_app) => {
     filterColumns,
     filterColumnsOptions,
     routes: {
-      '/': () => BrowserPage,
+      '/': () => PerSamplePage,
+      '/overlap': () => OverlapPage,
       '/stats': () => AnnotationStatsPage,
     },
   };

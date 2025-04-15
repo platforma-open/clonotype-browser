@@ -104,90 +104,6 @@ type CreateFilterUiMetadataMap<T extends FilterUiType> = {
 };
 
 export const filterUiMetadata = {
-  patternContainSubsequence: {
-    label: 'Col ~ Seq (Contain Subsequence)',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'patternContainSubsequence',
-      },
-      value: {
-        label: 'Seq',
-        fieldType: 'string',
-        defaultValue: () => '',
-      },
-    },
-    supportedFor: isStringValueType,
-  },
-  patternNotContainSubsequence: {
-    label: 'Col ≁ Seq (Not Contain Subsequence)',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'patternNotContainSubsequence',
-      },
-      value: {
-        label: 'Seq',
-        fieldType: 'string',
-        defaultValue: () => '',
-      },
-    },
-    supportedFor: isStringValueType,
-  },
-  patternEquals: {
-    label: 'Col = Seq (Equals)',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'patternEquals',
-      },
-      value: {
-        label: 'Seq',
-        fieldType: 'string',
-        defaultValue: () => '',
-      },
-    },
-    supportedFor: isStringValueType,
-  },
-  patternNotEquals: {
-    label: 'Col ≠ Seq (Not Equal)',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'patternNotEquals',
-      },
-      value: {
-        label: 'Seq',
-        fieldType: 'string',
-        defaultValue: () => '',
-      },
-    },
-    supportedFor: isStringValueType,
-  },
   lessThan: {
     label: 'Col < X (Less Than)',
     form: {
@@ -272,48 +188,6 @@ export const filterUiMetadata = {
     },
     supportedFor: isNumericValueType,
   },
-  topN: {
-    label: 'Top N',
-    form: {
-      column: {
-        label: 'Rank By Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'topN',
-      },
-      n: {
-        label: 'N',
-        fieldType: 'number',
-        defaultValue: () => 10,
-      },
-    },
-    supportedFor: isNumericValueType,
-  },
-  bottomN: {
-    label: 'Bottom N',
-    form: {
-      column: {
-        label: 'Rank By Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'bottomN',
-      },
-      n: {
-        label: 'N',
-        fieldType: 'number',
-        defaultValue: () => 10,
-      },
-    },
-    supportedFor: isNumericValueType,
-  },
   lessThanColumn: {
     label: 'Col₁ < Col₂ (Compare Columns)',
     form: {
@@ -370,6 +244,164 @@ export const filterUiMetadata = {
       return isNumericValueType(spec1) && (spec2 === undefined || isNumericValueType(spec2));
     },
   },
+  topN: {
+    label: 'Top N',
+    form: {
+      column: {
+        label: 'Rank By Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'topN',
+      },
+      n: {
+        label: 'N',
+        fieldType: 'number',
+        defaultValue: () => 10,
+      },
+    },
+    supportedFor: isNumericValueType,
+  },
+  bottomN: {
+    label: 'Bottom N',
+    form: {
+      column: {
+        label: 'Rank By Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'bottomN',
+      },
+      n: {
+        label: 'N',
+        fieldType: 'number',
+        defaultValue: () => 10,
+      },
+    },
+    supportedFor: isNumericValueType,
+  },
+  patternContainSubsequence: {
+    label: 'Col ~ Seq (Contain Subsequence)',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'patternContainSubsequence',
+      },
+      value: {
+        label: 'Seq',
+        fieldType: 'string',
+        defaultValue: () => '',
+      },
+    },
+    supportedFor: isStringValueType,
+  },
+  patternNotContainSubsequence: {
+    label: 'Col ≁ Seq (Not Contain Subsequence)',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'patternNotContainSubsequence',
+      },
+      value: {
+        label: 'Seq',
+        fieldType: 'string',
+        defaultValue: () => '',
+      },
+    },
+    supportedFor: isStringValueType,
+  },
+  patternEquals: {
+    label: 'Col = Seq (Equals)',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'patternEquals',
+      },
+      value: {
+        label: 'Seq',
+        fieldType: 'string',
+        defaultValue: () => '',
+      },
+    },
+    supportedFor: isStringValueType,
+  },
+  patternNotEquals: {
+    label: 'Col ≠ Seq (Not Equal)',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'patternNotEquals',
+      },
+      value: {
+        label: 'Seq',
+        fieldType: 'string',
+        defaultValue: () => '',
+      },
+    },
+    supportedFor: isStringValueType,
+  },
+  isNA: {
+    label: 'Is NA',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'isNA',
+      },
+    },
+    supportedFor: () => true,
+  },
+  isNotNA: {
+    label: 'Is Not NA',
+    form: {
+      column: {
+        label: 'Column',
+        fieldType: 'SUniversalPColumnId',
+        defaultValue: () => undefined,
+      },
+      type: {
+        label: 'Predicate',
+        fieldType: 'FilterUiType',
+        defaultValue: () => 'isNotNA',
+      },
+    },
+    supportedFor: () => true,
+  },
   or: {
     label: 'Or',
     form: {
@@ -417,38 +449,6 @@ export const filterUiMetadata = {
       },
     },
     supportedFor: () => false,
-  },
-  isNA: {
-    label: 'Col = NA',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'isNA',
-      },
-    },
-    supportedFor: () => true,
-  },
-  isNotNA: {
-    label: 'Col ≠ NA',
-    form: {
-      column: {
-        label: 'Column',
-        fieldType: 'SUniversalPColumnId',
-        defaultValue: () => undefined,
-      },
-      type: {
-        label: 'Predicate',
-        fieldType: 'FilterUiType',
-        defaultValue: () => 'isNotNA',
-      },
-    },
-    supportedFor: () => true,
   },
 } satisfies CreateFilterUiMetadataMap<FilterUiType>;
 
@@ -664,3 +664,4 @@ export function compileAnnotationScript(uiScript: AnnotationScriptUi): Annotatio
     }),
   };
 }
+

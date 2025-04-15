@@ -135,7 +135,7 @@ describe('compileFilter', () => {
   });
 
   it('should compile "topN" filter (Top 5)', () => {
-    const uiFilter: FilterUi = { type: 'topN', column: 'colNum' as unknown as SUniversalPColumnId, n: 5, descending: true };
+    const uiFilter: FilterUi = { type: 'topN', column: 'colNum' as unknown as SUniversalPColumnId, n: 5 };
     const expectedRank: ValueRank = { transformer: 'rank', column: 'colNum' as unknown as SUniversalPColumnId, descending: true };
     const expectedFilter: NumericalComparisonFilter = {
       type: 'numericalComparison',
@@ -147,8 +147,8 @@ describe('compileFilter', () => {
   });
 
   it('should compile "topN" filter (Bottom 3)', () => {
-    const uiFilter: FilterUi = { type: 'topN', column: 'colNum' as unknown as SUniversalPColumnId, n: 3, descending: false };
-    const expectedRank: ValueRank = { transformer: 'rank', column: 'colNum' as unknown as SUniversalPColumnId }; // descending: false is default, omitted
+    const uiFilter: FilterUi = { type: 'bottomN', column: 'colNum' as unknown as SUniversalPColumnId, n: 3 };
+    const expectedRank: ValueRank = { transformer: 'rank', column: 'colNum' as unknown as SUniversalPColumnId };
     const expectedFilter: NumericalComparisonFilter = {
       type: 'numericalComparison',
       lhs: expectedRank,
@@ -159,28 +159,26 @@ describe('compileFilter', () => {
   });
 
   it('should compile "lessThan" filter', () => {
-    const uiFilter: FilterUi = { type: 'lessThan', column: 'colNum' as unknown as SUniversalPColumnId, rhs: 10, minDiff: 1 };
-    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', lhs: 'colNum' as unknown as SUniversalPColumnId, rhs: 10, minDiff: 1 };
+    const uiFilter: FilterUi = { type: 'lessThan', column: 'colNum' as unknown as SUniversalPColumnId, x: 10 };
+    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', lhs: 'colNum' as unknown as SUniversalPColumnId, rhs: 10 };
     expect(compileFilter(uiFilter)).toEqual(expectedFilter);
   });
 
   it('should compile "greaterThan" filter', () => {
-    const uiFilter: FilterUi = { type: 'greaterThan', column: 'colNum' as unknown as SUniversalPColumnId, lhs: 5, minDiff: 2 };
-    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', rhs: 'colNum' as unknown as SUniversalPColumnId, lhs: 5, minDiff: 2 };
+    const uiFilter: FilterUi = { type: 'greaterThan', column: 'colNum' as unknown as SUniversalPColumnId, x: 5 };
+    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', rhs: 'colNum' as unknown as SUniversalPColumnId, lhs: 5 };
     expect(compileFilter(uiFilter)).toEqual(expectedFilter);
   });
 
   it('should compile "lessThanOrEqual" filter', () => {
-    const uiFilter: FilterUi = { type: 'lessThanOrEqual', column: 'colNum' as unknown as SUniversalPColumnId, rhs: 20, minDiff: 3 };
-    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', lhs: 'colNum' as unknown as SUniversalPColumnId, rhs: 20, minDiff: 3, allowEqual: true };
+    const uiFilter: FilterUi = { type: 'lessThanOrEqual', column: 'colNum' as unknown as SUniversalPColumnId, x: 20 };
+    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', lhs: 'colNum' as unknown as SUniversalPColumnId, rhs: 20, allowEqual: true };
     expect(compileFilter(uiFilter)).toEqual(expectedFilter);
   });
 
   it('should compile "greaterThanOrEqual" filter', () => {
-    const uiFilter: FilterUi = { type: 'greaterThanOrEqual', column: 'colNum' as unknown as SUniversalPColumnId, lhs: 0, minDiff: 4 };
-    // Note: The current compile logic for greaterThanOrEqual doesn't add allowEqual: true.
-    // Adjusting expectation based on current implementation. If this is wrong, the compile function needs fixing.
-    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', rhs: 'colNum' as unknown as SUniversalPColumnId, lhs: 0, minDiff: 4 };
+    const uiFilter: FilterUi = { type: 'greaterThanOrEqual', column: 'colNum' as unknown as SUniversalPColumnId, x: 0 };
+    const expectedFilter: AnnotationFilter = { type: 'numericalComparison', rhs: 'colNum' as unknown as SUniversalPColumnId, lhs: 0, allowEqual: true };
     expect(compileFilter(uiFilter)).toEqual(expectedFilter);
   });
 
