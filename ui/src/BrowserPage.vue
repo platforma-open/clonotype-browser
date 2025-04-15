@@ -7,14 +7,14 @@ import {
   PlDropdownRef,
   PlSlideModal,
   PlTableFilters,
-  type PlDataTableSettings,
+  type PlAgDataTableSettings,
   PlAgDataTableToolsPanel,
+  PlAgDataTableV2 as PlAgDataTable,
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
 import { generateAnnotationScript, generateDemo2Aging } from './demo';
-import { default as PlAgDataTable } from './PlAgDataTable/PlAgDataTable.vue';
 
 const app = useApp();
 
@@ -27,11 +27,11 @@ function setAnchorColumn(ref: PlRef | undefined) {
     : undefined;
 }
 
-const tableSettings = computed<PlDataTableSettings | undefined>(() =>
+const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
   app.model.args.inputAnchor
     ? {
         sourceType: 'ptable',
-        pTable: app.model.outputs.table,
+        model: app.model.outputs.overlapTable,
       }
     : undefined,
 );
@@ -63,7 +63,7 @@ function setDemoAnnotationScript2() {
     </template>
     <template #append>
       <PlAgDataTableToolsPanel>
-        <PlTableFilters v-model="app.model.ui.filterModel" :columns="columns" />
+        <PlTableFilters v-model="app.model.ui.overlapTable.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
         Annotations
@@ -75,7 +75,7 @@ function setDemoAnnotationScript2() {
     <div style="flex: 1">
       <PlAgDataTable
         ref="tableInstance"
-        v-model="app.model.ui.tableState"
+        v-model="app.model.ui.overlapTable.tableState"
         :settings="tableSettings"
         show-columns-panel
         show-export-button
