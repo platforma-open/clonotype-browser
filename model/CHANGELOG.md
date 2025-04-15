@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.3.2
+
+### Patch Changes
+
+- 10b4e58: Moved PlAgDataTableV2 to monorepo
+
 ## 1.3.1
 
 ### Patch Changes
