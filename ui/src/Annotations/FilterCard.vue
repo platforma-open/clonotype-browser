@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useApp } from '../app';
 import type { FilterUi, AnyForm } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { getFilterUiMetadata } from '@platforma-open/milaboratories.clonotype-browser-2.model';
@@ -8,13 +8,16 @@ import { PlIcon16, PlMaskIcon16 } from '@platforma-sdk/ui-vue';
 
 defineEmits<{
   (e: 'delete'): void;
+  (e: 'expand', value: boolean): void;
+}>();
+
+defineProps<{
+  expanded?: boolean;
 }>();
 
 const app = useApp();
 
 const model = defineModel<FilterUi>({ default: () => ({}) });
-
-const isExpanded = ref(false);
 
 const columnLabel = computed(() => {
   return app.filterColumnsOptions.find((c) => {
@@ -32,15 +35,14 @@ const form = computed(() => {
 
 <template>
   <div :class="$style.card">
-    <div :class="[$style.header, { [$style.expanded]: isExpanded }]" @click="isExpanded = !isExpanded">
+    <div :class="[$style.header, { [$style.expanded]: expanded }]" @click="$emit('expand', !expanded)">
       <div :class="$style.icon">
-        <PlIcon16 v-if="!isExpanded" name="chevron-right" />
-        <PlIcon16 v-else name="chevron-down" />
+        <PlIcon16 :class="$style.chevron" name="chevron-right" />
       </div>
       <div>{{ columnLabel }}</div>
       <PlMaskIcon16 :class="$style.delete" name="close" @click.stop="$emit('delete')" />
     </div>
-    <div v-if="isExpanded" :class="$style.content">
+    <div v-if="expanded" :class="$style.content">
       <DynamicForm v-model="model" :form="form" />
     </div>
   </div>
@@ -57,6 +59,7 @@ const form = computed(() => {
 }
 
 .header {
+  --chevron-rotate: rotate(0);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -72,7 +75,13 @@ const form = computed(() => {
   user-select: none;
   &.expanded {
     background: linear-gradient(180deg, #EBFFEB 0%, #FFF 100%);
-    border-bottom: 1px solid #E1E3EB;
+    --chevron-rotate: rotate(90deg);
+  }
+  &:not(.expanded) {
+    background: #F7F8FA;
+    &:hover {
+      background: #fff;
+    }
   }
 }
 
@@ -86,6 +95,11 @@ const form = computed(() => {
   justify-content: center;
   min-width: 16px;
   min-height: 16px;
+}
+
+.chevron {
+  transition: transform 0.2s ease-in-out;
+  transform: var(--chevron-rotate);
 }
 
 .delete {

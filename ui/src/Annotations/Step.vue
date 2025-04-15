@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onUnmounted, ref, useTemplateRef } from 'vue';
+import { onUnmounted, useTemplateRef, computed, ref } from 'vue';
 import type { AnnotationStepUi, FilterUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24 } from '@platforma-sdk/ui-vue';
+import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24, PlIcon16 } from '@platforma-sdk/ui-vue';
 import FilterCard from './FilterCard.vue';
 import AddFilterForm from './AddFilterForm.vue';
+import { useCommonState } from './commonState';
 
 const emit = defineEmits<{
   (e: 'delete'): void;
@@ -11,18 +12,34 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   step: AnnotationStepUi;
+  index: number;
 }>();
 
-const isEditStepModalOpen = ref(false);
+const commonState = useCommonState();
 
-const isAddFilterModalOpen = ref(false);
+const expandedFilterIndex = ref<number | undefined>(undefined);
+
+const isEditStepModalOpen = computed({
+  get: () => commonState.value.editStepModalIndex === props.index,
+  set: (value) => {
+    commonState.value.editStepModalIndex = value ? props.index : undefined;
+  },
+});
+
+const isAddFilterModalOpen = computed({
+  get: () => commonState.value.addFilterModalIndex === props.index,
+  set: (value) => {
+    if (commonState.value.addFilterModalIndex === props.index) {
+      commonState.value.addFilterModalIndex = value ? props.index : undefined;
+    }
+  },
+});
 
 const addFilter = () => {
-  isAddFilterModalOpen.value = true;
+  commonState.value.addFilterModalIndex = props.index;
 };
 
 const updateFilter = (index: number, filter: FilterUi) => {
-  console.log('updateFilter', index, filter);
   props.step.filter.filters[index] = filter;
 };
 
@@ -67,10 +84,15 @@ onUnmounted(() => {
           v-for="(filter, i) in step.filter.filters"
           :key="i"
           :model-value="filter"
+          :expanded="expandedFilterIndex === i"
           @update:model-value="updateFilter(i, $event)"
           @delete="deleteFilter(i)"
+          @expand="(v: boolean) => v ? expandedFilterIndex = i : expandedFilterIndex = undefined"
         />
-        <PlBtnSecondary icon="add" @click.stop="addFilter">Add filter</PlBtnSecondary>
+        <PlBtnSecondary :class="$style.addFilterBtn" @click="addFilter">
+          <PlIcon16 name="add" style="margin-right: 8px;" />
+          Add filter
+        </PlBtnSecondary>
       </div>
     </template>
     <template #actions>
@@ -114,5 +136,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.addFilterBtn {
+  border: 1px dashed #E1E3EB;
 }
 </style>

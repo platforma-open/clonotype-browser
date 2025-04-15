@@ -12,7 +12,7 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
-import AnnotationsModal from './Annotations/AnnotationsModal.vue';
+import { AnnotationsModal } from './Annotations';
 import { generateAnnotationScript, generateDemo2Aging } from './demo';
 import { default as PlAgDataTable } from './PlAgDataTable/PlAgDataTable.vue';
 

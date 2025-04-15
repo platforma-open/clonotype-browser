@@ -58,10 +58,16 @@ const setFieldValue = (fieldName: string, value: any) => {
 };
 
 watch(() => props.form, (newForm) => {
+  let oldKeys = Object.keys(formData.value);
   for (const [fieldName, field] of Object.entries(newForm)) {
     if (formData.value[fieldName] === undefined) {
       formData.value[fieldName] = field.defaultValue();
     }
+    oldKeys = oldKeys.filter((key) => key !== fieldName);
+  }
+  for (const key of oldKeys) {
+    console.log('delete', key);
+    delete formData.value[key];
   }
 },
 { immediate: true, deep: true },

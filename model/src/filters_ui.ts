@@ -1,5 +1,5 @@
 import type { SUniversalPColumnId } from '@platforma-sdk/model';
-import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate, TransformedColumn, IsNA, NotFilter, PatternFilter, NumericalComparisonFilter, ValueRank } from './filter';
+import type { AnnotationFilter, AnnotationScript, AnnotationMode, PatternPredicate, IsNA, NotFilter, PatternFilter, NumericalComparisonFilter, ValueRank } from './filter';
 import type { SimplifiedPColumnSpec } from './';
 
 export function unreachable(x: never): never {
@@ -608,6 +608,17 @@ export function compileAnnotationScript(uiScript: AnnotationScriptUi): Annotatio
     steps: uiScript.steps.map((step) => ({
       ...step,
       filter: compileFilter(step.filter),
-    })),
+    })).filter((step) => {
+      // No need to compile empty steps
+      if (step.filter.type === 'or') {
+        return step.filter.filters.length > 0;
+      }
+
+      if (step.filter.type === 'and') {
+        return step.filter.filters.length > 0;
+      }
+
+      return false;
+    }),
   };
 }
