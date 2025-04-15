@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.4.0
+
+### Minor Changes
+
+- 8e80c55: Filter UI, PerSample/Overlap & Other Fixes
+
 ## 1.3.2
 
 ### Patch Changes
