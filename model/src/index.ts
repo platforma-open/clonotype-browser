@@ -4,22 +4,19 @@ import type {
   PlRef,
   PlTableFiltersModel,
   PColumnSpec,
-  DataInfo,
-  TreeNodeAccessor,
-  PColumn,
   SUniversalPColumnId,
   PColumnEntryUniversal,
   InferOutputsType,
-  RenderCtx,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
   createPlDataTable,
+  createPlDataTableV2,
   PColumnCollection,
+  selectorsToPredicate,
 } from '@platforma-sdk/model';
 import * as R from 'remeda';
 import type { AnnotationScript } from './filter';
-import { createPlDataTableSpec, createPlDataTableData } from './join_helpers';
 
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
@@ -223,13 +220,6 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('tableSpec', (ctx) => {
-    const columns = getTableColumns(ctx);
-    if (!columns) return undefined;
-
-    return createPlDataTableSpec(ctx, columns);
-  })
-
   .output('overlapTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
@@ -265,50 +255,20 @@ export const platforma = BlockModel.create('Heavy')
 
     if (!columns) return undefined;
 
-    return {
-      table: createPlDataTableData(
-        ctx,
-        columns,
-        ctx.uiState.overlapTable.tableState,
-        ctx.uiState.overlapTable.filterModel?.filters,
-      ),
-      tableSpec: createPlDataTableSpec(ctx, columns),
-    } satisfies UITableData;
+    return createPlDataTableV2(
+      ctx,
+      columns,
+      selectorsToPredicate({
+        name: 'pl7.app/vdj/sequence',
+        domain: {
+          'pl7.app/vdj/feature': 'CDR3',
+          'pl7.app/alphabet': 'nucleotide',
+        },
+      }),
+      ctx.uiState.overlapTable.tableState,
+      { filters: ctx.uiState.overlapTable.filterModel?.filters },
+    );
   })
-
-  // .output('table', (ctx) => {
-  //   if (ctx.args.inputAnchor === undefined)
-  //     return undefined;
-
-  //   const columns = ctx.resultPool.getAnchoredPColumns(
-  //     { main: ctx.args.inputAnchor },
-  //     [{
-  //       domainAnchor: 'main',
-  //       axes: [
-  //         { split: true },
-  //         { anchor: 'main', idx: 1 },
-  //       ],
-  //     }, {
-  //       domainAnchor: 'main',
-  //       axes: [
-  //         { anchor: 'main', idx: 1 },
-  //       ],
-  //     }],
-  //   ) as (PColumn<DataInfo<TreeNodeAccessor>> | PColumn<TreeNodeAccessor>)[];
-  //   if (!columns) return undefined;
-
-  //   const annotationPf = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true });
-  //   if (annotationPf && annotationPf.getIsReadyOrError()) {
-  //     const labelColumns = annotationPf.getPColumns();
-  //     if (labelColumns) {
-  //       columns.push(...labelColumns);
-  //     }
-  //   }
-
-  //   return createPlDataTable(ctx, columns, ctx.uiState.tableState, {
-  //     filters: ctx.uiState.filterModel?.filters,
-  //   });
-  // })
 
   .output('statsTable', (ctx) => {
     const statsPf = ctx.prerun?.resolve({ field: 'statsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
