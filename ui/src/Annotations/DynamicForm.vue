@@ -18,7 +18,7 @@ const formData = defineModel<{
 const columnSpecRef = computed(() => {
   const value = formData.value;
   if ('column' in value) {
-    return app.filterColumns.find((c) => c.id === value.column)?.obj;
+    return app.filterColumns?.find((c) => c.id === value.column)?.obj;
   }
   return undefined;
 });
@@ -39,7 +39,7 @@ const secondColumnOptions = computed(() => {
   const typeMetadata = typeMetadataRef.value;
   const columnSpec = columnSpecRef.value;
   if (typeMetadata && columnSpec) {
-    return app.filterColumns.filter((c) => typeMetadata.supportedFor(columnSpec, c.obj)).map((c) => ({
+    return app.filterColumns?.filter((c) => typeMetadata.supportedFor(columnSpec, c.obj)).map((c) => ({
       label: c.label,
       value: c.id,
     }));

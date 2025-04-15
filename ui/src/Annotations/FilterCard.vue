@@ -20,7 +20,7 @@ const app = useApp();
 const model = defineModel<FilterUi>({ default: () => ({}) });
 
 const columnLabel = computed(() => {
-  return app.filterColumnsOptions.find((c) => {
+  return app.filterColumnsOptions?.find((c) => {
     if ('column' in model.value) {
       return c.value === model.value.column;
     }

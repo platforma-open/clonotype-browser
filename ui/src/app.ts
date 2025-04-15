@@ -9,13 +9,19 @@ export const sdkPlugin = defineApp(platforma, (_app) => {
 
   const filterColumns = computed(() => {
     if (_app.model.args.annotationScript.mode === 'bySampleAndClonotype') {
-      return _app.model.outputs.bySampleAndClonotypeColumns ?? [];
+      const { bySampleAndClonotypeColumns, byClonotypeColumns } = _app.model.outputs;
+
+      if (!bySampleAndClonotypeColumns || !byClonotypeColumns) {
+        return undefined;
+      }
+
+      return [...bySampleAndClonotypeColumns, ...byClonotypeColumns];
     }
 
     return _app.model.outputs.byClonotypeColumns ?? [];
   });
 
-  const filterColumnsOptions = computed(() => filterColumns.value.map((c) => ({ label: c.label, value: c.id })));
+  const filterColumnsOptions = computed(() => filterColumns.value?.map((c) => ({ label: c.label, value: c.id })));
 
   return {
     isAnnotationModalOpen,
