@@ -31,7 +31,9 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@platforma-sdk/model": "file:/Users/dbolotin/mi/core/platforma/sdk/model/package.tgz"
+    }
   },
   "///": {
     "pnpm": {
