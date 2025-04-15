@@ -255,6 +255,11 @@ export const platforma = BlockModel.create('Heavy')
 
     if (!columns) return undefined;
 
+    columns.forEach((column) => {
+      if (column.spec.annotations?.['pl7.app/isAbundance'] === 'true')
+        column.spec.annotations['pl7.app/table/visibility'] = 'optional';
+    });
+
     return createPlDataTableV2(
       ctx,
       columns,
