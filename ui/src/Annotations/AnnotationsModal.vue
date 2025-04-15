@@ -12,7 +12,7 @@ import { useApp } from '../app';
 import Step from './Step.vue';
 import { compileAnnotationScript } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { getDefaultAnnotationScript } from './getDefaultAnnotationScript';
-import { useCurrentElement, watchDebounced, useEventListener } from '@vueuse/core';
+import { watchDebounced, useEventListener } from '@vueuse/core';
 import { provideCommonState } from './commonState';
 
 const app = useApp();
