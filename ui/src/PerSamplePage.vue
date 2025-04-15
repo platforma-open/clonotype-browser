@@ -5,7 +5,6 @@ import {
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
-  PlMaskIcon24,
   PlSlideModal,
   PlTableFilters,
   type PlAgDataTableSettings,
@@ -14,7 +13,7 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
-import { generateAnnotationScript, generateDemo2Aging } from './demo';
+import { AnnotationsModal } from './Annotations';
 
 const app = useApp();
 
@@ -31,29 +30,12 @@ const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
   app.model.args.inputAnchor
     ? {
         sourceType: 'ptable',
-        model: app.model.outputs.overlapTable,
+        model: app.model.outputs.perSampleTable,
+        sheets: app.model.outputs.perSampleTableSheets,
       }
     : undefined,
 );
 const columns = ref<PTableColumnSpec[]>([]);
-
-function setDemoAnnotationScript1() {
-  const byClonotypeColumns = app.model.outputs.byClonotypeColumns;
-  const bySampleAndClonotypeColumns = app.model.outputs.bySampleAndClonotypeColumns;
-  if (!byClonotypeColumns || !bySampleAndClonotypeColumns) return;
-
-  console.dir(byClonotypeColumns, { depth: null });
-  console.dir(bySampleAndClonotypeColumns, { depth: null });
-
-  app.model.args.annotationScript = generateAnnotationScript(byClonotypeColumns, bySampleAndClonotypeColumns);
-}
-
-function setDemoAnnotationScript2() {
-  const mainAbundance = app.model.outputs.mainAbundanceColumn;
-  if (!mainAbundance) return;
-
-  app.model.args.annotationScript = generateDemo2Aging(mainAbundance.value);
-}
 </script>
 
 <template>
@@ -63,19 +45,19 @@ function setDemoAnnotationScript2() {
     </template>
     <template #append>
       <PlAgDataTableToolsPanel>
-        <PlTableFilters v-model="app.model.ui.overlapTable.filterModel" :columns="columns" />
+        <PlTableFilters v-model="app.model.ui.perSampleTable.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
-      <PlBtnGhost @click.shift.stop="setDemoAnnotationScript2" @click.alt.stop="setDemoAnnotationScript1" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
+      <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
+        Annotations
+      </PlBtnGhost>
+      <PlBtnGhost icon="settings" @click.exact.stop="() => (app.model.ui.settingsOpen = true)">
         Settings
-        <template #append>
-          <PlMaskIcon24 name="settings" />
-        </template>
       </PlBtnGhost>
     </template>
     <div style="flex: 1">
       <PlAgDataTable
         ref="tableInstance"
-        v-model="app.model.ui.overlapTable.tableState"
+        v-model="app.model.ui.perSampleTable.tableState"
         :settings="tableSettings"
         show-columns-panel
         show-export-button
@@ -93,4 +75,5 @@ function setDemoAnnotationScript2() {
       @update:model-value="setAnchorColumn"
     />
   </PlSlideModal>
+  <AnnotationsModal />
 </template>

@@ -183,7 +183,7 @@ export interface NotFilter {
 /**
  * Union type for all supported annotation filters.
  */
-export type AnnotationFilter = PatternFilter | NumericalComparisonFilter | OrFilter | AndFilter | NotFilter;
+export type AnnotationFilter = IsNA | PatternFilter | NumericalComparisonFilter | OrFilter | AndFilter | NotFilter;
 
 //
 // Annotation
@@ -234,4 +234,11 @@ export type AnnotationScript = {
   mode: AnnotationMode;
   /** Ordered list of annotation steps to apply */
   steps: AnnotationStep[];
+};
+
+export type AnnotationScript2<S extends AnnotationStep> = {
+  /** The mode of annotation to apply */
+  mode: AnnotationMode;
+  /** Ordered list of annotation steps to apply */
+  steps: S[];
 };
