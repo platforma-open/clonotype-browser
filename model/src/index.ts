@@ -248,6 +248,9 @@ export const platforma = BlockModel.create('Heavy')
           { split: true },
           { anchor: 'main', idx: 1 },
         ],
+        annotations: {
+          'pl7.app/isAbundance': 'true',
+        },
       }, {
         domainAnchor: 'main',
         axes: [
@@ -313,6 +316,9 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 0 },
           { anchor: 'main', idx: 1 },
         ],
+        annotations: {
+          'pl7.app/isAbundance': 'true',
+        },
       }, {
         domainAnchor: 'main',
         axes: [
