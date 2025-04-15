@@ -292,15 +292,15 @@ blockTest(
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
     console.dir({ byClonotypeOutputs: outputs6 }, { depth: 8 });
 
-    expect(outputs6.table, 'Final Table').toBeDefined();
+    expect(outputs6.overlapTable, 'Overlap Table').toBeDefined();
     expect(outputs6.statsTable, 'Stats Table').toBeDefined();
 
-    const columnSpecs = await ml.driverKit.pFrameDriver.getSpec(outputs6.table!);
+    const columnSpecs = await ml.driverKit.pFrameDriver.getSpec(outputs6.overlapTable!.tableHandle);
     // console.dir({ byClonotypeColSpecs: columnSpecs }, { depth: 8 });
     const annotationIdx = columnSpecs.findIndex((col) => col.spec.name === 'pl7.app/vdj/annotation');
     expect(annotationIdx, 'Annotation Column Index').toBeGreaterThanOrEqual(0);
 
-    const annotationData = await ml.driverKit.pFrameDriver.getData(outputs6.table!, [annotationIdx]);
+    const annotationData = await ml.driverKit.pFrameDriver.getData(outputs6.overlapTable!.tableHandle, [annotationIdx]);
     expect(annotationData[0].data, 'Annotation Data').toBeDefined();
     expect(annotationData[0].data.length, 'Annotation Data Length').toBeGreaterThan(0);
     expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.startsWith('Top 2'))), 'Annotation contains "Top 2"').toBe(true);
@@ -414,7 +414,7 @@ blockTest(
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
     console.dir({ bySampleAndClonotypeOutputs: outputs6 }, { depth: 8 });
 
-    expect(outputs6.table, 'Final Table').toBeDefined();
+    expect(outputs6.overlapTable, 'Overlap Table').toBeDefined();
     expect(outputs6.statsTable, 'Stats Table').toBeDefined();
 
     // --- Assertions for bySampleAndClonotype ---
