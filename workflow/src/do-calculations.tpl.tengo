@@ -486,7 +486,7 @@ self.body(func(inputs) {
 		valueType: mainFractionSpec.valueType,
 		axesSpec: statsAxesSpec,
 		annotations: {
-			"pl7.app/label": "Total Fraction per Label"
+			"pl7.app/label": "Total Fraction"
 		}
 	})
 
@@ -496,7 +496,7 @@ self.body(func(inputs) {
 		valueType: "Long",
 		axesSpec: statsAxesSpec,
 		annotations: {
-			"pl7.app/label": "Number of Clonotypes per Label"
+			"pl7.app/label": "Total Number of Clonotypes"
 		}
 	})
 
