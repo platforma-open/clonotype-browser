@@ -156,6 +156,9 @@ export const platforma = BlockModel.create('Heavy')
             { split: true },
             { anchor: 'main', idx: 1 },
           ],
+          annotations: {
+            'pl7.app/isAbundance': 'true',
+          },
         }],
         { anchorCtx },
       );
