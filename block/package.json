@@ -24,7 +24,7 @@
       "ui": "@platforma-open/milaboratories.clonotype-browser-2.ui/dist"
     },
     "meta": {
-      "title": "Clonotype Browser V2",
+      "title": "Clonotype Browser",
       "logo": "file:../logos/block-logo.png",
       "url": "https://github.com/platforma-open/clonotype-browser-2",
       "support": "mailto:support@milaboratories.com",
@@ -41,7 +41,7 @@
         "url": "https://milaboratories.com/",
         "logo": "file:../logos/organization-logo.png"
       },
-      "marketplaceRanking": 7000
+      "marketplaceRanking": 16700
     }
   },
   "devDependencies": {
