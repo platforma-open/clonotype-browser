@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.1.8
+
+### Patch Changes
+
+- f031db7: Updated block metadata
+
 ## 1.1.7
 
 ### Patch Changes
