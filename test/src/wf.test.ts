@@ -215,6 +215,7 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
       annotationScript: {
+        title: 'My Annotation',
         mode: 'byClonotype',
         steps: [],
       } satisfies AnnotationScript,
@@ -327,6 +328,7 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
       annotationScript: {
+        title: 'My Annotation',
         mode: 'bySampleAndClonotype', // Change mode here
         steps: [],
       } satisfies AnnotationScript,
@@ -357,6 +359,7 @@ blockTest(
 
     // Define annotation steps using bySampleAndClonotype specific filters
     const annotationScript: AnnotationScript = {
+      title: 'My Annotation',
       mode: 'bySampleAndClonotype',
       steps: [
         {
