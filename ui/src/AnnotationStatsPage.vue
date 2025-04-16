@@ -6,9 +6,11 @@ import {
   PlTableFilters,
   type PlDataTableSettings,
   PlAgDataTableToolsPanel,
+  PlBtnGhost,
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
+import AnnotationsModal from './Annotations/AnnotationsModal.vue';
 
 const app = useApp();
 
@@ -26,12 +28,15 @@ const columns = ref<PTableColumnSpec[]>([]);
 <template>
   <PlBlockPage>
     <template #title>
-      Annotation Stats{{ app.model.ui.title ? ` - ${app.model.ui.title}` : '' }}
+      Annotation Stats - {{ app.model.args.annotationScript.title }}
     </template>
     <template #append>
       <PlAgDataTableToolsPanel>
         <PlTableFilters v-model="app.model.ui.statsTable.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
+      <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
+        Annotations
+      </PlBtnGhost>
     </template>
     <div style="flex: 1">
       <PlAgDataTable
@@ -44,4 +49,5 @@ const columns = ref<PTableColumnSpec[]>([]);
       />
     </div>
   </PlBlockPage>
+  <AnnotationsModal />
 </template>

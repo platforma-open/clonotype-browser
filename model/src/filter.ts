@@ -230,6 +230,8 @@ export type AnnotationMode =
  * with later steps taking precedence when multiple steps match the same record.
  */
 export type AnnotationScript = {
+  /** The title of the annotation */
+  title: string;
   /** The mode of annotation to apply */
   mode: AnnotationMode;
   /** Ordered list of annotation steps to apply */

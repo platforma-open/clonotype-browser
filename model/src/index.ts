@@ -29,13 +29,12 @@ type BlockArgs = {
 };
 
 export type UiState = {
-  title?: string;
   settingsOpen: boolean;
   statsTable: {
     tableState: PlDataTableState;
     filterModel: PlTableFiltersModel;
   };
-  annotationScript?: AnnotationScriptUi;
+  annotationScript: AnnotationScriptUi;
   overlapTable: {
     filterModel: PlTableFiltersModel;
     tableState: PlDataTableState;
@@ -91,13 +90,13 @@ export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
     annotationScript: {
+      title: 'My Annotation',
       mode: 'byClonotype',
       steps: [],
     },
   })
 
   .withUiState<UiState>({
-    title: 'Clonotype Browser V2',
     settingsOpen: true,
     overlapTable: {
       filterModel: {},
@@ -116,6 +115,11 @@ export const platforma = BlockModel.create('Heavy')
       tableState: {
         gridState: {},
       },
+    },
+    annotationScript: {
+      title: 'My Annotation',
+      mode: 'byClonotype',
+      steps: [],
     },
   })
 
@@ -266,7 +270,7 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     columns.forEach((column) => {
-      if (column.spec.annotations?.['pl7.app/isAbundance'] === 'true')
+      if (column.spec.annotations?.['pl7.app/isAbundance'] === 'true' && column.spec.name !== 'pl7.app/vdj/sampleCount')
         column.spec.annotations['pl7.app/table/visibility'] = 'optional';
     });
 
@@ -380,7 +384,9 @@ export const platforma = BlockModel.create('Heavy')
 
   .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationScript.steps.length > 0)
 
-  .title((_ctx) => 'Clonotype Browser')
+  .title((ctx) => ctx.args.annotationScript.steps.length > 0
+    ? `Annotation - ${ctx.args.annotationScript.title}`
+    : 'Clonotype Browser')
 
   .done();
 

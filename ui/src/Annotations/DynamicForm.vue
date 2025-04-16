@@ -66,7 +66,6 @@ watch(() => props.form, (newForm) => {
     oldKeys = oldKeys.filter((key) => key !== fieldName);
   }
   for (const key of oldKeys) {
-    console.log('delete', key);
     delete formData.value[key];
   }
 },
