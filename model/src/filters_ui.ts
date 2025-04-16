@@ -664,4 +664,3 @@ export function compileAnnotationScript(uiScript: AnnotationScriptUi): Annotatio
     }),
   };
 }
-

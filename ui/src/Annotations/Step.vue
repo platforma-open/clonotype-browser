@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted, useTemplateRef, computed, ref } from 'vue';
 import type { AnnotationStepUi, FilterUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24, PlIcon16 } from '@platforma-sdk/ui-vue';
+import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24, PlMaskIcon16, PlIcon16 } from '@platforma-sdk/ui-vue';
 import FilterCard from './FilterCard.vue';
 import AddFilterForm from './AddFilterForm.vue';
 import { useCommonState } from './commonState';
@@ -22,7 +22,12 @@ const expandedFilterIndex = ref<number | undefined>(undefined);
 const isEditStepModalOpen = computed({
   get: () => commonState.value.editStepModalIndex === props.index,
   set: (value) => {
-    commonState.value.editStepModalIndex = value ? props.index : undefined;
+    if (commonState.value.editStepModalIndex === props.index && !value) {
+      commonState.value.editStepModalIndex = undefined;
+    } else if (value) {
+      console.log('open', props.index);
+      commonState.value.editStepModalIndex = props.index;
+    }
   },
 });
 
@@ -73,6 +78,8 @@ onUnmounted(() => {
 <template>
   <div :class="$style.step" class="text-s" @click.stop="isEditStepModalOpen = true">
     <span>{{ step.label }}</span>
+    <div style="flex-grow: 1;" />
+    <PlMaskIcon16 name="sort" class="drag-handle" />
     <PlIcon24 name="chevron-right" />
   </div>
   <PlSlideModal v-model="isEditStepModalOpen" :close-on-outside-click="false">
@@ -110,6 +117,13 @@ onUnmounted(() => {
 </template>
 
 <style module>
+:global(.drag-handle) {
+  background-color: #fff;
+  &:hover {
+    background: var(--txt-01);
+  }
+}
+
 .step {
   display: flex;
   flex-direction: row;

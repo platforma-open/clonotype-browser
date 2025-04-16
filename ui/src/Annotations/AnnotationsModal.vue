@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, type Ref } from 'vue';
+import { ref, watch } from 'vue';
 import {
   PlSlideModal,
   PlBtnGroup,
@@ -14,7 +14,7 @@ import { compileAnnotationScript } from '@platforma-open/milaboratories.clonotyp
 import { getDefaultAnnotationScript } from './getDefaultAnnotationScript';
 import { watchDebounced, useEventListener } from '@vueuse/core';
 import { provideCommonState } from './commonState';
-
+import StepsList from './StepsList.vue';
 const app = useApp();
 
 const form = ref<AnnotationScriptUi>();
@@ -63,6 +63,14 @@ const removeStep = (index: number) => {
   form.value.steps = form.value.steps.filter((_, i) => i !== index);
 };
 
+const reorderSteps = (indices: number[]) => {
+  if (!form.value) {
+    return;
+  }
+
+  form.value.steps = indices.map((i) => form.value!.steps[i]);
+};
+
 const groupOptions = [
   { label: 'Global', value: 'byClonotype' },
   { label: 'Per sample', value: 'bySampleAndClonotype' },
@@ -91,7 +99,7 @@ useEventListener(document.body, 'click', (ev) => {
     <template v-if="form">
       <PlBtnGroup v-model="form.mode" :options="groupOptions" />
       <div :class="$style.steps">
-        <Step v-for="(step, i) in form.steps" :key="i" :step="step" :index="i" @delete="removeStep(i)" />
+        <StepsList :key="form.steps.length" :steps="form.steps" @delete="removeStep" @reorder="reorderSteps" />
         <PlBtnSecondary :class="$style.addStepBtn" @click="addStep">
           <PlIcon16 name="add" style="margin-right: 8px;" />
           Add annotation
