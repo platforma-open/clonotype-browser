@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted, useTemplateRef, computed, ref } from 'vue';
 import type { AnnotationStepUi, FilterUi } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24, PlMaskIcon16, PlIcon16 } from '@platforma-sdk/ui-vue';
+import { PlSlideModal, PlTextField, PlBtnPrimary, PlBtnSecondary, PlBtnDanger, PlIcon24, PlMaskIcon16, PlIcon16, PlEditableTitle } from '@platforma-sdk/ui-vue';
 import FilterCard from './FilterCard.vue';
 import AddFilterForm from './AddFilterForm.vue';
 import { useCommonState } from './commonState';
@@ -83,9 +83,16 @@ onUnmounted(() => {
     <PlIcon24 name="chevron-right" />
   </div>
   <PlSlideModal v-model="isEditStepModalOpen" :close-on-outside-click="false">
-    <template #title>{{ step.label }}</template>
+    <template #title>
+      <PlEditableTitle
+        v-model="step.label"
+        :max-length="40"
+        max-width="600px"
+        placeholder="Step Name"
+      />
+    </template>
     <template v-if="step">
-      <PlTextField v-model="step.label" label="Label" />
+      <!-- <PlTextField v-model="step.label" label="Label" /> -->
       <div :class="$style.filters">
         <FilterCard
           v-for="(filter, i) in step.filter.filters"

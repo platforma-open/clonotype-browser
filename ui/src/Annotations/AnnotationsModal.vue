@@ -6,10 +6,10 @@ import {
   PlBtnSecondary,
   PlIcon16,
   type SimpleOption,
+  PlEditableTitle,
 } from '@platforma-sdk/ui-vue';
 import type { AnnotationScriptUi, AnnotationMode } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { useApp } from '../app';
-import Step from './Step.vue';
 import { compileAnnotationScript } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { getDefaultAnnotationScript } from './getDefaultAnnotationScript';
 import { watchDebounced, useEventListener } from '@vueuse/core';
@@ -17,7 +17,7 @@ import { provideCommonState } from './commonState';
 import StepsList from './StepsList.vue';
 const app = useApp();
 
-const form = ref<AnnotationScriptUi>();
+const form = ref<AnnotationScriptUi>(app.model.ui.annotationScript);
 
 const commonState = provideCommonState();
 
@@ -46,7 +46,7 @@ const addStep = () => {
   }
 
   form.value.steps.push({
-    label: 'New step',
+    label: `Label #${form.value.steps.length + 1}`,
     filter: {
       type: 'and',
       filters: [],
@@ -95,7 +95,14 @@ useEventListener(document.body, 'click', (ev) => {
 
 <template>
   <PlSlideModal ref="modal" v-model="app.isAnnotationModalOpen" :close-on-outside-click="false">
-    <template #title>Annotations</template>
+    <template #title>
+      <PlEditableTitle
+        v-model="form.title"
+        :max-length="40"
+        max-width="600px"
+        placeholder="Annotation Name"
+      />
+    </template>
     <template v-if="form">
       <PlBtnGroup v-model="form.mode" :options="groupOptions" />
       <div :class="$style.steps">

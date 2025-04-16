@@ -195,12 +195,14 @@ self.body(func(inputs) {
 		}
 	}
 
-	finalAnnotationScript := util.transformAnnotationScriptColumns(
+	finalAnnotationScript := maps.deepMerge(util.transformAnnotationScriptColumns(
 		rawAnnotationScript,
 		func(column) {
 			return headerMap[column]
 		}
-	)
+	), {
+		title: undefined
+	})
 
 	// Setting the key columns for the script
 	finalAnnotationScript.clonotypeKeyColumn = CLONOTYPE_KEY_HEADER
@@ -280,8 +282,8 @@ self.body(func(inputs) {
 	annotationPfBuilder := pFrames.pFrameBuilder()
 
 	trace := pSpec.makeTrace(anchorSpec, {
-		type: "milaboratories.clonotype-browser-2",
-		label: "Clonotype Annotation",
+		type: "milaboratories.clonotype-browser-2.annotation",
+		label: rawAnnotationScript.title,
 		importance: 20,
 		id: blockId
 	})
@@ -294,7 +296,7 @@ self.body(func(inputs) {
 		},
 		axesSpec: fullAxesSpec,
 		annotations: {
-			"pl7.app/label": "Clonotype Annotations"
+			"pl7.app/label": rawAnnotationScript.title
 		}
 	})
 	annotationsAxisSpec := {
@@ -304,7 +306,7 @@ self.body(func(inputs) {
 			"pl7.app/vdj/clonotypeAnnotationRunId": blockId
 		},
 		annotations: {
-			"pl7.app/label": "Clonotype Annotations"
+			"pl7.app/label": rawAnnotationScript.title
 		}
 	}
 

@@ -19,11 +19,6 @@ const app = useApp();
 
 function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
-  app.model.ui.title = ref
-    ? app.model.outputs.inputOptions?.find((o) =>
-      plRefsEqual(o.ref, ref),
-    )?.label
-    : undefined;
 }
 
 const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
@@ -40,7 +35,7 @@ const columns = ref<PTableColumnSpec[]>([]);
 <template>
   <PlBlockPage>
     <template #title>
-      Clonotype Browser{{ app.model.ui.title ? ` - ${app.model.ui.title}` : '' }}
+      Overlap Clonotypes Browser
     </template>
     <template #append>
       <PlAgDataTableToolsPanel>

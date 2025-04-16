@@ -2,6 +2,7 @@ import type { AnnotationScriptUi } from '@platforma-open/milaboratories.clonotyp
 
 export function getDefaultAnnotationScript(): AnnotationScriptUi {
   return {
+    title: 'My Annotation',
     mode: 'byClonotype',
     steps: [],
   };

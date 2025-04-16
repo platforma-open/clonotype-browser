@@ -640,12 +640,14 @@ export type AnnotationStepUi = {
 };
 
 export type AnnotationScriptUi = {
+  title: string;
   mode: AnnotationMode;
   steps: AnnotationStepUi[];
 };
 
 export function compileAnnotationScript(uiScript: AnnotationScriptUi): AnnotationScript {
   return {
+    title: uiScript.title,
     mode: uiScript.mode,
     steps: uiScript.steps.map((step) => ({
       ...step,
