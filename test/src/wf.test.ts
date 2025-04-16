@@ -249,6 +249,7 @@ blockTest(
     // Cast to SUniversalPColumnId after checks
 
     const annotationScript: AnnotationScript = {
+      title: 'My Annotation',
       mode: 'byClonotype',
       steps: [
         {
