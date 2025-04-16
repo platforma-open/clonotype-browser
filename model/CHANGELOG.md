@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.4.1
+
+### Patch Changes
+
+- 89f4bae: Micro filters fix
+
 ## 1.4.0
 
 ### Minor Changes
