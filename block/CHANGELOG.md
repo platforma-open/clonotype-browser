@@ -1,5 +1,20 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.2.0
+
+### Minor Changes
+
+- 8dfe959: Block model has changed in a backward incompatible way
+
+### Patch Changes
+
+- Updated dependencies [8dc627a]
+- Updated dependencies [d095b79]
+- Updated dependencies [8dc627a]
+  - @platforma-open/milaboratories.clonotype-browser-2.ui@1.2.2
+  - @platforma-open/milaboratories.clonotype-browser-2.workflow@1.3.2
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.4.2
+
 ## 1.1.8
 
 ### Patch Changes

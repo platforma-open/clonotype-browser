@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.4.2
+
+### Patch Changes
+
+- 8dc627a: Fix to default column visibility
+
 ## 1.4.1
 
 ### Patch Changes

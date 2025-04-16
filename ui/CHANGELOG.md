@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.2.2
+
+### Patch Changes
+
+- 8dc627a: - Ability to reorder steps in annotation script
+  - Annotation title
+  - Annotation panel on "Annotation Stats" page
+- Updated dependencies [8dc627a]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.4.2
+
 ## 1.2.1
 
 ### Patch Changes

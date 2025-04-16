@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.3.2
+
+### Patch Changes
+
+- d095b79: - Output column name fixes
+  - Support of annotation title
+
 ## 1.3.1
 
 ### Patch Changes
