@@ -136,7 +136,9 @@ export const platforma = BlockModel.create('Heavy')
         { name: 'pl7.app/vdj/scClonotypeKey' },
       ],
       annotations: { 'pl7.app/isAnchor': 'true' },
-    }]),
+    }], {
+      refsWithEnrichments: true,
+    }),
   )
 
   .output('byClonotypeColumns', (ctx) => {
@@ -383,6 +385,9 @@ export const platforma = BlockModel.create('Heavy')
   })
 
   .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationScript.steps.length > 0)
+
+  // We enrich the input, only if we produce annotations
+  .enriches((args) => args.inputAnchor !== undefined && args.annotationScript.steps.length > 0 ? [args.inputAnchor] : [])
 
   .title((ctx) => ctx.args.annotationScript.steps.length > 0
     ? `Annotation - ${ctx.args.annotationScript.title}`
