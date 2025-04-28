@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.5.0
+
+### Minor Changes
+
+- c936aa5: Request enrichments for anchor columns, as for the new explicit dependency API
+
 ## 1.4.2
 
 ### Patch Changes
