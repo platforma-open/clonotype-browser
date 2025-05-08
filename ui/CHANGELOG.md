@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.3.0
+
+### Minor Changes
+
+- af876fc: SDK upgrade: column deduplication, label derivation fixes
+
+### Patch Changes
+
+- Updated dependencies [af876fc]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.6.0
+
 ## 1.2.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.2.0
+
+### Minor Changes
+
+- af876fc: SDK upgrade: column deduplication, label derivation fixes
+
 ## 1.1.1
 
 ### Patch Changes

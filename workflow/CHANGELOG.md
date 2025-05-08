@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.4.0
+
+### Minor Changes
+
+- af876fc: Fix for filtering column traces, now contain information about specific filtered label
+- af876fc: SDK upgrade: column deduplication, label derivation fixes
+
+### Patch Changes
+
+- Updated dependencies [af876fc]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.1.0
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.2.0
+
 ## 1.3.2
 
 ### Patch Changes
