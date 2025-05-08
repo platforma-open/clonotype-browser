@@ -7,6 +7,7 @@ import type {
   SUniversalPColumnId,
   PColumnEntryUniversal,
   InferOutputsType,
+  AnchoredPColumnSelector,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
@@ -85,6 +86,11 @@ const simplifyColumnEntries = (
 
   return ret;
 };
+
+const copmmonExcludes: AnchoredPColumnSelector[] = [
+  { name: 'pl7.app/vdj/sequence/annotation' },
+  { annotations: { 'pl7.app/isSubset': 'true' } },
+];
 
 export const platforma = BlockModel.create('Heavy')
 
@@ -240,15 +246,18 @@ export const platforma = BlockModel.create('Heavy')
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (!anchorCtx) return undefined;
 
-    const collection = new PColumnCollection()
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool);
+    const collection = new PColumnCollection();
 
     const aggregates = ctx.prerun?.resolve({ field: 'aggregatesPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
     if (aggregates) collection.addColumns(aggregates);
 
     const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
     if (annotation) collection.addColumns(annotation);
+
+    // result pool is added after the pre-run ouptus so that pre-run results take precedence
+    collection
+      .addColumnProvider(ctx.resultPool)
+      .addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
       [{
@@ -266,7 +275,7 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 1 },
         ],
       }],
-      { anchorCtx, labelOps: { includeNativeLabel: false } },
+      { anchorCtx, exclude: copmmonExcludes },
     );
 
     if (!columns) return undefined;
@@ -311,12 +320,15 @@ export const platforma = BlockModel.create('Heavy')
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (!anchorCtx) return undefined;
 
-    const collection = new PColumnCollection()
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool);
+    const collection = new PColumnCollection();
 
     const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
     if (annotation) collection.addColumns(annotation);
+
+    // result pool is added after the pre-run ouptus so that pre-run results take precedence
+    collection
+      .addColumnProvider(ctx.resultPool)
+      .addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
       [{
@@ -325,16 +337,16 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 0 },
           { anchor: 'main', idx: 1 },
         ],
-        annotations: {
-          'pl7.app/isAbundance': 'true',
-        },
       }, {
         domainAnchor: 'main',
         axes: [
           { anchor: 'main', idx: 1 },
         ],
       }],
-      { anchorCtx },
+      {
+        anchorCtx,
+        exclude: copmmonExcludes,
+      },
     );
 
     if (!columns) return undefined;

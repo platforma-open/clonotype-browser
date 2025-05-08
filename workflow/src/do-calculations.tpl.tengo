@@ -315,6 +315,18 @@ self.body(func(inputs) {
 			}
 		}
 
+		trace := pSpec.makeTrace(anchorSpec, {
+			type: "milaboratories.clonotype-browser-2.annotation",
+			label: rawAnnotationScript.title,
+			importance: 20,
+			id: blockId
+		}, {
+			type: "milaboratories.clonotype-browser-2.filter",
+			label: label,
+			importance: 25,
+			id: blockId
+		})
+
 		finalFilterSpec := trace.inject(filterColumnSpec)
 
 		filtersPfBuilder.add(safeLabel, finalFilterSpec, filterData)
