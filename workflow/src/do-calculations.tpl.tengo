@@ -64,10 +64,6 @@ self.body(func(inputs) {
 	mainCountSpec := mainCount.spec
 	mainCountData := mainCount.data
 
-	// Set global header overrides for key columns on the bundle
-	columnBundle.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
-	columnBundle.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
-
 	outputs := {}
 
 	if len(rawAnnotationScript.steps) == 0 {
@@ -80,8 +76,13 @@ self.body(func(inputs) {
 
 	scriptColumns := util.extractColumnsFromFilter(rawAnnotationScript) // Already returns unique list
 
-	clonoTableBuilder := columnBundle.xsvTableBuilder()
-	sampleTableBuilder := columnBundle.xsvTableBuilder()
+	clonoTableBuilder := pFrames.tsvFileBuilder()
+	sampleTableBuilder := pFrames.tsvFileBuilder()
+
+	clonoTableBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
+
+	sampleTableBuilder.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
+	sampleTableBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
 
 	clonoSchemaMap := {}
 	clonoSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
@@ -99,9 +100,10 @@ self.body(func(inputs) {
 		colSpec := columnBundle.getSpec(colId)
 		numAxes := len(colSpec.axesSpec)
 
+
 		if numAxes == 1 {
 			// Belongs in clonotype table
-			clonoTableBuilder.add(colId)
+			clonoTableBuilder.add(columnBundle.getColumn(colId))
 			header := clonoTableBuilder.getHeader(colId)
 			spec := clonoTableBuilder.getSpec(colId)
 			clonoSchemaMap[header] = { column: header, type: spec.valueType }
@@ -112,7 +114,7 @@ self.body(func(inputs) {
 			if mode == "byClonotype" {
 				ll.panic("Column %s has 2 axes but mode is 'byClonotype'. The script expects only 1-axis columns in this mode.", colId)
 			}
-			sampleTableBuilder.add(colId)
+			sampleTableBuilder.add(columnBundle.getColumn(colId))
 			header := sampleTableBuilder.getHeader(colId)
 			spec := sampleTableBuilder.getSpec(colId)
 			sampleSchemaMap[header] = { column: header, type: spec.valueType }
@@ -146,7 +148,7 @@ self.body(func(inputs) {
 	cmd.arg("--script").arg("script.json")
 
 	if needsClonoTable {
-		clonoTable := clonoTableBuilder.build("tsv")
+		clonoTable := clonoTableBuilder.build()
 		clonoSchema := maps.getValues(clonoSchemaMap)
 		if len(clonoSchema) == 0 {
 			ll.panic("Clonotype table is required by mode or columns, but the resulting table is empty.")
@@ -158,7 +160,7 @@ self.body(func(inputs) {
 	}
 
 	if needsSampleTable {
-		sampleTable := sampleTableBuilder.build("tsv")
+		sampleTable := sampleTableBuilder.build()
 		sampleSchema := maps.getValues(sampleSchemaMap)
 		if len(sampleSchema) == 0 {
 			ll.panic("Sample-clonotype table is required by mode, but the resulting table is empty.")
