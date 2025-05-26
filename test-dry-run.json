@@ -1,0 +1,1200 @@
+
+> @ test:dry-run /home/runner/work/clonotype-browser-2/clonotype-browser-2
+> PL_PKG_DEV=local turbo run test --dry-run=json
+
+{
+  "id": "2xeJiiYDue4Z2bkNoCO5ALlYaVS",
+  "version": "1",
+  "turboVersion": "2.5.3",
+  "monorepo": true,
+  "globalCacheInputs": {
+    "rootKey": "I can’t see ya, but I know you’re here",
+    "files": {},
+    "hashOfExternalDependencies": "4611511a7dea809a",
+    "hashOfInternalDependencies": "",
+    "environmentVariables": {
+      "specified": {
+        "env": [],
+        "passThroughEnv": null
+      },
+      "configured": [],
+      "inferred": [],
+      "passthrough": null
+    },
+    "engines": null
+  },
+  "packages": [
+    "@platforma-open/milaboratories.clonotype-browser-2",
+    "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
+    "@platforma-open/milaboratories.clonotype-browser-2.annotator",
+    "@platforma-open/milaboratories.clonotype-browser-2.model",
+    "@platforma-open/milaboratories.clonotype-browser-2.test",
+    "@platforma-open/milaboratories.clonotype-browser-2.ui",
+    "@platforma-open/milaboratories.clonotype-browser-2.workflow"
+  ],
+  "envMode": "strict",
+  "frameworkInference": true,
+  "tasks": [
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2",
+      "hash": "a9844d70961471d9",
+      "inputs": {
+        "CHANGELOG.md": "a6f9a6b7a867b4002740d6b435730860516974c2",
+        "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
+        "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
+        "package.json": "47fa5dcb59acdd57dbf58e467ab48a8b4aa8384a"
+      },
+      "hashOfExternalDependencies": "09d375163a30b47d",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "rm -rf ./block-pack && block-tools pack",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "block/.turbo/turbo-build.log",
+      "directory": "block",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.model#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.ui#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.workflow#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2#test",
+        "@platforma-open/milaboratories.clonotype-browser-2.test#build"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2",
+      "hash": "3b723d092351f6ed",
+      "inputs": {
+        "CHANGELOG.md": "a6f9a6b7a867b4002740d6b435730860516974c2",
+        "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
+        "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
+        "package.json": "47fa5dcb59acdd57dbf58e467ab48a8b4aa8384a"
+      },
+      "hashOfExternalDependencies": "09d375163a30b47d",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "block/.turbo/turbo-test.log",
+      "directory": "block",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
+      "hash": "662f2fde64422cdf",
+      "inputs": {
+        "CHANGELOG.md": "99298f884f40c7fe551eb17b4959af503d754cc7",
+        "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
+        "package.json": "767fb312841e1f3d7e852be8122ee8adc4414579",
+        "requirements.txt": "28c3be4a3228ba46f6f596152880c35c25371bbe",
+        "src/.gitignore": "df20a937011a83c1fea3cb6f36e96d8ec7b3b03b",
+        "src/main.py": "dc8581fd1eff718dde81441cc90d6a760f4e12c1",
+        "src/requirements.txt": "55775b63ca510d846ea6eeee64d47f4d5230e191"
+      },
+      "hashOfExternalDependencies": "564029be6488e653",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "pl-pkg build",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "software/annotation2filters/.turbo/turbo-build.log",
+      "directory": "software/annotation2filters",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#test",
+        "@platforma-open/milaboratories.clonotype-browser-2.workflow#build"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
+      "hash": "97a2f08383d8c21e",
+      "inputs": {
+        "CHANGELOG.md": "99298f884f40c7fe551eb17b4959af503d754cc7",
+        "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
+        "package.json": "767fb312841e1f3d7e852be8122ee8adc4414579",
+        "requirements.txt": "28c3be4a3228ba46f6f596152880c35c25371bbe",
+        "src/.gitignore": "df20a937011a83c1fea3cb6f36e96d8ec7b3b03b",
+        "src/main.py": "dc8581fd1eff718dde81441cc90d6a760f4e12c1",
+        "src/requirements.txt": "55775b63ca510d846ea6eeee64d47f4d5230e191"
+      },
+      "hashOfExternalDependencies": "564029be6488e653",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "software/annotation2filters/.turbo/turbo-test.log",
+      "directory": "software/annotation2filters",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
+      "hash": "0f6f29ecb9926af8",
+      "inputs": {
+        "CHANGELOG.md": "c6e667097223e9b0eaae49f83cec58a41b4f8c42",
+        "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
+        "itest/example2/clonotype_properties_schema.json": "3ff7f4ae1102774d6d09071c4c3598d1a7682798",
+        "itest/example2/output.tsv": "2dbd54a90a17d4055246fbd192ccb7aca90988c3",
+        "itest/example2/sample_clonotype_properties.tsv": "b15cd94ae684a4ae2ed71d8e6ee2a714a85f3b66",
+        "itest/example2/sample_clonotype_properties_schema.json": "53b702f68b29fb5524a46001747085206a1d0a16",
+        "itest/example2/script.json": "a7418a7b0b8d9768935c7b58854d3cb12eefc3d9",
+        "itest/go1.sh": "fca745744986365c6fc752cc040c7f44bdecf5aa",
+        "itest/go2.sh": "b73f4f63432da69411c69db1ca78077519753055",
+        "itest/test_1_clonotype_properties.tsv": "2ef1698dc26ce5f0592f112fd57dfe93f7095efc",
+        "itest/test_1_clonotype_properties_schema.json": "c4adce9947018a5277ee133f0b584c6863d7595f",
+        "itest/test_1_output.tsv": "570d21ee2514bebc8b51bc506e2b2727d7edeace",
+        "itest/test_1_script.json": "2e1a0c9f4629e8f3fe418f3d881d85142c01eae3",
+        "package.json": "6278a8f336e56f91798f2248080691f829d2bd74",
+        "requirements.txt": "28c3be4a3228ba46f6f596152880c35c25371bbe",
+        "src/.gitignore": "df20a937011a83c1fea3cb6f36e96d8ec7b3b03b",
+        "src/main.py": "f3da2af257c628c4dcb239df3ecea8bd675ee4fb",
+        "src/requirements.txt": "55775b63ca510d846ea6eeee64d47f4d5230e191"
+      },
+      "hashOfExternalDependencies": "564029be6488e653",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "pl-pkg build",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "software/annotator/.turbo/turbo-build.log",
+      "directory": "software/annotator",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2.annotator#test",
+        "@platforma-open/milaboratories.clonotype-browser-2.workflow#build"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
+      "hash": "ab761479634f9f2d",
+      "inputs": {
+        "CHANGELOG.md": "c6e667097223e9b0eaae49f83cec58a41b4f8c42",
+        "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
+        "itest/example2/clonotype_properties_schema.json": "3ff7f4ae1102774d6d09071c4c3598d1a7682798",
+        "itest/example2/output.tsv": "2dbd54a90a17d4055246fbd192ccb7aca90988c3",
+        "itest/example2/sample_clonotype_properties.tsv": "b15cd94ae684a4ae2ed71d8e6ee2a714a85f3b66",
+        "itest/example2/sample_clonotype_properties_schema.json": "53b702f68b29fb5524a46001747085206a1d0a16",
+        "itest/example2/script.json": "a7418a7b0b8d9768935c7b58854d3cb12eefc3d9",
+        "itest/go1.sh": "fca745744986365c6fc752cc040c7f44bdecf5aa",
+        "itest/go2.sh": "b73f4f63432da69411c69db1ca78077519753055",
+        "itest/test_1_clonotype_properties.tsv": "2ef1698dc26ce5f0592f112fd57dfe93f7095efc",
+        "itest/test_1_clonotype_properties_schema.json": "c4adce9947018a5277ee133f0b584c6863d7595f",
+        "itest/test_1_output.tsv": "570d21ee2514bebc8b51bc506e2b2727d7edeace",
+        "itest/test_1_script.json": "2e1a0c9f4629e8f3fe418f3d881d85142c01eae3",
+        "package.json": "6278a8f336e56f91798f2248080691f829d2bd74",
+        "requirements.txt": "28c3be4a3228ba46f6f596152880c35c25371bbe",
+        "src/.gitignore": "df20a937011a83c1fea3cb6f36e96d8ec7b3b03b",
+        "src/main.py": "f3da2af257c628c4dcb239df3ecea8bd675ee4fb",
+        "src/requirements.txt": "55775b63ca510d846ea6eeee64d47f4d5230e191"
+      },
+      "hashOfExternalDependencies": "564029be6488e653",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "software/annotator/.turbo/turbo-test.log",
+      "directory": "software/annotator",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.annotator#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
+      "hash": "44b99acc76d24406",
+      "inputs": {
+        "CHANGELOG.md": "44fc43e6325900e3cbe7fabaeba73a70af9d00e5",
+        "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
+        "package.json": "085eb5674c4f65f51f2f65d8aa64606fd4eb521b",
+        "src/__filters_ui.test.ts": "641ea1b5028ec23ac028653873c5e5ab0847ad70",
+        "src/__filters_ui.ts": "c0a26bd66319fe93fd6e55f655961b893e8bd791",
+        "src/filter.ts": "1f5406f209b1713fb3d85bcedbd1808c6d949c9d",
+        "src/filters_ui.test.ts": "c6bb41f6a39252633c92f183bc12eda126404dea",
+        "src/filters_ui.ts": "cbf89c1c9a93d1c13f8ce82750ac4440733aeb67",
+        "src/index.ts": "ff3c10080913c92b5ba7d41441ed6d31f162805a",
+        "src/lens.ts": "dc64141ca594ae6eacd03146e09e53cefded9ee9",
+        "src/predicate.ts": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
+        "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97",
+        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+      },
+      "hashOfExternalDependencies": "e643d679300f1cd6",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "tsup && vite build && block-tools build-model",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "model/.turbo/turbo-build.log",
+      "directory": "model",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.model#test",
+        "@platforma-open/milaboratories.clonotype-browser-2.test#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.ui#build"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "vite",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
+      "hash": "a7beaeeb3e00af72",
+      "inputs": {
+        "CHANGELOG.md": "44fc43e6325900e3cbe7fabaeba73a70af9d00e5",
+        "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
+        "package.json": "085eb5674c4f65f51f2f65d8aa64606fd4eb521b",
+        "src/__filters_ui.test.ts": "641ea1b5028ec23ac028653873c5e5ab0847ad70",
+        "src/__filters_ui.ts": "c0a26bd66319fe93fd6e55f655961b893e8bd791",
+        "src/filter.ts": "1f5406f209b1713fb3d85bcedbd1808c6d949c9d",
+        "src/filters_ui.test.ts": "c6bb41f6a39252633c92f183bc12eda126404dea",
+        "src/filters_ui.ts": "cbf89c1c9a93d1c13f8ce82750ac4440733aeb67",
+        "src/index.ts": "ff3c10080913c92b5ba7d41441ed6d31f162805a",
+        "src/lens.ts": "dc64141ca594ae6eacd03146e09e53cefded9ee9",
+        "src/predicate.ts": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
+        "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97",
+        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+      },
+      "hashOfExternalDependencies": "e643d679300f1cd6",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "vitest",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "model/.turbo/turbo-test.log",
+      "directory": "model",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.model#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "vite",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
+      "hash": "b66ac81e33e09cbe",
+      "inputs": {
+        "CHANGELOG.md": "cb8c315fb75d8f6d6bd67d352031be64484b11c1",
+        "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
+        "assets/SRR11233652_sampledBulk_R2.fastq.gz": "b7a328d50b0819fb63365e18c07f27b4bd03bc0a",
+        "assets/SRR11233663_sampledBulk_R1.fastq.gz": "b3dbffc35e2fb8992f4dfaa55e26c2f936f63c3b",
+        "assets/SRR11233663_sampledBulk_R2.fastq.gz": "025f0ef7850eff8939982a2fc1ff3aa12138f2de",
+        "assets/SRR11233664_sampledBulk_R1.fastq.gz": "f8b677cb0af2863e5d9e5f214fd42638f3d50a61",
+        "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
+        "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
+        "package.json": "efb31132f150445c78fcb4bd69229a0052fd9fd1",
+        "src/wf.test.ts": "56349549538230482ceb356e900030e3e735f4cd",
+        "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
+        "vitest.config.mts": "51dd75ef9201bf0a31b7b4d3abf38d56c0bc6741"
+      },
+      "hashOfExternalDependencies": "9d54ba1d1f0627ad",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "test/.turbo/turbo-build.log",
+      "directory": "test",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.model#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2.test#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
+      "hash": "af801aeccedbf391",
+      "inputs": {
+        "CHANGELOG.md": "cb8c315fb75d8f6d6bd67d352031be64484b11c1",
+        "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
+        "assets/SRR11233652_sampledBulk_R2.fastq.gz": "b7a328d50b0819fb63365e18c07f27b4bd03bc0a",
+        "assets/SRR11233663_sampledBulk_R1.fastq.gz": "b3dbffc35e2fb8992f4dfaa55e26c2f936f63c3b",
+        "assets/SRR11233663_sampledBulk_R2.fastq.gz": "025f0ef7850eff8939982a2fc1ff3aa12138f2de",
+        "assets/SRR11233664_sampledBulk_R1.fastq.gz": "f8b677cb0af2863e5d9e5f214fd42638f3d50a61",
+        "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
+        "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
+        "package.json": "efb31132f150445c78fcb4bd69229a0052fd9fd1",
+        "src/wf.test.ts": "56349549538230482ceb356e900030e3e735f4cd",
+        "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
+        "vitest.config.mts": "51dd75ef9201bf0a31b7b4d3abf38d56c0bc6741"
+      },
+      "hashOfExternalDependencies": "9d54ba1d1f0627ad",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "vitest",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "test/.turbo/turbo-test.log",
+      "directory": "test",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.test#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
+      "hash": "7e69d309ac78577a",
+      "inputs": {
+        "CHANGELOG.md": "601c22f3a8a45d81d0ebf7730937c221973d710f",
+        "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
+        "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
+        "package.json": "3e21485eea3812d835431f55d0c9a03aa7b938bc",
+        "src/AnnotationStatsPage.vue": "bbd4b02b394f39e83e8f6ced2d70fe2f072b6ff5",
+        "src/Annotations/AddFilterForm.vue": "7fd2bc19b3f535c5c6754032cf61e96fd10fb865",
+        "src/Annotations/AnnotationsModal.vue": "81cb574830f1a7579463e901dbd467855b04e8f3",
+        "src/Annotations/DynamicForm.vue": "bce848afd6dfdddbc839cdde44f7e2623e9c224d",
+        "src/Annotations/FilterCard.vue": "c6c5aada8e105681110c27a6d887e1ff5bc7e51d",
+        "src/Annotations/Step.vue": "2c21aa773095299a8158f81bb8f800a1d63b0456",
+        "src/Annotations/StepsList.vue": "95e3e319294acb83b47710c13b7d1f297ca75dd2",
+        "src/Annotations/commonState.ts": "ebee5b134d5d98c6a3492507a8501054c1966d77",
+        "src/Annotations/getDefaultAnnotationScript.ts": "073c1bc2343f8c71b953d6581100bb858e2c5333",
+        "src/Annotations/index.ts": "706defe7bbd7fed222c5d93daa64d0109e731768",
+        "src/OverlapPage.vue": "f4cd3e9948d578b391c73dd1ef2ce1258d6598b0",
+        "src/PerSamplePage.vue": "4a0d09c0cbe3b3140a8c6f3d9659adc77c4b3d1e",
+        "src/app.ts": "eb863b7baa4ef35a31f1e973a0600739f9f35816",
+        "src/main.ts": "a7d29c169ac806a6d3d8fe37245af74a351f6c88",
+        "tsconfig.app.json": "253816c78177577b3c07b4586e714c46808ee423",
+        "tsconfig.json": "ea9d0cd8255683d84f125948115daf1de0f06b1f",
+        "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
+        "vite.config.ts": "c2f320930e6ebaff365fa61042e25ba27c35a473",
+        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+      },
+      "hashOfExternalDependencies": "dc90e9a576436f32",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "vue-tsc -b && vite build",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "ui/.turbo/turbo-build.log",
+      "directory": "ui",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.model#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.ui#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "vite",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
+      "hash": "f7f5f2f48734bf8e",
+      "inputs": {
+        "CHANGELOG.md": "601c22f3a8a45d81d0ebf7730937c221973d710f",
+        "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
+        "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
+        "package.json": "3e21485eea3812d835431f55d0c9a03aa7b938bc",
+        "src/AnnotationStatsPage.vue": "bbd4b02b394f39e83e8f6ced2d70fe2f072b6ff5",
+        "src/Annotations/AddFilterForm.vue": "7fd2bc19b3f535c5c6754032cf61e96fd10fb865",
+        "src/Annotations/AnnotationsModal.vue": "81cb574830f1a7579463e901dbd467855b04e8f3",
+        "src/Annotations/DynamicForm.vue": "bce848afd6dfdddbc839cdde44f7e2623e9c224d",
+        "src/Annotations/FilterCard.vue": "c6c5aada8e105681110c27a6d887e1ff5bc7e51d",
+        "src/Annotations/Step.vue": "2c21aa773095299a8158f81bb8f800a1d63b0456",
+        "src/Annotations/StepsList.vue": "95e3e319294acb83b47710c13b7d1f297ca75dd2",
+        "src/Annotations/commonState.ts": "ebee5b134d5d98c6a3492507a8501054c1966d77",
+        "src/Annotations/getDefaultAnnotationScript.ts": "073c1bc2343f8c71b953d6581100bb858e2c5333",
+        "src/Annotations/index.ts": "706defe7bbd7fed222c5d93daa64d0109e731768",
+        "src/OverlapPage.vue": "f4cd3e9948d578b391c73dd1ef2ce1258d6598b0",
+        "src/PerSamplePage.vue": "4a0d09c0cbe3b3140a8c6f3d9659adc77c4b3d1e",
+        "src/app.ts": "eb863b7baa4ef35a31f1e973a0600739f9f35816",
+        "src/main.ts": "a7d29c169ac806a6d3d8fe37245af74a351f6c88",
+        "tsconfig.app.json": "253816c78177577b3c07b4586e714c46808ee423",
+        "tsconfig.json": "ea9d0cd8255683d84f125948115daf1de0f06b1f",
+        "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
+        "vite.config.ts": "c2f320930e6ebaff365fa61042e25ba27c35a473",
+        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+      },
+      "hashOfExternalDependencies": "dc90e9a576436f32",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "ui/.turbo/turbo-test.log",
+      "directory": "ui",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.ui#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "vite",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#build",
+      "task": "build",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
+      "hash": "a42d94fc57e0978a",
+      "inputs": {
+        "CHANGELOG.md": "49c80be1e3540c43bd9b3c19a0b4202c5a167cdc",
+        "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
+        "package.json": "0a6940cb91c65b738846a914456dce262a09c4e8",
+        "src/do-calculations.tpl.tengo": "541a99b234322a1434c96b226a408c2365481ebc",
+        "src/main.tpl.tengo": "a8b12f35817886470fea6d9c4723c0d1ff4b06af",
+        "src/prerun.tpl.tengo": "6b8ad89a39c4ca8f7c486961adb818836b36d118",
+        "src/util.lib.tengo": "3e0b9ea43c9a190592d00587e86dbe4e43b8148b",
+        "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
+        "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
+      },
+      "hashOfExternalDependencies": "0938109011606e36",
+      "cache": {
+        "local": false,
+        "remote": true,
+        "status": "HIT",
+        "source": "REMOTE",
+        "timeSaved": 0
+      },
+      "command": "rm -rf dist && pl-tengo check && pl-tengo build",
+      "cliArguments": [],
+      "outputs": [
+        "./block-pack/**",
+        "./dist/**",
+        "./pkg-*.tgz"
+      ],
+      "excludedOutputs": null,
+      "logFile": "workflow/.turbo/turbo-build.log",
+      "directory": "workflow",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.annotator#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.clonotype-browser-2#build",
+        "@platforma-open/milaboratories.clonotype-browser-2.workflow#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [
+          "./block-pack/**",
+          "./dist/**",
+          "./pkg-*.tgz"
+        ],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "$TURBO_DEFAULT$"
+        ],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [
+          "PL_PKG_DEV"
+        ],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [
+            "PL_PKG_DEV"
+          ],
+          "passThroughEnv": null
+        },
+        "configured": [
+          "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+        ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
+      "hash": "059843c774781a18",
+      "inputs": {
+        "CHANGELOG.md": "49c80be1e3540c43bd9b3c19a0b4202c5a167cdc",
+        "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
+        "package.json": "0a6940cb91c65b738846a914456dce262a09c4e8",
+        "src/do-calculations.tpl.tengo": "541a99b234322a1434c96b226a408c2365481ebc",
+        "src/main.tpl.tengo": "a8b12f35817886470fea6d9c4723c0d1ff4b06af",
+        "src/prerun.tpl.tengo": "6b8ad89a39c4ca8f7c486961adb818836b36d118",
+        "src/util.lib.tengo": "3e0b9ea43c9a190592d00587e86dbe4e43b8148b",
+        "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
+        "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
+      },
+      "hashOfExternalDependencies": "0938109011606e36",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "workflow/.turbo/turbo-test.log",
+      "directory": "workflow",
+      "dependencies": [
+        "@platforma-open/milaboratories.clonotype-browser-2.workflow#build"
+      ],
+      "dependents": [],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": [
+          "DEBUG",
+          "PL_ADDRESS",
+          "PL_TEST_PASSWORD",
+          "PL_TEST_PROXY",
+          "PL_TEST_USER"
+        ],
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": [
+            "DEBUG",
+            "PL_ADDRESS",
+            "PL_TEST_PASSWORD",
+            "PL_TEST_PROXY",
+            "PL_TEST_USER"
+          ]
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": [
+          "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
+          "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
+          "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
+        ]
+      }
+    }
+  ],
+  "user": "github-merge-queue[bot]",
+  "scm": {
+    "type": "git",
+    "sha": "d6347600b90c0608eade30f61e6894ed0eca910c",
+    "branch": "main"
+  }
+}
+

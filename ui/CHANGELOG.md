@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.3.1
+
+### Patch Changes
+
+- b7dacb3: SDK Upgrade formatting support
+
 ## 1.3.0
 
 ### Minor Changes
