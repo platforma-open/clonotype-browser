@@ -239,12 +239,18 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('exportDebug', (ctx) => {
-    return ctx.prerun?.resolve('exportDebug')?.getDataAsJson();
-  })
+  // .output('exportDebug', (ctx) => {
+  //   return ctx.prerun?.resolve('exportDebug')?.getDataAsJson();
+  // })
 
   .output('exportedTsv', (ctx) => {
-    return ctx.prerun?.resolve('tsv')?.getRemoteFileHandle();
+    const tsvResource = ctx.prerun?.resolve('tsv');
+    if (!tsvResource) return undefined;
+    if (!tsvResource.getIsReadyOrError())
+      return undefined;
+    if (tsvResource.resourceType.name === 'Null')
+      return null;
+    return tsvResource.getRemoteFileHandle();
   })
 
   .output('overlapTable', (ctx) => {

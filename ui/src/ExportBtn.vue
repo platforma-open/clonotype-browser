@@ -32,8 +32,9 @@ async function exportTsv() {
 
 <template>
   <PlBtnGhost
-    icon="download"
-    :loading="exporting || app.model.outputs.exportedTsv?.handle === undefined"
+    :icon="app.model.outputs.exportedTsv === null ? 'close' : 'download'"
+    :disabled="app.model.outputs.exportedTsv === null"
+    :loading="exporting || (app.model.outputs.exportedTsv?.handle === undefined && app.model.outputs.exportedTsv !== null)"
     @click.stop="exportTsv"
   >
     Export All
