@@ -239,6 +239,14 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('exportDebug', (ctx) => {
+    return ctx.prerun?.resolve('exportDebug')?.getDataAsJson();
+  })
+
+  .output('exportedTsv', (ctx) => {
+    return ctx.prerun?.resolve('tsv')?.getRemoteFileHandle();
+  })
+
   .output('overlapTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;

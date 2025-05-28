@@ -14,6 +14,7 @@ import {
 import { computed, ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
+import ExportBtn from './ExportBtn.vue';
 
 const app = useApp();
 
@@ -41,6 +42,7 @@ const columns = ref<PTableColumnSpec[]>([]);
       <PlAgDataTableToolsPanel>
         <PlTableFilters v-model="app.model.ui.overlapTable.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
+      <ExportBtn />
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
         Annotations
       </PlBtnGhost>
@@ -54,7 +56,6 @@ const columns = ref<PTableColumnSpec[]>([]);
         v-model="app.model.ui.overlapTable.tableState"
         :settings="tableSettings"
         show-columns-panel
-        show-export-button
         @columns-changed="(newColumns) => (columns = newColumns)"
       />
     </div>

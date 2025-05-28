@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { PlRef, PTableColumnSpec } from '@platforma-sdk/model';
-import { plRefsEqual } from '@platforma-sdk/model';
+import { type PlRef, type PTableColumnSpec } from '@platforma-sdk/model';
 import {
   PlBlockPage,
   PlBtnGhost,
@@ -14,6 +13,7 @@ import {
 import { computed, ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
+import ExportBtn from './ExportBtn.vue';
 
 const app = useApp();
 
@@ -31,6 +31,7 @@ const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
     : undefined,
 );
 const columns = ref<PTableColumnSpec[]>([]);
+
 </script>
 
 <template>
@@ -42,6 +43,7 @@ const columns = ref<PTableColumnSpec[]>([]);
       <PlAgDataTableToolsPanel>
         <PlTableFilters v-model="app.model.ui.perSampleTable.filterModel" :columns="columns" />
       </PlAgDataTableToolsPanel>
+      <ExportBtn />
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
         Annotations
       </PlBtnGhost>
@@ -55,7 +57,6 @@ const columns = ref<PTableColumnSpec[]>([]);
         v-model="app.model.ui.perSampleTable.tableState"
         :settings="tableSettings"
         show-columns-panel
-        show-export-button
         @columns-changed="(newColumns) => (columns = newColumns)"
       />
     </div>

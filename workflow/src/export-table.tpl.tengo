@@ -1,0 +1,78 @@
+self := import("@platforma-sdk/workflow-tengo:tpl")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+pframes := import("@platforma-sdk/workflow-tengo:pframes")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+
+util := import(":util")
+
+self.awaitState("columnBundle", "PColumnBundleWithPartitions")
+self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
+
+self.body(func(inputs) {
+	columnBundle := inputs.columnBundle
+
+	columnsPerSample := columnBundle.getColumns("perSample")
+	columnsPerClonotype := columnBundle.getColumns("perClonotype")
+	sampleLabels := columnBundle.getColumn("sampleLabels")
+	sampleLabelsMap := sampleLabels.data.getDataAsJson().data
+
+	byCloneSpecs := []
+	bySampleSpecs := []
+
+	tsvBuilder := pframes.tsvFileBuilder()
+	for column in columnsPerClonotype {
+		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+			continue
+		}
+		byCloneSpecs += [column.spec]
+		tsvBuilder.add(column)
+	}
+	for column in columnsPerSample {
+		parsed := pframes.parseData(column)
+		partitioned := parsed.partition(0)
+		maps.forEach(partitioned, func(key, partition) {
+			sampleLabel := sampleLabelsMap[key]
+			spec := maps.deepTransform(partition.getSpec(), {
+				annotations: {
+					"pl7.app/label": func(label) {
+						return label + " / " + sampleLabel
+					}
+				}
+			})
+			bySampleSpecs += [spec]
+			tsvBuilder.add({
+				spec: spec,
+				data: partition.createDataResource()
+			})
+		})
+	}
+	cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
+
+	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
+		return int(a.annotations["pl7.app/table/orderPriority"]) > int(b.annotations["pl7.app/table/orderPriority"])
+	})
+
+	wf := pt.workflow()
+	df := wf.frame(tsvBuilder.build(), { xsvType: "tsv", inferSchema: false })
+	df = df.withoutColumns(cloneKeyAxisHeader)
+	df = df.select(slices.map(byCloneSpecs + bySampleSpecs, func(spec) {
+		return pt.col(spec.annotations["pl7.app/label"])
+	})...)
+	df.save("output.tsv")
+	ptablerResult := wf.run()
+	finalTsv := ptablerResult.getFile("output.tsv")
+
+	return {
+		exportDebug: smart.createJsonResource({
+			cloneKeyAxisHeader: cloneKeyAxisHeader,
+			columnsPerSample: len(columnsPerSample),
+			samples: len(columnsPerSample[0].data.inputs()),
+			columnsPerClonotype: len(columnsPerClonotype),
+			sampleLabelsMap: sampleLabelsMap
+		}),
+		tsv: finalTsv
+	}
+})
