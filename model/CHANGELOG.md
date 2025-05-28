@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.7.0
+
+### Minor Changes
+
+- aa57257: Workflow-based export
+
 ## 1.6.0
 
 ### Minor Changes
