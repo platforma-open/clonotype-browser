@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.4.1
+
+### Patch Changes
+
+- 790cc37: Potentially better export performance for big datasets
+- Updated dependencies [790cc37]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.7.1
+
 ## 1.4.0
 
 ### Minor Changes

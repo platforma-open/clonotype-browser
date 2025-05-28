@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.5.2
+
+### Patch Changes
+
+- 790cc37: Potentially better export performance for big datasets
+
 ## 1.5.1
 
 ### Patch Changes
