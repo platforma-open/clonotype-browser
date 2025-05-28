@@ -1,6 +1,7 @@
 self := import("@platforma-sdk/workflow-tengo:tpl")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
 pframes := import("@platforma-sdk/workflow-tengo:pframes")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 slices := import("@platforma-sdk/workflow-tengo:slices")
@@ -10,6 +11,8 @@ util := import(":util")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
+
+cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
 
 self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
@@ -22,22 +25,46 @@ self.body(func(inputs) {
 	byCloneSpecs := []
 	bySampleSpecs := []
 
-	tsvBuilder := pframes.tsvFileBuilder()
-	for column in columnsPerClonotype {
-		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
-			continue
+	//
+	// Creating tsv files for each sample
+	//
+
+	slices.quickSortInPlaceFn(columnsPerSample, func(a, b) {
+		if is_undefined(a.spec.annotations["pl7.app/table/orderPriority"]) {
+			return false
 		}
-		if is_undefined(column.spec.annotations["pl7.app/label"]) {
-			continue
+		if is_undefined(b.spec.annotations["pl7.app/table/orderPriority"]) {
+			return true
 		}
-		byCloneSpecs += [column.spec]
-		tsvBuilder.add(column)
-	}
-	for column in columnsPerSample {
+		return int(a.spec.annotations["pl7.app/table/orderPriority"]) > int(b.spec.annotations["pl7.app/table/orderPriority"])
+	})
+	partitionedColumnsPerSample := slices.map(columnsPerSample, func(column) {
 		parsed := pframes.parseData(column)
-		partitioned := parsed.partition(0)
+		return parsed.partition(0)
+	})
+	partitionsPerSample := {}
+	for partitioned in partitionedColumnsPerSample {
 		maps.forEach(partitioned, func(key, partition) {
+			if is_undefined(partitionsPerSample[key]) {
+				partitionsPerSample[key] = []
+			}
+			partitionsPerSample[key] = append(partitionsPerSample[key], partition)
+		})
+	}
+
+	// If no per-sample data, terminate early
+	if len(partitionsPerSample) == 0 {
+		return {
+			tsv: smart.createNullResource()
+		}
+	}
+
+	perSampleTsvFiles := {}
+	maps.forEach(partitionsPerSample, func(key, partitions) {
+		builder := pframes.tsvFileBuilder()
+		for partition in partitions {
 			sampleLabel := sampleLabelsMap[key]
+			ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + key)
 			spec := maps.deepTransform(partition.getSpec(), {
 				annotations: {
 					"pl7.app/label": func(label) {
@@ -46,13 +73,61 @@ self.body(func(inputs) {
 				}
 			})
 			bySampleSpecs += [spec]
-			tsvBuilder.add({
+			builder.add({
 				spec: spec,
 				data: partition.createDataResource()
 			})
-		})
+		}
+		perSampleTsvFiles[key] = builder.build()
+	})
+
+	//
+	// Creating the per-clonotype table
+	//
+
+	perClonotypeTsvBuilder := pframes.tsvFileBuilder()
+	for column in columnsPerClonotype {
+		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+			continue
+		}
+		if is_undefined(column.spec.annotations["pl7.app/label"]) {
+			continue
+		}
+		byCloneSpecs += [column.spec]
+		perClonotypeTsvBuilder.add(column)
 	}
-	cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
+	perClonotypeTsv := perClonotypeTsvBuilder.build()
+
+	//
+	// Creating the big table
+	//
+
+	bigTableWf := pt.workflow()
+	perClonotypePf := bigTableWf.frame(perClonotypeTsv, { xsvType: "tsv", inferSchema: false })
+
+	perSamplePfs := []
+	maps.forEach(perSampleTsvFiles, func(key, tsv) {
+		perSamplePf := bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })
+		perSamplePfs += [perSamplePf]
+	})
+	ll.assert(len(perSamplePfs) > 0, "Expected at least one per-sample table, got " + string(len(perSamplePfs)))
+	for len(perSamplePfs) > 1 {
+		nextPerSamplePfs := []
+		for i := 1; i < len(perSamplePfs); i+=2 {
+			pf1 := perSamplePfs[i - 1]
+			pf2 := perSamplePfs[i]
+			joined := pf1.join(pf2, { on: cloneKeyAxisHeader, how: "full", coalesce: true })
+			nextPerSamplePfs = append(nextPerSamplePfs, joined)
+		}
+		if len(perSamplePfs) % 2 == 1 {
+			nextPerSamplePfs = append(nextPerSamplePfs, perSamplePfs[len(perSamplePfs) - 1])
+		}
+		perSamplePfs = nextPerSamplePfs
+	}
+
+	ll.assert(len(perSamplePfs) == 1, "Expected exactly one per-sample table, got " + string(len(perSamplePfs)))
+
+	bigTablePf := perClonotypePf.join(perSamplePfs[0], { on: cloneKeyAxisHeader, how: "full", coalesce: true })
 
 	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
 		if is_undefined(a.annotations["pl7.app/table/orderPriority"]) {
@@ -64,24 +139,14 @@ self.body(func(inputs) {
 		return int(a.annotations["pl7.app/table/orderPriority"]) > int(b.annotations["pl7.app/table/orderPriority"])
 	})
 
-	wf := pt.workflow()
-	df := wf.frame(tsvBuilder.build(), { xsvType: "tsv", inferSchema: false })
-	df = df.withoutColumns(cloneKeyAxisHeader)
-	df = df.select(slices.map(byCloneSpecs + bySampleSpecs, func(spec) {
+	bigTablePf = bigTablePf.select(slices.map(byCloneSpecs + bySampleSpecs, func(spec) {
 		return pt.col(spec.annotations["pl7.app/label"])
 	})...)
-	df.save("output.tsv")
-	ptablerResult := wf.run()
-	finalTsv := ptablerResult.getFile("output.tsv")
+	bigTablePf.save("big_table.tsv")
+	bigTableWfResult := bigTableWf.run()
+	finalTsv := bigTableWfResult.getFile("big_table.tsv")
 
 	return {
-		exportDebug: smart.createJsonResource({
-			cloneKeyAxisHeader: cloneKeyAxisHeader,
-			columnsPerSample: len(columnsPerSample),
-			samples: len(columnsPerSample[0].data.inputs()),
-			columnsPerClonotype: len(columnsPerClonotype),
-			sampleLabelsMap: sampleLabelsMap
-		}),
-		tsv: finalTsv
+		tsv: file.exportFile(finalTsv)
 	}
 })
