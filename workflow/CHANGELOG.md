@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.5.1
+
+### Patch Changes
+
+- 945cb47: Fix for export if orderPriority is absent in one of the columns
+
 ## 1.5.0
 
 ### Minor Changes
