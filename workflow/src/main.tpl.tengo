@@ -4,6 +4,7 @@ render := import("@platforma-sdk/workflow-tengo:render")
 util := import(":util")
 
 doCalculations := assets.importTemplate(":do-calculations")
+exportTable := assets.importTemplate(":export-table")
 
 wf.setPreRun(assets.importTemplate(":prerun"))
 
@@ -15,16 +16,17 @@ wf.body(func(args) {
 		}
 	}
 
-	blockId := wf.blockId().getDataAsJson()
+	blockId := wf.getBlockId()
 
 	exports := {}
+	outputs := {}
 
 	if len(args.annotationScript.steps) > 0 {
-		columnBundle := util.createColumnBundle(wf, args)
+		columnBundleForAnnotation := util.createColumnBundle(wf, args)
 		calculationResult := render.createEphemeral(doCalculations, {
 			blockId: blockId,
 			blockArgs: args,
-			columnBundle: columnBundle
+			columnBundle: columnBundleForAnnotation
 		})
 
 		exports["annotationPf"] = calculationResult.output("annotationPf")
@@ -33,7 +35,7 @@ wf.body(func(args) {
 	}
 
 	return {
-		outputs: {},
+		outputs: outputs,
 		exports: exports
 	}
 })
