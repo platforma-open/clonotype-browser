@@ -27,6 +27,9 @@ self.body(func(inputs) {
 		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
 			continue
 		}
+		if is_undefined(column.spec.annotations["pl7.app/label"]) {
+			continue
+		}
 		byCloneSpecs += [column.spec]
 		tsvBuilder.add(column)
 	}
@@ -52,6 +55,12 @@ self.body(func(inputs) {
 	cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
 
 	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
+		if is_undefined(a.annotations["pl7.app/table/orderPriority"]) {
+			return false
+		}
+		if is_undefined(b.annotations["pl7.app/table/orderPriority"]) {
+			return true
+		}
 		return int(a.annotations["pl7.app/table/orderPriority"]) > int(b.annotations["pl7.app/table/orderPriority"])
 	})
 
