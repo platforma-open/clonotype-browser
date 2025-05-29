@@ -14,7 +14,9 @@ exportTableTpl := assets.importTemplate(":export-table")
 wf.body(func(args) {
 	if is_undefined(args.inputAnchor) {
 		return {
-			outputs: {},
+			outputs: {
+				tsv: smart.createNullResource()
+			},
 			exports: {}
 		}
 	}
