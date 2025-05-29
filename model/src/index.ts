@@ -244,6 +244,8 @@ export const platforma = BlockModel.create('Heavy')
   // })
 
   .output('exportedTsv', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
     const tsvResource = ctx.prerun?.resolve('tsv');
     if (!tsvResource) return undefined;
     if (!tsvResource.getIsReadyOrError())
@@ -314,7 +316,7 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('perSampleTableSheets', (ctx) => {
+  .output('perSampleTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -324,12 +326,7 @@ export const platforma = BlockModel.create('Heavy')
     const samples = getUniquePartitionKeys(anchor.data)?.[0];
     if (!samples) return undefined;
 
-    return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
-  })
-
-  .output('perSampleTable', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
+    const sheets = [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
 
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (!anchorCtx) return undefined;
@@ -365,7 +362,7 @@ export const platforma = BlockModel.create('Heavy')
 
     if (!columns) return undefined;
 
-    return createPlDataTableV2(
+    const model = createPlDataTableV2(
       ctx,
       columns,
       selectorsToPredicate({
@@ -378,6 +375,11 @@ export const platforma = BlockModel.create('Heavy')
       ctx.uiState.perSampleTable.tableState,
       { filters: ctx.uiState.perSampleTable.filterModel?.filters },
     );
+
+    return {
+      model,
+      sheets,
+    };
   })
 
   .output('statsTable', (ctx) => {

@@ -25,8 +25,8 @@ const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
   app.model.args.inputAnchor
     ? {
         sourceType: 'ptable',
-        model: app.model.outputs.perSampleTable,
-        sheets: app.model.outputs.perSampleTableSheets,
+        model: app.model.outputs.perSampleTable?.model,
+        sheets: app.model.outputs.perSampleTable?.sheets ?? [],
       }
     : undefined,
 );
