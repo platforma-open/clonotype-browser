@@ -8,18 +8,18 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/workflow-tengo': ^4.6.2
-  '@platforma-sdk/model': ^1.31.17
-  '@platforma-sdk/ui-vue': ^1.31.17
-  '@platforma-sdk/tengo-builder': ^2.1.5
+  '@platforma-sdk/workflow-tengo': ^4.6.4
+  '@platforma-sdk/model': ^1.32.1
+  '@platforma-sdk/ui-vue': ^1.32.2
+  '@platforma-sdk/tengo-builder': ^2.1.6
   '@platforma-sdk/package-builder': ^2.16.0
-  '@platforma-sdk/block-tools': ^2.5.50
+  '@platforma-sdk/block-tools': ^2.5.51
   '@platforma-sdk/eslint-config': ^1.0.3
 
-  '@platforma-sdk/test': ^1.31.18
+  '@platforma-sdk/test': ^1.32.5
   '@milaboratories/helpers': ^1.6.11
 
-  '@platforma-open/milaboratories.runenv-python-3': ^1.1.14
+  '@platforma-open/milaboratories.runenv-python-3': ^1.1.16
   '@platforma-open/milaboratories.software-mixcr': 4.7.0-147-develop	
   '@platforma-open/milaboratories.software-ptransform': ^1.4.3
 
@@ -55,5 +55,5 @@ catalog:
 
   '@platforma-open/milaboratories.samples-and-data': ^1.10.5
   '@platforma-open/milaboratories.samples-and-data.model': ^1.10.0
-  '@platforma-open/milaboratories.mixcr-clonotyping-2': ^2.5.0
-  '@platforma-open/milaboratories.mixcr-clonotyping-2.model': ^1.11.0
+  '@platforma-open/milaboratories.mixcr-clonotyping-2': ^2.5.1
+  '@platforma-open/milaboratories.mixcr-clonotyping-2.model': ^1.11.1

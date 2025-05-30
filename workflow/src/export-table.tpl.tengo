@@ -12,7 +12,7 @@ util := import(":util")
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
 
-cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
+cloneKeyAxisHeader := "clonotypeKey"
 
 self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
@@ -62,6 +62,7 @@ self.body(func(inputs) {
 	perSampleTsvFiles := {}
 	maps.forEach(partitionsPerSample, func(key, partitions) {
 		builder := pframes.tsvFileBuilder()
+		axisHeaderSet := false
 		for partition in partitions {
 			sampleLabel := sampleLabelsMap[key]
 			ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + key)
@@ -72,6 +73,10 @@ self.body(func(inputs) {
 					}
 				}
 			})
+			if !axisHeaderSet {
+				builder.setAxisHeader(spec.axesSpec[0], cloneKeyAxisHeader)
+				axisHeaderSet = true
+			}
 			bySampleSpecs += [spec]
 			builder.add({
 				spec: spec,
@@ -110,19 +115,20 @@ self.body(func(inputs) {
 	tsvBuilder := undefined
 	columnsInBuilder := 0
 	for column in columnsPerClonotype {
-		if tsvBuilder == undefined {
-			tsvBuilder = pframes.tsvFileBuilder()
-		}
 		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
 			continue
 		}
 		if is_undefined(column.spec.annotations["pl7.app/label"]) {
 			continue
 		}
+		if tsvBuilder == undefined {
+			tsvBuilder = pframes.tsvFileBuilder()
+			tsvBuilder.setAxisHeader(column.spec.axesSpec[0], cloneKeyAxisHeader)
+		}
 		byCloneSpecs += [column.spec]
 		tsvBuilder.add(column)
 		columnsInBuilder += 1
-		if columnsInBuilder == 2 {
+		if columnsInBuilder == 4 {
 			tsv := tsvBuilder.build()
 			pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
 			tsvBuilder = undefined
@@ -139,7 +145,23 @@ self.body(func(inputs) {
 		perSamplePf := bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })
 		pfs += [perSamplePf]
 	})
-	ll.assert(len(pfs) > 0, "Expected at least one per-sample table, got " + string(len(pfs)))
+	ll.assert(len(pfs) > 0, "Expected at least one table, got " + string(len(pfs)))
+
+	//
+	// Assembling join tree
+	//
+	// P0 ──┐
+	//      ├─ J01 ──┐
+	// P1 ──┘        │
+	// P2 ──┐        ├─ J0123 ──┐
+	//      ├─ J23 ──┘          │
+	// P3 ──┘                   │
+	// P4 ──┐                   ├─ J0123456 (Final Result)
+	//      ├─ J45 ──┐          │
+	// P5 ──┘        ├─ J456 ───┘
+	// P6 ───────────┘
+	//
+
 	for len(pfs) > 1 {
 		nextPerSamplePfs := []
 		for i := 1; i < len(pfs); i+=2 {
