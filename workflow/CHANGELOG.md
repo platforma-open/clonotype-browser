@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.5.3
+
+### Patch Changes
+
+- 1c3e02c: - Another performance improvement for export procedure
+  - SDK Upgrade: fix for await condition logic / cures export button freezes in loading state
+
 ## 1.5.2
 
 ### Patch Changes
