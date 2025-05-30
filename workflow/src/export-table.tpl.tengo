@@ -12,7 +12,7 @@ util := import(":util")
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
 
-cloneKeyAxisHeader := "pl7_app_vdj_clonotypeKey"
+cloneKeyAxisHeader := "clonotypeKey"
 
 self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
@@ -62,6 +62,7 @@ self.body(func(inputs) {
 	perSampleTsvFiles := {}
 	maps.forEach(partitionsPerSample, func(key, partitions) {
 		builder := pframes.tsvFileBuilder()
+		axisHeaderSet := false
 		for partition in partitions {
 			sampleLabel := sampleLabelsMap[key]
 			ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + key)
@@ -72,6 +73,10 @@ self.body(func(inputs) {
 					}
 				}
 			})
+			if !axisHeaderSet {
+				builder.setAxisHeader(spec.axesSpec[0], cloneKeyAxisHeader)
+				axisHeaderSet = true
+			}
 			bySampleSpecs += [spec]
 			builder.add({
 				spec: spec,
@@ -85,7 +90,30 @@ self.body(func(inputs) {
 	// Creating the per-clonotype table
 	//
 
-	perClonotypeTsvBuilder := pframes.tsvFileBuilder()
+	// perClonotypeTsvBuilder := pframes.tsvFileBuilder()
+	// for column in columnsPerClonotype {
+	// 	if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+	// 		continue
+	// 	}
+	// 	if is_undefined(column.spec.annotations["pl7.app/label"]) {
+	// 		continue
+	// 	}
+	// 	byCloneSpecs += [column.spec]
+	// 	perClonotypeTsvBuilder.add(column)
+	// }
+	// perClonotypeTsv := perClonotypeTsvBuilder.build()
+
+	//
+	// Creating the big table
+	//
+
+	bigTableWf := pt.workflow()
+	// perClonotypePf := bigTableWf.frame(perClonotypeTsv, { xsvType: "tsv", inferSchema: false })
+
+	pfs := []
+
+	tsvBuilder := undefined
+	columnsInBuilder := 0
 	for column in columnsPerClonotype {
 		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
 			continue
@@ -93,41 +121,66 @@ self.body(func(inputs) {
 		if is_undefined(column.spec.annotations["pl7.app/label"]) {
 			continue
 		}
+		if tsvBuilder == undefined {
+			tsvBuilder = pframes.tsvFileBuilder()
+			tsvBuilder.setAxisHeader(column.spec.axesSpec[0], cloneKeyAxisHeader)
+		}
 		byCloneSpecs += [column.spec]
-		perClonotypeTsvBuilder.add(column)
+		tsvBuilder.add(column)
+		columnsInBuilder += 1
+		if columnsInBuilder == 4 {
+			tsv := tsvBuilder.build()
+			pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+			tsvBuilder = undefined
+			columnsInBuilder = 0
+		}
 	}
-	perClonotypeTsv := perClonotypeTsvBuilder.build()
 
-	//
-	// Creating the big table
-	//
+	if tsvBuilder != undefined {
+		tsv := tsvBuilder.build()
+		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+	}
 
-	bigTableWf := pt.workflow()
-	perClonotypePf := bigTableWf.frame(perClonotypeTsv, { xsvType: "tsv", inferSchema: false })
-
-	perSamplePfs := []
 	maps.forEach(perSampleTsvFiles, func(key, tsv) {
 		perSamplePf := bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })
-		perSamplePfs += [perSamplePf]
+		pfs += [perSamplePf]
 	})
-	ll.assert(len(perSamplePfs) > 0, "Expected at least one per-sample table, got " + string(len(perSamplePfs)))
-	for len(perSamplePfs) > 1 {
+	ll.assert(len(pfs) > 0, "Expected at least one table, got " + string(len(pfs)))
+
+	//
+	// Assembling join tree
+	//
+	// P0 ──┐
+	//      ├─ J01 ──┐
+	// P1 ──┘        │
+	// P2 ──┐        ├─ J0123 ──┐
+	//      ├─ J23 ──┘          │
+	// P3 ──┘                   │
+	// P4 ──┐                   ├─ J0123456 (Final Result)
+	//      ├─ J45 ──┐          │
+	// P5 ──┘        ├─ J456 ───┘
+	// P6 ───────────┘
+	//
+
+	for len(pfs) > 1 {
 		nextPerSamplePfs := []
-		for i := 1; i < len(perSamplePfs); i+=2 {
-			pf1 := perSamplePfs[i - 1]
-			pf2 := perSamplePfs[i]
+		for i := 1; i < len(pfs); i+=2 {
+			pf1 := pfs[i - 1]
+			pf2 := pfs[i]
 			joined := pf1.join(pf2, { on: cloneKeyAxisHeader, how: "full", coalesce: true })
 			nextPerSamplePfs = append(nextPerSamplePfs, joined)
 		}
-		if len(perSamplePfs) % 2 == 1 {
-			nextPerSamplePfs = append(nextPerSamplePfs, perSamplePfs[len(perSamplePfs) - 1])
+		if len(pfs) % 2 == 1 {
+			nextPerSamplePfs = append(nextPerSamplePfs, pfs[len(pfs) - 1])
 		}
-		perSamplePfs = nextPerSamplePfs
+		pfs = nextPerSamplePfs
 	}
 
-	ll.assert(len(perSamplePfs) == 1, "Expected exactly one per-sample table, got " + string(len(perSamplePfs)))
+	ll.assert(len(pfs) == 1, "Expected exactly one data frame, got " + string(len(pfs)))
 
-	bigTablePf := perClonotypePf.join(perSamplePfs[0], { on: cloneKeyAxisHeader, how: "full", coalesce: true })
+	bigTablePf := pfs[0]
+
+	// bigTablePf := perClonotypePf.join(pfs[0], { on: cloneKeyAxisHeader, how: "full", coalesce: true })
 
 	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
 		if is_undefined(a.annotations["pl7.app/table/orderPriority"]) {
