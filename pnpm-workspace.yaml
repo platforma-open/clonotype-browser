@@ -23,7 +23,7 @@ catalog:
   '@platforma-open/milaboratories.software-mixcr': 4.7.0-147-develop	
   '@platforma-open/milaboratories.software-ptransform': ^1.4.3
 
-  'vue': ^3.5.13
+  'vue': ^3.5.16
   'vue-tsc': ^2.2.10
 
   'canonicalize': ~2.1.0

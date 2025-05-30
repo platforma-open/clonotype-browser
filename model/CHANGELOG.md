@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.7.2
+
+### Patch Changes
+
+- e1503d9: Fix double redraw in PlAgDataTable
+
 ## 1.7.1
 
 ### Patch Changes
