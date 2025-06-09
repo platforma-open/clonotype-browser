@@ -3,14 +3,14 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "2xnNua9iNC3SDu2R8ZcU6RN0pRV",
+  "id": "2yHXVR1AIsK2ydBWGqhCE5b2Cwj",
   "version": "1",
-  "turboVersion": "2.5.3",
+  "turboVersion": "2.5.4",
   "monorepo": true,
   "globalCacheInputs": {
     "rootKey": "I can’t see ya, but I know you’re here",
     "files": {},
-    "hashOfExternalDependencies": "4611511a7dea809a",
+    "hashOfExternalDependencies": "891ed2fdc631773d",
     "hashOfInternalDependencies": "",
     "environmentVariables": {
       "specified": {
@@ -39,14 +39,14 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "023a1fd99dabf520",
+      "hash": "29a55744feb24bf7",
       "inputs": {
-        "CHANGELOG.md": "c62a34b6ae200ad377610d8f53cd3c900df70251",
+        "CHANGELOG.md": "be86a16e38d5095fc218a12ddfbaf4d3ef28ea97",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "9f1b95d25253f95614720bc5ca87f4d7825d9ae1"
+        "package.json": "33e80d12e1fcba951c01ecebd9195a4584ae39a2"
       },
-      "hashOfExternalDependencies": "4e678680683b558b",
+      "hashOfExternalDependencies": "0e753e6c77a13cfa",
       "cache": {
         "local": false,
         "remote": true,
@@ -117,14 +117,14 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "7ebb70535b7ccc4b",
+      "hash": "f21a146333020dc8",
       "inputs": {
-        "CHANGELOG.md": "c62a34b6ae200ad377610d8f53cd3c900df70251",
+        "CHANGELOG.md": "be86a16e38d5095fc218a12ddfbaf4d3ef28ea97",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "9f1b95d25253f95614720bc5ca87f4d7825d9ae1"
+        "package.json": "33e80d12e1fcba951c01ecebd9195a4584ae39a2"
       },
-      "hashOfExternalDependencies": "4e678680683b558b",
+      "hashOfExternalDependencies": "0e753e6c77a13cfa",
       "cache": {
         "local": false,
         "remote": false,
@@ -189,7 +189,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
-      "hash": "826fdf0d48ddea13",
+      "hash": "f1bb9bceaedfc2ad",
       "inputs": {
         "CHANGELOG.md": "99298f884f40c7fe551eb17b4959af503d754cc7",
         "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
@@ -266,7 +266,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
-      "hash": "b798b46ba9da8374",
+      "hash": "330b8aba281e0ee2",
       "inputs": {
         "CHANGELOG.md": "99298f884f40c7fe551eb17b4959af503d754cc7",
         "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
@@ -341,7 +341,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
-      "hash": "01385ddbb47182cb",
+      "hash": "ebcac2a4df45d6ac",
       "inputs": {
         "CHANGELOG.md": "c6e667097223e9b0eaae49f83cec58a41b4f8c42",
         "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
@@ -429,7 +429,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
-      "hash": "b20eb869393b0533",
+      "hash": "2c52c865aa43a23e",
       "inputs": {
         "CHANGELOG.md": "c6e667097223e9b0eaae49f83cec58a41b4f8c42",
         "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
@@ -515,11 +515,11 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
-      "hash": "10248874ba230030",
+      "hash": "623da723e0095dbc",
       "inputs": {
-        "CHANGELOG.md": "8a9be6d5a2a46dd8036e6f6349210766e146ccce",
+        "CHANGELOG.md": "8372d5de5236919871f5e1492f60c0507408625c",
         "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
-        "package.json": "ba8457a53c2a5077bd59f0c9bc231e91f551c2b2",
+        "package.json": "610bf3d48ac8b1a25f8be13341b370ceb42693ec",
         "src/__filters_ui.test.ts": "641ea1b5028ec23ac028653873c5e5ab0847ad70",
         "src/__filters_ui.ts": "c0a26bd66319fe93fd6e55f655961b893e8bd791",
         "src/filter.ts": "1f5406f209b1713fb3d85bcedbd1808c6d949c9d",
@@ -532,7 +532,7 @@
         "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "eb6c322014bef0b3",
+      "hashOfExternalDependencies": "02a780da8ea351cc",
       "cache": {
         "local": false,
         "remote": true,
@@ -601,11 +601,11 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
-      "hash": "d3a786e203f289ec",
+      "hash": "99537416e4135ccb",
       "inputs": {
-        "CHANGELOG.md": "8a9be6d5a2a46dd8036e6f6349210766e146ccce",
+        "CHANGELOG.md": "8372d5de5236919871f5e1492f60c0507408625c",
         "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
-        "package.json": "ba8457a53c2a5077bd59f0c9bc231e91f551c2b2",
+        "package.json": "610bf3d48ac8b1a25f8be13341b370ceb42693ec",
         "src/__filters_ui.test.ts": "641ea1b5028ec23ac028653873c5e5ab0847ad70",
         "src/__filters_ui.ts": "c0a26bd66319fe93fd6e55f655961b893e8bd791",
         "src/filter.ts": "1f5406f209b1713fb3d85bcedbd1808c6d949c9d",
@@ -618,7 +618,7 @@
         "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "eb6c322014bef0b3",
+      "hashOfExternalDependencies": "02a780da8ea351cc",
       "cache": {
         "local": false,
         "remote": true,
@@ -684,9 +684,9 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "0b6e8ee9c351d338",
+      "hash": "74d71169dc731e39",
       "inputs": {
-        "CHANGELOG.md": "56cef728bb51afe0a4ff1a885d950eb90687be1e",
+        "CHANGELOG.md": "a2d259cf1467b1380cbcf7b0785ae2d1a015d253",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
         "assets/SRR11233652_sampledBulk_R2.fastq.gz": "b7a328d50b0819fb63365e18c07f27b4bd03bc0a",
         "assets/SRR11233663_sampledBulk_R1.fastq.gz": "b3dbffc35e2fb8992f4dfaa55e26c2f936f63c3b",
@@ -694,12 +694,12 @@
         "assets/SRR11233664_sampledBulk_R1.fastq.gz": "f8b677cb0af2863e5d9e5f214fd42638f3d50a61",
         "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
         "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
-        "package.json": "2db3d51ad2cc3f810ef763b18297062d11d2a8f2",
+        "package.json": "f635d10d4caf09bc420e5538a1882876da3f812c",
         "src/wf.test.ts": "56349549538230482ceb356e900030e3e735f4cd",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "51dd75ef9201bf0a31b7b4d3abf38d56c0bc6741"
       },
-      "hashOfExternalDependencies": "f3256d06bc50fb9f",
+      "hashOfExternalDependencies": "63ecb2f9c287f222",
       "cache": {
         "local": false,
         "remote": false,
@@ -767,9 +767,9 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "3258f60c7faf849f",
+      "hash": "4cf41688282a54be",
       "inputs": {
-        "CHANGELOG.md": "56cef728bb51afe0a4ff1a885d950eb90687be1e",
+        "CHANGELOG.md": "a2d259cf1467b1380cbcf7b0785ae2d1a015d253",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
         "assets/SRR11233652_sampledBulk_R2.fastq.gz": "b7a328d50b0819fb63365e18c07f27b4bd03bc0a",
         "assets/SRR11233663_sampledBulk_R1.fastq.gz": "b3dbffc35e2fb8992f4dfaa55e26c2f936f63c3b",
@@ -777,12 +777,12 @@
         "assets/SRR11233664_sampledBulk_R1.fastq.gz": "f8b677cb0af2863e5d9e5f214fd42638f3d50a61",
         "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
         "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
-        "package.json": "2db3d51ad2cc3f810ef763b18297062d11d2a8f2",
+        "package.json": "f635d10d4caf09bc420e5538a1882876da3f812c",
         "src/wf.test.ts": "56349549538230482ceb356e900030e3e735f4cd",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "51dd75ef9201bf0a31b7b4d3abf38d56c0bc6741"
       },
-      "hashOfExternalDependencies": "f3256d06bc50fb9f",
+      "hashOfExternalDependencies": "63ecb2f9c287f222",
       "cache": {
         "local": false,
         "remote": true,
@@ -848,12 +848,12 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "2723e05f41c1003c",
+      "hash": "16a7194bd2a0a639",
       "inputs": {
-        "CHANGELOG.md": "ba3c1f49fe4c1bc63da963f47baec8e5906bdcf6",
+        "CHANGELOG.md": "d2ec1d36fd7833a330ae1bb4e249ef3110b80a6a",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "98065815d94908f204f3d048bbc153eee5270a10",
+        "package.json": "6e55fe6aa566e92e3e614a76496223ec33103759",
         "src/AnnotationStatsPage.vue": "bbd4b02b394f39e83e8f6ced2d70fe2f072b6ff5",
         "src/Annotations/AddFilterForm.vue": "7fd2bc19b3f535c5c6754032cf61e96fd10fb865",
         "src/Annotations/AnnotationsModal.vue": "81cb574830f1a7579463e901dbd467855b04e8f3",
@@ -875,7 +875,7 @@
         "vite.config.ts": "c2f320930e6ebaff365fa61042e25ba27c35a473",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "7d271e33a77e3797",
+      "hashOfExternalDependencies": "556c6deb2e42eaef",
       "cache": {
         "local": false,
         "remote": true,
@@ -944,12 +944,12 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "5d53ebc2495da52f",
+      "hash": "5ac33f57ff7bae2c",
       "inputs": {
-        "CHANGELOG.md": "ba3c1f49fe4c1bc63da963f47baec8e5906bdcf6",
+        "CHANGELOG.md": "d2ec1d36fd7833a330ae1bb4e249ef3110b80a6a",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "98065815d94908f204f3d048bbc153eee5270a10",
+        "package.json": "6e55fe6aa566e92e3e614a76496223ec33103759",
         "src/AnnotationStatsPage.vue": "bbd4b02b394f39e83e8f6ced2d70fe2f072b6ff5",
         "src/Annotations/AddFilterForm.vue": "7fd2bc19b3f535c5c6754032cf61e96fd10fb865",
         "src/Annotations/AnnotationsModal.vue": "81cb574830f1a7579463e901dbd467855b04e8f3",
@@ -971,7 +971,7 @@
         "vite.config.ts": "c2f320930e6ebaff365fa61042e25ba27c35a473",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "7d271e33a77e3797",
+      "hashOfExternalDependencies": "556c6deb2e42eaef",
       "cache": {
         "local": false,
         "remote": false,
@@ -1036,11 +1036,11 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "0cb5860a7b199167",
+      "hash": "055bd3508f597bd3",
       "inputs": {
-        "CHANGELOG.md": "c89230a527a8acea9191361c8302e88f290cfa03",
+        "CHANGELOG.md": "c2fd57d039eec3d817596840edff0ea7ae18ff3e",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "b0d3cc4e8e93b8191d20e82834b3a6ec9577b329",
+        "package.json": "75dd8e88deb817fc2b78f28162af9abdc14e4d84",
         "src/do-calculations.tpl.tengo": "541a99b234322a1434c96b226a408c2365481ebc",
         "src/export-table.tpl.tengo": "6f2a2f8001edbf48886adaf1728b046905c810fa",
         "src/main.tpl.tengo": "a4c0e559313af620a4be99913a5be55d00b18e02",
@@ -1049,7 +1049,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "e701bcedbc7b87d5",
+      "hashOfExternalDependencies": "63ce9bc5492dd7b0",
       "cache": {
         "local": false,
         "remote": true,
@@ -1119,11 +1119,11 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "35b0be93476bf104",
+      "hash": "ed5dc0feedd2a3ab",
       "inputs": {
-        "CHANGELOG.md": "c89230a527a8acea9191361c8302e88f290cfa03",
+        "CHANGELOG.md": "c2fd57d039eec3d817596840edff0ea7ae18ff3e",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "b0d3cc4e8e93b8191d20e82834b3a6ec9577b329",
+        "package.json": "75dd8e88deb817fc2b78f28162af9abdc14e4d84",
         "src/do-calculations.tpl.tengo": "541a99b234322a1434c96b226a408c2365481ebc",
         "src/export-table.tpl.tengo": "6f2a2f8001edbf48886adaf1728b046905c810fa",
         "src/main.tpl.tengo": "a4c0e559313af620a4be99913a5be55d00b18e02",
@@ -1132,7 +1132,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "e701bcedbc7b87d5",
+      "hashOfExternalDependencies": "63ce9bc5492dd7b0",
       "cache": {
         "local": false,
         "remote": false,
@@ -1197,7 +1197,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "e3982ac81590a7d6ec266f0405dc020073bf726b",
+    "sha": "1b28d3128961e09415b7dca1b22c83dd74285930",
     "branch": "main"
   }
 }
