@@ -7,7 +7,6 @@
     "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
-    "@platforma-open/milaboratories.software-mixcr": "catalog:",
     "@platforma-open/milaboratories.software-ptransform": "catalog:",
     "@platforma-open/milaboratories.clonotype-browser-2.annotator": "workspace:*",
     "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters": "workspace:*",
