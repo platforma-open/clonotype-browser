@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.2.1
+
+### Patch Changes
+
+- 99d90d1: Update ui sdk to the 1.33.13 version (fixes table reload bug when all columns are shown)
+
 ## 1.2.0
 
 ### Minor Changes

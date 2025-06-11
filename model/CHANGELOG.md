@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.7.4
+
+### Patch Changes
+
+- 99d90d1: Update ui sdk to the 1.33.13 version (fixes table reload bug when all columns are shown)
+
 ## 1.7.3
 
 ### Patch Changes
