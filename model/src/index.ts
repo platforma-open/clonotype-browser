@@ -27,6 +27,7 @@ type BlockArgs = {
   inputAnchor?: PlRef;
   /** Annotation script to apply to the input anchor */
   annotationScript: AnnotationScript;
+  datasetTitle?: string;
 };
 
 export type UiState = {
@@ -419,7 +420,9 @@ export const platforma = BlockModel.create('Heavy')
 
   .title((ctx) => ctx.args.annotationScript.steps.length > 0
     ? `Annotation - ${ctx.args.annotationScript.title}`
-    : 'Clonotype Browser')
+    : ctx.args.datasetTitle
+      ? `Clonotype Browser - ${ctx.args.datasetTitle}`
+      : 'Clonotype Browser')
 
   .done();
 

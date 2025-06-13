@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type PlRef, type PTableColumnSpec } from '@platforma-sdk/model';
+import { type PlRef, type PTableColumnSpec, plRefsEqual } from '@platforma-sdk/model';
 import {
   PlBlockPage,
   PlBtnGhost,
@@ -19,6 +19,9 @@ const app = useApp();
 
 function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
+  if (ref) {
+    app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
+  }
 }
 
 const tableSettings = computed<PlAgDataTableSettings | undefined>(() =>
