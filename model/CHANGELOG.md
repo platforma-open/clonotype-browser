@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.8.0
+
+### Minor Changes
+
+- 8d6d20d: Add dataset name to block title when there are no annotations
+
 ## 1.7.4
 
 ### Patch Changes
