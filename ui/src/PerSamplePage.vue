@@ -21,6 +21,8 @@ function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
   if (ref) {
     app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
+  } else {
+    app.model.args.datasetTitle = undefined;
   }
 }
 
