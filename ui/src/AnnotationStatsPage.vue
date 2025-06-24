@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { PTableColumnSpec } from '@platforma-sdk/model';
+import { canonicalizeJson, type PTableColumnSpec } from '@platforma-sdk/model';
 import {
-  PlAgDataTable,
   PlBlockPage,
   PlTableFilters,
-  type PlDataTableSettings,
+  type PlDataTableSettingsV2,
   PlAgDataTableToolsPanel,
   PlBtnGhost,
+  PlAgDataTableV2,
 } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import { useApp } from './app';
@@ -14,13 +14,14 @@ import AnnotationsModal from './Annotations/AnnotationsModal.vue';
 
 const app = useApp();
 
-const tableSettings = computed<PlDataTableSettings | undefined>(() =>
+const tableSettings = computed<PlDataTableSettingsV2>(() =>
   app.model.args.annotationScript.steps.length > 0
     ? {
-        sourceType: 'ptable',
-        pTable: app.model.outputs.statsTable,
+        sourceId: canonicalizeJson(app.model.args.annotationScript.steps),
+        sheets: [],
+        model: app.model.outputs.statsTable,
       }
-    : undefined,
+    : { sourceId: null },
 );
 const columns = ref<PTableColumnSpec[]>([]);
 </script>
@@ -39,13 +40,13 @@ const columns = ref<PTableColumnSpec[]>([]);
       </PlBtnGhost>
     </template>
     <div style="flex: 1">
-      <PlAgDataTable
+      <PlAgDataTableV2
         ref="tableInstance"
         v-model="app.model.ui.statsTable.tableState"
         :settings="tableSettings"
         show-columns-panel
         show-export-button
-        @columns-changed="(newColumns) => (columns = newColumns)"
+        @columns-changed="(info) => (columns = info.columns)"
       />
     </div>
   </PlBlockPage>
