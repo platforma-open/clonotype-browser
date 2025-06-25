@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { type PlRef, type PTableColumnSpec, canonicalizeJson, plRefsEqual } from '@platforma-sdk/model';
+import { type PlRef, type PTableColumnSpec, plRefsEqual } from '@platforma-sdk/model';
 import {
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
   PlSlideModal,
   PlTableFilters,
-  type PlDataTableSettingsV2,
   PlAgDataTableToolsPanel,
   PlAgDataTableV2 as PlAgDataTable,
+  usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
 import ExportBtn from './ExportBtn.vue';
@@ -26,15 +26,11 @@ function setAnchorColumn(ref: PlRef | undefined) {
   }
 }
 
-const tableSettings = computed<PlDataTableSettingsV2>(() =>
-  app.model.args.inputAnchor && app.model.outputs.perSampleTableSheets
-    ? {
-        sourceId: canonicalizeJson(app.model.args.inputAnchor),
-        sheets: app.model.outputs.perSampleTableSheets,
-        model: app.model.outputs.perSampleTable,
-      }
-    : { sourceId: null },
-);
+const tableSettings = usePlDataTableSettingsV2({
+  sourceId: () => app.model.args.inputAnchor,
+  model: () => app.model.outputs.perSampleTable,
+  sheets: () => app.model.outputs.perSampleTableSheets,
+});
 const columns = ref<PTableColumnSpec[]>([]);
 
 </script>

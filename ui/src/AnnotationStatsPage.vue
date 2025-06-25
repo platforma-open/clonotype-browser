@@ -1,28 +1,24 @@
 <script setup lang="ts">
-import { canonicalizeJson, type PTableColumnSpec } from '@platforma-sdk/model';
+import { type PTableColumnSpec } from '@platforma-sdk/model';
 import {
   PlBlockPage,
   PlTableFilters,
-  type PlDataTableSettingsV2,
   PlAgDataTableToolsPanel,
   PlBtnGhost,
   PlAgDataTableV2,
+  usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useApp } from './app';
 import AnnotationsModal from './Annotations/AnnotationsModal.vue';
 
 const app = useApp();
 
-const tableSettings = computed<PlDataTableSettingsV2>(() =>
-  app.model.args.annotationScript.steps.length > 0
-    ? {
-        sourceId: canonicalizeJson(app.model.args.annotationScript.steps),
-        sheets: [],
-        model: app.model.outputs.statsTable,
-      }
-    : { sourceId: null },
-);
+const tableSettings = usePlDataTableSettingsV2({
+  sourceId: () => app.model.args.annotationScript.steps.length > 0 ? app.model.args.annotationScript.steps : undefined,
+  model: () => app.model.outputs.statsTable,
+});
+
 const columns = ref<PTableColumnSpec[]>([]);
 </script>
 

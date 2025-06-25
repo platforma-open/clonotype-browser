@@ -31,7 +31,9 @@
       }
     }
   },
-  "pnpm": {},
+  "pnpm": {
+    "overrides": {}
+  },
   "///": {
     "pnpm": {
       "overrides": {

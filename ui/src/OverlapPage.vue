@@ -7,11 +7,11 @@ import {
   PlDropdownRef,
   PlSlideModal,
   PlTableFilters,
-  type PlDataTableSettingsV2,
   PlAgDataTableToolsPanel,
   PlAgDataTableV2 as PlAgDataTable,
+  usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
 import ExportBtn from './ExportBtn.vue';
@@ -22,15 +22,10 @@ function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
 }
 
-const tableSettings = computed<PlDataTableSettingsV2>(() =>
-  app.model.args.inputAnchor
-    ? {
-        sourceId: canonicalizeJson(app.model.args.inputAnchor),
-        sheets: [],
-        model: app.model.outputs.overlapTable,
-      }
-    : { sourceId: null },
-);
+const tableSettings = usePlDataTableSettingsV2({
+  sourceId: () => app.model.args.inputAnchor,
+  model: () => app.model.outputs.overlapTable,
+});
 const columns = ref<PTableColumnSpec[]>([]);
 </script>
 
