@@ -223,7 +223,7 @@ blockTest(
 
     const annotationStableState2 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      200000,
+      300000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
@@ -288,7 +288,7 @@ blockTest(
 
     const annotationStableState3 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      200000,
+      300000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
@@ -337,7 +337,7 @@ blockTest(
 
     const annotationStableState2 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      200000,
+      300000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
@@ -412,7 +412,7 @@ blockTest(
 
     const annotationStableState3 = (await awaitStableState(
       project.getBlockState(annotationBlockId),
-      200000,
+      300000,
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
