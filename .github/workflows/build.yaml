@@ -33,7 +33,6 @@ jobs:
       test-script-name: 'test'
       pnpm-recursive-tests: false
       team-id: 'ciplopen'
-
       publish-to-public: 'true'
       package-path: 'block'
       create-tag: 'true'
