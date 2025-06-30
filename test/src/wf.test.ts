@@ -317,7 +317,7 @@ blockTest(
 );
 
 // Test for bySampleAndClonotype mode
-blockTest.skip(
+blockTest(
   'simple project bySampleAndClonotype mode',
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
