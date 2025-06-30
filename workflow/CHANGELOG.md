@@ -1,5 +1,17 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.6.0
+
+### Minor Changes
+
+- 016a1e2: Memory and CPU limits for operations
+
+### Patch Changes
+
+- Updated dependencies [016a1e2]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.0
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.0
+
 ## 1.5.6
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @platforma-open/milaboratories.clonotype-browser-2.test
 
+## 1.3.0
+
+### Minor Changes
+
+- 016a1e2: Memory and CPU limits for operations
+
+### Patch Changes
+
+- Updated dependencies [016a1e2]
+- Updated dependencies [faae9e0]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.9.0
+
 ## 1.2.6
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.3.0
+
+### Minor Changes
+
+- 016a1e2: Memory and CPU limits for operations
+
 ## 1.2.1
 
 ### Patch Changes

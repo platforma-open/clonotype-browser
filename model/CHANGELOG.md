@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.9.0
+
+### Minor Changes
+
+- 016a1e2: Memory and CPU limits for operations
+
+### Patch Changes
+
+- faae9e0: PlAgDataTableV2 update
+
 ## 1.8.0
 
 ### Minor Changes
