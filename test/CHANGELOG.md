@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.test
 
+## 1.3.1
+
+### Patch Changes
+
+- 79549c1: SDK Upgrade: fix for compatibility issues final migration to request-based task scheduling
+- Updated dependencies [79549c1]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.9.1
+
 ## 1.3.0
 
 ### Minor Changes

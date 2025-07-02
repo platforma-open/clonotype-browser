@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.6.1
+
+### Patch Changes
+
+- 79549c1: SDK Upgrade: fix for compatibility issues final migration to request-based task scheduling
+- Updated dependencies [79549c1]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.1
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.1
+
 ## 1.6.0
 
 ### Minor Changes
