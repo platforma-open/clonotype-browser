@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import type { PlRef, PTableColumnSpec } from '@platforma-sdk/model';
-import { canonicalizeJson } from '@platforma-sdk/model';
+import type { PlRef } from '@platforma-sdk/model';
 import {
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
   PlSlideModal,
-  PlTableFilters,
-  PlAgDataTableToolsPanel,
-  PlAgDataTableV2 as PlAgDataTable,
+  PlAgDataTableV2,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { ref } from 'vue';
 import { useApp } from './app';
 import { AnnotationsModal } from './Annotations';
 import ExportBtn from './ExportBtn.vue';
@@ -26,7 +22,6 @@ const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.args.inputAnchor,
   model: () => app.model.outputs.overlapTable,
 });
-const columns = ref<PTableColumnSpec[]>([]);
 </script>
 
 <template>
@@ -35,9 +30,6 @@ const columns = ref<PTableColumnSpec[]>([]);
       Overlap Clonotypes Browser
     </template>
     <template #append>
-      <PlAgDataTableToolsPanel>
-        <PlTableFilters v-model="app.model.ui.overlapTable.filterModel" :columns="columns" />
-      </PlAgDataTableToolsPanel>
       <ExportBtn />
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
         Annotations
@@ -46,15 +38,11 @@ const columns = ref<PTableColumnSpec[]>([]);
         Settings
       </PlBtnGhost>
     </template>
-    <div style="flex: 1">
-      <PlAgDataTable
-        ref="tableInstance"
-        v-model="app.model.ui.overlapTable.tableState"
-        :settings="tableSettings"
-        show-columns-panel
-        @columns-changed="(info) => (columns = info.columns)"
-      />
-    </div>
+    <PlAgDataTableV2
+      ref="tableInstance"
+      v-model="app.model.ui.overlapTable.tableState"
+      :settings="tableSettings"
+    />
   </PlBlockPage>
   <PlSlideModal v-model="app.model.ui.settingsOpen" :close-on-outside-click="true">
     <template #title>Settings</template>
