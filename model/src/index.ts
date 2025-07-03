@@ -1,7 +1,6 @@
 import type {
   InferHrefType,
   PlRef,
-  PlTableFiltersModel,
   PColumnSpec,
   SUniversalPColumnId,
   PColumnEntryUniversal,
@@ -33,15 +32,12 @@ export type UiState = {
   settingsOpen: boolean;
   perSampleTable: {
     tableState: PlDataTableStateV2;
-    filterModel: PlTableFiltersModel;
   };
   overlapTable: {
     tableState: PlDataTableStateV2;
-    filterModel: PlTableFiltersModel;
   };
   statsTable: {
     tableState: PlDataTableStateV2;
-    filterModel: PlTableFiltersModel;
   };
   annotationScript: AnnotationScriptUi;
 };
@@ -105,15 +101,12 @@ export const platforma = BlockModel.create('Heavy')
   .withUiState<UiState>({
     settingsOpen: true,
     perSampleTable: {
-      filterModel: {},
       tableState: createPlDataTableStateV2(),
     },
     overlapTable: {
-      filterModel: {},
       tableState: createPlDataTableStateV2(),
     },
     statsTable: {
-      filterModel: {},
       tableState: createPlDataTableStateV2(),
     },
     annotationScript: {
@@ -299,7 +292,6 @@ export const platforma = BlockModel.create('Heavy')
       ctx,
       columns,
       ctx.uiState.overlapTable.tableState,
-      { filters: ctx.uiState.overlapTable.filterModel?.filters },
     );
   })
 
@@ -359,7 +351,6 @@ export const platforma = BlockModel.create('Heavy')
       ctx,
       columns,
       ctx.uiState.perSampleTable.tableState,
-      { filters: ctx.uiState.perSampleTable.filterModel?.filters },
     );
   })
 
@@ -380,7 +371,6 @@ export const platforma = BlockModel.create('Heavy')
         ctx,
         columnsAfterSplitting,
         ctx.uiState.statsTable.tableState,
-        { filters: ctx.uiState.statsTable.filterModel?.filters },
       );
     }
     return undefined;
