@@ -9,7 +9,7 @@ import {
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
-import { AnnotationsModal } from './Annotations';
+import { AnnotationsModal } from '@platforma-sdk/ui-vue';
 import ExportBtn from './ExportBtn.vue';
 
 const app = useApp();
@@ -60,5 +60,9 @@ const tableSettings = usePlDataTableSettingsV2({
       @update:model-value="setAnchorColumn"
     />
   </PlSlideModal>
-  <AnnotationsModal />
+  <AnnotationsModal
+    v-model:annotation="app.model.ui.annotationScript"
+    v-model:opened="app.isAnnotationModalOpen"
+    :columns="app.filterColumns"
+  />
 </template>

@@ -1,3 +1,4 @@
+import omit from 'lodash.omit';
 import type {
   InferHrefType,
   PlRef,
@@ -7,6 +8,8 @@ import type {
   InferOutputsType,
   AnchoredPColumnSelector,
   PlDataTableStateV2,
+  AnnotationScript,
+  AnnotationScriptUi,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
@@ -16,9 +19,6 @@ import {
   getUniquePartitionKeys,
   PColumnCollection,
 } from '@platforma-sdk/model';
-import * as R from 'remeda';
-import type { AnnotationScript } from './filter';
-import type { AnnotationScriptUi } from './filters_ui';
 
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
@@ -65,7 +65,7 @@ const simplifyColumnEntries = (
 
   const ret = entries.map((entry) => {
     const filteredAnnotations = entry.spec.annotations
-      ? R.omit(entry.spec.annotations, excludedAnnotationKeys)
+      ? omit(entry.spec.annotations, excludedAnnotationKeys)
       : undefined;
 
     return {
@@ -399,9 +399,8 @@ export const platforma = BlockModel.create('Heavy')
 
   .done();
 
+export type Platforma = typeof platforma;
+
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
-export { BlockArgs };
-
-export * from './filter';
-export * from './filters_ui';
+export type { BlockArgs };
