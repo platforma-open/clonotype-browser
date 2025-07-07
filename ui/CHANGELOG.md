@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.6.2
+
+### Patch Changes
+
+- bd7bfae: Upgrade to use latest PlAgDataTableV2 update
+- Updated dependencies [bd7bfae]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.9.2
+
 ## 1.6.1
 
 ### Patch Changes
