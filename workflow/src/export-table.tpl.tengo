@@ -7,11 +7,15 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 math := import("math")
 pt := import("@platforma-sdk/workflow-tengo:pt")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
 
 util := import(":util")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
+
+sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-binary-collection.software-7zip:main")
 
 cloneKeyAxisHeader := "clonotypeKey"
 
@@ -203,8 +207,19 @@ self.body(func(inputs) {
 	bigTablePf.save("big_table.tsv")
 	bigTableWfResult := bigTableWf.run()
 	finalTsv := bigTableWfResult.getFile("big_table.tsv")
+	zipResult := exec.builder().
+		printErrStreamToStdout().
+		software(sevenZipSw).
+		cpu(4).
+		mem("2GiB").
+		addFile("clones.tsv", finalTsv).
+		arg("a").
+		arg("clones.zip").
+		arg("clones.tsv").
+		saveFile("clones.zip").
+		run()
 
 	return {
-		tsv: file.exportFile(finalTsv)
+		tsvZip: file.exportFile(zipResult.getFile("clones.zip"))
 	}
 })

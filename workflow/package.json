@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@platforma-open/milaboratories.software-ptransform": "catalog:",
+    "@platforma-open/milaboratories.software-binary-collection.software-7zip": "catalog:",
     "@platforma-open/milaboratories.clonotype-browser-2.annotator": "workspace:*",
     "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters": "workspace:*",
     "@platforma-sdk/workflow-tengo": "catalog:"

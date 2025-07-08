@@ -10,15 +10,15 @@ const exporting = ref(false);
 async function exportTsv() {
   exporting.value = true;
   try {
-    const handle = app.model.outputs.exportedTsv?.handle;
+    const handle = app.model.outputs.exportedTsvZip?.handle;
     if (handle !== undefined) {
       const pl = getRawPlatformaInstance();
       const contentArray = await pl.blobDriver.getContent(handle);
-      const contentBlob = new Blob([contentArray], { type: 'text/tab-separated-values' });
+      const contentBlob = new Blob([contentArray], { type: 'application/zip' });
       const url = URL.createObjectURL(contentBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'clones.tsv';
+      a.download = 'clones.zip';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -32,9 +32,9 @@ async function exportTsv() {
 
 <template>
   <PlBtnGhost
-    :icon="app.model.outputs.exportedTsv === null ? 'close' : 'download'"
-    :disabled="app.model.outputs.exportedTsv === null"
-    :loading="exporting || (app.model.outputs.exportedTsv?.handle === undefined && app.model.outputs.exportedTsv !== null)"
+    :icon="app.model.outputs.exportedTsvZip === null ? 'close' : 'download'"
+    :disabled="app.model.outputs.exportedTsvZip === null"
+    :loading="exporting || (app.model.outputs.exportedTsvZip?.handle === undefined && app.model.outputs.exportedTsvZip !== null)"
     @click.stop="exportTsv"
   >
     Export All
