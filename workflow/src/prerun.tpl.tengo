@@ -36,7 +36,7 @@ wf.body(func(args) {
 		columnBundle: bundleBuilderForExport.build()
 	})
 
-	outputs["tsv"] = exportResult.output("tsv")
+	outputs["tsvZip"] = exportResult.output("tsvZip")
 	outputs["exportDebug"] = exportResult.output("exportDebug")
 
 	columnBundleForAnnotation := util.createColumnBundle(wf, args)

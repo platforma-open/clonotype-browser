@@ -230,10 +230,10 @@ export const platforma = BlockModel.create('Heavy')
   //   return ctx.prerun?.resolve('exportDebug')?.getDataAsJson();
   // })
 
-  .output('exportedTsv', (ctx) => {
+  .output('exportedTsvZip', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
-    const tsvResource = ctx.prerun?.resolve('tsv');
+    const tsvResource = ctx.prerun?.resolve('tsvZip');
     if (!tsvResource) return undefined;
     if (!tsvResource.getIsReadyOrError())
       return undefined;
