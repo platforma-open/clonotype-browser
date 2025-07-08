@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.7.0
+
+### Minor Changes
+
+- 970fa26: Zipped export
+
 ## 1.6.1
 
 ### Patch Changes

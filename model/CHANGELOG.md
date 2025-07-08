@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.10.0
+
+### Minor Changes
+
+- 970fa26: Zipped export
+
 ## 1.9.2
 
 ### Patch Changes

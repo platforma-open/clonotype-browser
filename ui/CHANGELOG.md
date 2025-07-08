@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.7.0
+
+### Minor Changes
+
+- 970fa26: Zipped export
+
+### Patch Changes
+
+- Updated dependencies [970fa26]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.10.0
+
 ## 1.6.2
 
 ### Patch Changes
