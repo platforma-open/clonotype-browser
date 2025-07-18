@@ -1,28 +1,27 @@
 import type {
+  BlockArgs,
+  BlockOutputs,
+  platforma,
+  SimplifiedUniversalPColumnEntry,
+} from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
+import type {
   BlockArgs as MiXCRClonotypingBlockArgs,
   BlockOutputs as MiXCRClonotypingBlockOutputs,
-  platforma as mixcrPlatforma } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
+  platforma as mixcrPlatforma,
+} from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import {
   SupportedPresetList,
   uniquePlId,
 } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
-import type { RawHelpers } from '@platforma-sdk/test';
-import { awaitStableState, blockTest } from '@platforma-sdk/test';
 import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaboratories.samples-and-data';
 import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
-import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
-import { blockSpec as annotationBlockSpec } from 'this-block';
-import type {
-  BlockArgs,
-  BlockOutputs,
-  platforma,
-  AnnotationScript,
-  SimplifiedUniversalPColumnEntry,
-} from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import type { InferBlockState, SUniversalPColumnId } from '@platforma-sdk/model';
+import type { AnnotationScript, InferBlockState, SUniversalPColumnId } from '@platforma-sdk/model';
 import { wrapOutputs } from '@platforma-sdk/model';
-import type { ML } from '@platforma-sdk/test';
-import { test, type expect as vitestExpect } from 'vitest';
+import type { ML, RawHelpers } from '@platforma-sdk/test';
+import { awaitStableState, blockTest } from '@platforma-sdk/test';
+import { blockSpec as annotationBlockSpec } from 'this-block';
+import type { expect as vitestExpect } from 'vitest';
 
 // Helper function for common setup
 async function setupProject(
@@ -227,13 +226,13 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
-    console.dir({ byClonotypeColumns: outputs5.byClonotypeColumns }, { depth: 8 });
+    console.dir({ byClonotypeColumns: outputs5.byClonotypeColumns?.columns }, { depth: 8 });
 
     // Find column IDs from byClonotypeColumns
-    const readCount652Column = findColumnId(outputs5.byClonotypeColumns, (l) => l.includes('Number Of Reads / SRR11233652'));
-    const readFraction652Column = findColumnId(outputs5.byClonotypeColumns, (l) => l.includes('Fraction of reads / SRR11233652'));
-    const readFraction664Column = findColumnId(outputs5.byClonotypeColumns, (l) => l.includes('Fraction of reads / SRR11233664'));
-    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns, 'Best V gene');
+    const readCount652Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Number Of Reads / SRR11233652'));
+    const readFraction652Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233652'));
+    const readFraction664Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233664'));
+    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns?.columns, 'Best V gene');
 
     // Ensure all column references are defined before using them
     expect(readCount652Column, 'Read Count 652 Column').toBeDefined();
@@ -345,10 +344,10 @@ blockTest(
 
     // Find column IDs from bySampleAndClonotypeColumns
     // Note: In this mode, columns represent values per sample-clonotype pair directly
-    const readCountColumn = findColumnId(outputs5.bySampleAndClonotypeColumns, 'Number Of Reads');
-    const readFractionColumn = findColumnId(outputs5.bySampleAndClonotypeColumns, 'Fraction of reads');
+    const readCountColumn = findColumnId(outputs5.bySampleAndClonotypeColumns?.columns, 'Number Of Reads');
+    const readFractionColumn = findColumnId(outputs5.bySampleAndClonotypeColumns?.columns, 'Fraction of reads');
     // Find V gene from byClonotypeColumns (still available, represents clonotype property)
-    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns, 'Best V gene');
+    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns?.columns, 'Best V gene');
 
     expect(readCountColumn, 'Read Count Column').toBeDefined();
     expect(readFractionColumn, 'Read Fraction Column').toBeDefined();

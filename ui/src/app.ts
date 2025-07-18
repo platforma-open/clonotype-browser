@@ -1,33 +1,49 @@
-import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import type { PFrameHandle } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
-import AnnotationStatsPage from './AnnotationStatsPage.vue';
-import { ref, computed } from 'vue';
-import PerSamplePage from './PerSamplePage.vue';
-import OverlapPage from './OverlapPage.vue';
+import { computed, ref } from 'vue';
+import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
+import OverlapPage from './components/OverlapPage.vue';
+import PerSamplePage from './components/PerSamplePage.vue';
+import { migrateUiState } from './migration';
+import { processAnnotatiuoUiStateToArgs } from './model';
+import { getValuesForSelectedColumns } from './utils';
 
-export const sdkPlugin = defineApp(platforma, (_app) => {
+export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
+  migrateUiState(app.model.ui);
+  processAnnotatiuoUiStateToArgs(
+    () => app.model.ui.annotationScript,
+    () => app.model.args.annotationScript,
+  );
+
   const isAnnotationModalOpen = ref(false);
+  const hasSelectedColumns = computed(() => {
+    return app.model.ui.selectedColumns?.selectedKeys.length > 0;
+  });
+  const filterColumns = computed((): SimplifiedUniversalPColumnEntry[] => {
+    const { bySampleAndClonotypeColumns, byClonotypeColumns } = app.model.outputs;
 
-  const filterColumns = computed(() => {
-    if (_app.model.args.annotationScript.mode === 'bySampleAndClonotype') {
-      const { bySampleAndClonotypeColumns, byClonotypeColumns } = _app.model.outputs;
-
-      if (!bySampleAndClonotypeColumns || !byClonotypeColumns) {
-        return undefined;
-      }
-
-      return [...bySampleAndClonotypeColumns, ...byClonotypeColumns];
-    }
-
-    return _app.model.outputs.byClonotypeColumns ?? [];
+    return app.model.args.annotationScript.mode === 'bySampleAndClonotype'
+      ? [...(bySampleAndClonotypeColumns?.columns ?? []), ...(byClonotypeColumns?.columns ?? [])]
+      : (byClonotypeColumns?.columns ?? []);
   });
 
-  const filterColumnsOptions = computed(() => filterColumns.value?.map((c) => ({ label: c.label, value: c.id })));
-
   return {
+    getValuesForSelectedColumns: () => {
+      const { bySampleAndClonotypeColumns, byClonotypeColumns } = app.model.outputs;
+      const pFrame = app.model.args.annotationScript.mode === 'bySampleAndClonotype'
+        ? [byClonotypeColumns?.pFrame, bySampleAndClonotypeColumns?.pFrame]
+        : [byClonotypeColumns?.pFrame];
+
+      if (pFrame.some((pf) => pf === undefined)) {
+        throw new Error('Platforma PFrame is not available');
+      }
+
+      return getValuesForSelectedColumns(app.model.ui.selectedColumns, pFrame as PFrameHandle[]);
+    },
+    hasSelectedColumns,
     isAnnotationModalOpen,
     filterColumns,
-    filterColumnsOptions,
     routes: {
       '/': () => PerSamplePage,
       '/overlap': () => OverlapPage,
