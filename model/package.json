@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-2.model",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "description": "Block model",
   "type": "module",
   "main": "dist/index.cjs",
@@ -11,7 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-     "@types/lodash.omit": "^4.5.9",
+    "@types/lodash.omit": "^4.5.9",
     "lodash.omit": "^4.5.0",
     "@platforma-sdk/model": "catalog:"
   },

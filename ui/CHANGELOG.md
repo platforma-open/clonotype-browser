@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.7.1
+
+### Patch Changes
+
+- 8b8a6df: use annotation ui model from sdk
+- Updated dependencies [8b8a6df]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.10.1
+
 ## 1.7.0
 
 ### Minor Changes
