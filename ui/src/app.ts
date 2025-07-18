@@ -9,6 +9,14 @@ import { migrateUiState } from './migration';
 import { processAnnotatiuoUiStateToArgs } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
+// workaround, remove tomorrow
+declare global {
+  interface Window {
+    platformaApiVersion: string | undefined;
+  }
+}
+window.platformaApiVersion = undefined;
+
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   migrateUiState(app.model.ui);
   processAnnotatiuoUiStateToArgs(
