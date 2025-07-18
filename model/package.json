@@ -8,18 +8,17 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup && vite build && block-tools build-model",
-    "lint": "eslint .",
-    "test": "vitest"
+    "lint": "eslint ."
   },
   "dependencies": {
-    "@platforma-sdk/model": "catalog:",
-    "remeda": "catalog:"
+     "@types/lodash.omit": "^4.5.9",
+    "lodash.omit": "^4.5.0",
+    "@platforma-sdk/model": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/block-tools": "catalog:",
     "@platforma-sdk/eslint-config": "catalog:",
     "eslint": "catalog:",
-    "vitest": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "tsup": "catalog:"

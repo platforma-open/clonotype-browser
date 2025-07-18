@@ -8,15 +8,17 @@ packages:
   - test
 
 catalog:
+  '@milaboratories/ts-configs': ^1.0.4
+  '@milaboratories/build-configs': ^1.0.4
   '@platforma-sdk/workflow-tengo': ^4.9.3
-  '@platforma-sdk/model': ^1.39.7
-  '@platforma-sdk/ui-vue': ^1.39.7
+  '@platforma-sdk/model': ^1.41.4
+  '@platforma-sdk/ui-vue': ^1.41.4
   '@platforma-sdk/tengo-builder': ^2.1.12
   '@platforma-sdk/package-builder': ^2.16.2
   '@platforma-sdk/block-tools': ^2.5.66
   '@platforma-sdk/eslint-config': ^1.0.3
 
-  '@platforma-sdk/test': ^1.39.7
+  '@platforma-sdk/test': ^1.41.4
   '@milaboratories/helpers': ^1.6.17
 
   '@platforma-open/milaboratories.runenv-python-3': ^1.1.16
@@ -33,7 +35,6 @@ catalog:
 
   'zod': ~3.23.8
   'utility-types': ^3.11.0
-  'remeda': ^2.25.0
 
   'typescript': ~5.6.3
   'tsup': ~8.3.5

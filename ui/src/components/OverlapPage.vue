@@ -1,39 +1,34 @@
 <script setup lang="ts">
-import { type PlRef, plRefsEqual } from '@platforma-sdk/model';
+import type { PlRef } from '@platforma-sdk/model';
+
 import {
+  PlAgDataTableV2,
+  PlAnnotationsModal,
   PlBlockPage,
   PlBtnGhost,
   PlDropdownRef,
   PlSlideModal,
-  PlAgDataTableV2,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { useApp } from './app';
-import { AnnotationsModal } from './Annotations';
+import { useApp } from '../app';
 import ExportBtn from './ExportBtn.vue';
 
 const app = useApp();
 
 function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
-  if (ref) {
-    app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
-  } else {
-    app.model.args.datasetTitle = undefined;
-  }
 }
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.args.inputAnchor,
-  model: () => app.model.outputs.perSampleTable,
-  sheets: () => app.model.outputs.perSampleTableSheets,
+  model: () => app.model.outputs.overlapTable,
 });
 </script>
 
 <template>
   <PlBlockPage>
     <template #title>
-      Per Sample Clonotype Browser
+      Overlap Clonotypes Browser
     </template>
     <template #append>
       <ExportBtn />
@@ -46,7 +41,8 @@ const tableSettings = usePlDataTableSettingsV2({
     </template>
     <PlAgDataTableV2
       ref="tableInstance"
-      v-model="app.model.ui.perSampleTable.tableState"
+      v-model="app.model.ui.overlapTable.tableState"
+      v-model:selection="app.model.ui.selectedColumns"
       :settings="tableSettings"
     />
   </PlBlockPage>
@@ -60,5 +56,11 @@ const tableSettings = usePlDataTableSettingsV2({
       @update:model-value="setAnchorColumn"
     />
   </PlSlideModal>
-  <AnnotationsModal />
+  <PlAnnotationsModal
+    v-model:annotation="app.model.ui.annotationScript"
+    v-model:opened="app.isAnnotationModalOpen"
+    :columns="app.filterColumns"
+    :hasSelectedColumns="app.hasSelectedColumns"
+    :getValuesForSelectedColumns="app.getValuesForSelectedColumns"
+  />
 </template>

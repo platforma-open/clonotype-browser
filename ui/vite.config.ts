@@ -1,15 +1,13 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import sourcemaps from 'rollup-plugin-sourcemaps2';
+import { createViteDevConfig } from '@milaboratories/build-configs';
+import { defineConfig, mergeConfig } from 'vite';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  base: './',
-  build: {
-    sourcemap: true,
-    rollupOptions: {
-      plugins: [sourcemaps()]
-    }
-  }
+export default defineConfig((configEnv) => {
+  return mergeConfig(createViteDevConfig(configEnv), {
+    server: {
+      fs: {
+        allow: ['/'],
+      },
+    },
+  });
 });
