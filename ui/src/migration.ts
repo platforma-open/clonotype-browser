@@ -1,5 +1,5 @@
 import { isNil, randomInt } from '@milaboratories/helpers';
-import type { UiState } from '@platforma-open/milaboratories.clonotype-browser-2.model/dist/index.cjs';
+import type { UiState } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 
 export function migrateUiState(uiState: UiState) {
   if (uiState.selectedColumns === undefined) {
