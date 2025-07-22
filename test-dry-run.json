@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "3049oNqQCayjCKbM7mirDeoVNT2",
+  "id": "30E4ZDV2dVFAbTvsO5iQrYiR30a",
   "version": "1",
   "turboVersion": "2.5.4",
   "monorepo": true,
@@ -39,12 +39,12 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "6c2bb9a997dfab72",
+      "hash": "4be95fdc600c0abb",
       "inputs": {
-        "CHANGELOG.md": "ad69b01819f5736fd6207791b68db1c1fb58213f",
+        "CHANGELOG.md": "116e3e1fdc77214c22c47d027ce97f97d6288938",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "e185a9794e9b41723710b8fb0993d8c5722f75ab"
+        "package.json": "d3e8c89ce7cf69fd3a7a66f1de63f5bc929b2523"
       },
       "hashOfExternalDependencies": "6dd9881610a9bde2",
       "cache": {
@@ -117,12 +117,12 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "a238bb56be13596d",
+      "hash": "8207d1d6e56aa044",
       "inputs": {
-        "CHANGELOG.md": "ad69b01819f5736fd6207791b68db1c1fb58213f",
+        "CHANGELOG.md": "116e3e1fdc77214c22c47d027ce97f97d6288938",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "e185a9794e9b41723710b8fb0993d8c5722f75ab"
+        "package.json": "d3e8c89ce7cf69fd3a7a66f1de63f5bc929b2523"
       },
       "hashOfExternalDependencies": "6dd9881610a9bde2",
       "cache": {
@@ -667,7 +667,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "8fce8d08af2dd508",
+      "hash": "3595ea226d021601",
       "inputs": {
         "CHANGELOG.md": "4d49d68d8b62f747957acfc81c35448c3bd9dc61",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -750,7 +750,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "abea12559f2370cf",
+      "hash": "1991322aaf9e8ed1",
       "inputs": {
         "CHANGELOG.md": "4d49d68d8b62f747957acfc81c35448c3bd9dc61",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -831,13 +831,13 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "211360fa9bd6576d",
+      "hash": "b2bbfafa9a7ba85f",
       "inputs": {
-        "CHANGELOG.md": "b40fce1c99fce4b90d1a3466300d82cfb5952cd0",
+        "CHANGELOG.md": "1582fdf236f032b6f3e0b76f97e5cb5bdf8c368f",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "f8a02a560f27e900990a725488ab39475c5276f1",
-        "src/app.ts": "77ae2bc852d3daa8948db3fcabc2c0c441ca7cc3",
+        "package.json": "64abc57a4c6a257281451b9d497d8516405cbad4",
+        "src/app.ts": "35ba0facb74a48bf758699b524fa0459fdb8edc0",
         "src/components/AnnotationStatsPage.vue": "39c3953ad36076d50fa618f23047c1b7d3fc78ea",
         "src/components/ExportBtn.vue": "fb68b270950de93bd63373891707d706339ebb6f",
         "src/components/OverlapPage.vue": "c3b3b627153bc088478eb35088234699731d0654",
@@ -920,13 +920,13 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "47bd130c81e5bb9c",
+      "hash": "2421ce60cd1f4201",
       "inputs": {
-        "CHANGELOG.md": "b40fce1c99fce4b90d1a3466300d82cfb5952cd0",
+        "CHANGELOG.md": "1582fdf236f032b6f3e0b76f97e5cb5bdf8c368f",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "f8a02a560f27e900990a725488ab39475c5276f1",
-        "src/app.ts": "77ae2bc852d3daa8948db3fcabc2c0c441ca7cc3",
+        "package.json": "64abc57a4c6a257281451b9d497d8516405cbad4",
+        "src/app.ts": "35ba0facb74a48bf758699b524fa0459fdb8edc0",
         "src/components/AnnotationStatsPage.vue": "39c3953ad36076d50fa618f23047c1b7d3fc78ea",
         "src/components/ExportBtn.vue": "fb68b270950de93bd63373891707d706339ebb6f",
         "src/components/OverlapPage.vue": "c3b3b627153bc088478eb35088234699731d0654",
@@ -1166,7 +1166,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "edf9db23d387b81a8250f67a478e75d3c0e7f2ec",
+    "sha": "556a6dfe94dfccb22af4be57969222b4de556119",
     "branch": "main"
   }
 }

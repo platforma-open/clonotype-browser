@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.7.2
+
+### Patch Changes
+
+- 663776d: explicity import platforma
+
 ## 1.7.1
 
 ### Patch Changes
