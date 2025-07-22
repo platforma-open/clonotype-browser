@@ -1,4 +1,5 @@
 import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import type { PFrameHandle } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
@@ -15,7 +16,7 @@ declare global {
     platformaApiVersion: string | undefined;
   }
 }
-window.platformaApiVersion = undefined;
+window.platformaApiVersion ??= undefined;
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   migrateUiState(app.model.ui);
