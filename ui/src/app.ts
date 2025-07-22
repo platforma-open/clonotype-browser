@@ -1,4 +1,5 @@
 import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
+import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import type { PFrameHandle } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
@@ -8,14 +9,6 @@ import PerSamplePage from './components/PerSamplePage.vue';
 import { migrateUiState } from './migration';
 import { processAnnotatiuoUiStateToArgs } from './model';
 import { getValuesForSelectedColumns } from './utils';
-
-// workaround, remove tomorrow
-declare global {
-  interface Window {
-    platformaApiVersion: string | undefined;
-  }
-}
-window.platformaApiVersion = undefined;
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   migrateUiState(app.model.ui);
