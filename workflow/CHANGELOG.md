@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.7.1
+
+### Patch Changes
+
+- eed65c7: Update sdk (use api v2)
+- Updated dependencies [eed65c7]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.2
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.2
+
 ## 1.7.0
 
 ### Minor Changes

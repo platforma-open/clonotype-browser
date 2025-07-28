@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotation2filters
 
+## 1.2.2
+
+### Patch Changes
+
+- eed65c7: Update sdk (use api v2)
+
 ## 1.2.1
 
 ### Patch Changes

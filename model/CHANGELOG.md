@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.10.2
+
+### Patch Changes
+
+- eed65c7: Update sdk (use api v2)
+
 ## 1.10.1
 
 ### Patch Changes

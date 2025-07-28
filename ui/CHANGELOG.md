@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.7.3
+
+### Patch Changes
+
+- eed65c7: Update sdk (use api v2)
+- Updated dependencies [eed65c7]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.10.2
+
 ## 1.7.2
 
 ### Patch Changes
