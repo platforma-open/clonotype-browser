@@ -51,6 +51,6 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
       '/stats': () => AnnotationStatsPage,
     },
   };
-}, { debug: true });
+}, { debug: false });
 
 export const useApp = sdkPlugin.useApp;
