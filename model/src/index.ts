@@ -426,7 +426,7 @@ export const platforma = BlockModel.create('Heavy')
       ? `Clonotype Browser - ${ctx.args.datasetTitle}`
       : 'Clonotype Browser')
 
-  .done();
+  .done(2);
 
 export type Platforma = typeof platforma;
 
