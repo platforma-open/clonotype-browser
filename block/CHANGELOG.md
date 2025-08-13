@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.6.5
+
+### Patch Changes
+
+- @platforma-open/milaboratories.clonotype-browser-2.workflow@1.7.3
+
 ## 1.6.4
 
 ### Patch Changes

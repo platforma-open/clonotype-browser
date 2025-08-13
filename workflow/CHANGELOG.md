@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.7.3
+
+### Patch Changes
+
+- Updated dependencies [99299f2]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.3
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.3
+
 ## 1.7.2
 
 ### Patch Changes
