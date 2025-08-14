@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.10.4
+
+### Patch Changes
+
+- d205cd1: fix reactivity for useApp
+
 ## 1.10.3
 
 ### Patch Changes
