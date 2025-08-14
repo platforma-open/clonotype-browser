@@ -2,11 +2,8 @@ import { isNil, randomInt } from '@milaboratories/helpers';
 import type { UiState } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 
 export function migrateUiState(uiState: UiState) {
-  if (uiState.selectedColumns === undefined) {
-    uiState.selectedColumns = {
-      axesSpec: [],
-      selectedKeys: [],
-    };
+  if (uiState != null && 'selectedColumns' in uiState) {
+    delete uiState.selectedColumns;
   }
 
   migrateToWithId(uiState.annotationScript.steps);

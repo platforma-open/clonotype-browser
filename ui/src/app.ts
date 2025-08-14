@@ -1,8 +1,8 @@
 import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import type { PFrameHandle } from '@platforma-sdk/model';
+import type { PFrameHandle, PlSelectionModel } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
 import OverlapPage from './components/OverlapPage.vue';
 import PerSamplePage from './components/PerSamplePage.vue';
@@ -11,6 +11,11 @@ import { processAnnotatiuoUiStateToArgs } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
+  const selectedColumns: PlSelectionModel = reactive({
+    axesSpec: [],
+    selectedKeys: [],
+  });
+
   migrateUiState(app.model.ui);
   processAnnotatiuoUiStateToArgs(
     () => app.model.ui.annotationScript,
@@ -19,7 +24,7 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
 
   const isAnnotationModalOpen = ref(false);
   const hasSelectedColumns = computed(() => {
-    return app.model.ui.selectedColumns?.selectedKeys.length > 0;
+    return selectedColumns.selectedKeys.length > 0;
   });
   const filterColumns = computed((): SimplifiedUniversalPColumnEntry[] => {
     const { bySampleAndClonotypeColumns, byClonotypeColumns } = app.model.outputs;
@@ -40,8 +45,9 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
         throw new Error('Platforma PFrame is not available');
       }
 
-      return getValuesForSelectedColumns(app.model.ui.selectedColumns, pFrame as PFrameHandle[]);
+      return getValuesForSelectedColumns(selectedColumns, pFrame as PFrameHandle[]);
     },
+    selectedColumns,
     hasSelectedColumns,
     isAnnotationModalOpen,
     filterColumns,

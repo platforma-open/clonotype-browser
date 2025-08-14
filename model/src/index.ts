@@ -10,9 +10,8 @@ import type {
   PColumnSpec,
   PlDataTableStateV2,
   PlRef,
-  PlSelectionModel,
   PObjectId,
-  SUniversalPColumnId,
+  SUniversalPColumnId
 } from '@platforma-sdk/model';
 import {
   BlockModel,
@@ -43,7 +42,6 @@ export type UiState = {
   statsTable: {
     tableState: PlDataTableStateV2;
   };
-  selectedColumns: PlSelectionModel;
   annotationScript: AnnotationScriptUi;
 };
 
@@ -118,10 +116,6 @@ export const platforma = BlockModel.create('Heavy')
       title: 'My Annotation',
       mode: 'byClonotype',
       steps: [],
-    },
-    selectedColumns: {
-      axesSpec: [],
-      selectedKeys: [],
     },
   })
 
