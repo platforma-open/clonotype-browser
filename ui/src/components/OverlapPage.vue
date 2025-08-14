@@ -42,7 +42,7 @@ const tableSettings = usePlDataTableSettingsV2({
     <PlAgDataTableV2
       ref="tableInstance"
       v-model="app.model.ui.overlapTable.tableState"
-      v-model:selection="app.model.ui.selectedColumns"
+      v-model:selection="app.selectedColumns"
       :settings="tableSettings"
     />
   </PlBlockPage>

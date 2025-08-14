@@ -1,6 +1,6 @@
 import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import type { PFrameHandle } from '@platforma-sdk/model';
+import type { PFrameHandle, PlSelectionModel } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
@@ -17,9 +17,14 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
     () => app.model.args.annotationScript,
   );
 
+  const selectedColumns = ref({
+    axesSpec: [],
+    selectedKeys: [],
+  } satisfies PlSelectionModel);
+
   const isAnnotationModalOpen = ref(false);
   const hasSelectedColumns = computed(() => {
-    return app.model.ui.selectedColumns?.selectedKeys.length > 0;
+    return selectedColumns.value.selectedKeys.length > 0;
   });
   const filterColumns = computed((): SimplifiedUniversalPColumnEntry[] => {
     const { bySampleAndClonotypeColumns, byClonotypeColumns } = app.model.outputs;
@@ -40,8 +45,9 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
         throw new Error('Platforma PFrame is not available');
       }
 
-      return getValuesForSelectedColumns(app.model.ui.selectedColumns, pFrame as PFrameHandle[]);
+      return getValuesForSelectedColumns(selectedColumns.value, pFrame as PFrameHandle[]);
     },
+    selectedColumns,
     hasSelectedColumns,
     isAnnotationModalOpen,
     filterColumns,
