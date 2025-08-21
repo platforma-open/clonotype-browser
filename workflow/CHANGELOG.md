@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.8.0
+
+### Minor Changes
+
+- 0753379: fix for export with empty input
+
 ## 1.7.3
 
 ### Patch Changes
