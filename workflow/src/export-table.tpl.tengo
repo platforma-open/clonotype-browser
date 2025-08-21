@@ -60,7 +60,7 @@ self.body(func(inputs) {
 	// If no per-sample data, terminate early
 	if len(partitionsPerSample) == 0 {
 		return {
-			tsv: smart.createNullResource()
+			tsvZip: smart.createNullResource()
 		}
 	}
 
