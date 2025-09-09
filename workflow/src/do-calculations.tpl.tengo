@@ -135,13 +135,18 @@ createStatsDataAndSpecBySampleFactory := func(sampleAxis, annotationsAxis, creat
 	}
 }
 
-convertToPFrame := func(...dataAndSpecs) {
+convertArrToPFrame := func(...entities) {
+	return slices.reduce(entities, func(acc, v) {
+		acc.add(v.column, v.spec, v.data)
+		return acc
+	}, pFrames.pFrameBuilder()).build()
+}
+
+convertMapToPFrame := func(mapEntities) {
 	pf := pFrames.pFrameBuilder()
 
-	for dataAndSpec in dataAndSpecs {
-		for k, v in dataAndSpec {
-			pf.add(k, v.spec, v.data)
-		}
+	for k, v in mapEntities {
+		pf.add(k, v.spec, v.data)
 	}
 
 	return pf.build()
@@ -211,8 +216,8 @@ self.body(func(inputs) {
 		createColumnSpec
 	)
 
-	outputs["annotationPf"] = convertToPFrame(result.annotations.dataAndSpec);
-	outputs["filtersPf"] = convertToPFrame(slices.map(result.annotationsFilters, func(v) { return v.dataAndSpec }))
+	outputs["annotationPf"] = convertArrToPFrame(result.annotations)
+	outputs["filtersPf"] = convertArrToPFrame(result.annotationsFilters...)
 
 	// -------------------
 
@@ -227,6 +232,7 @@ self.body(func(inputs) {
 	statsBySampleFile := statsBySampleFileBuilder.build()
 
 	wf := pt.workflow()
+	
 	wf.frame(statsBySampleFile, { format: "tsv" }).
 		groupBy(SAMPLE_KEY_HEADER, result.annotations.column).
 		agg(
@@ -245,10 +251,11 @@ self.body(func(inputs) {
 			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER)
 		).
 		save(ANNOTATION_STATS_FILE)
+
 	wfResult := wf.run()
 
-	outputs["sampleStatsPf"] = convertToPFrame(createStatsDataAndSpecBySample(wfResult.getFile(SAMPLE_STATS_FILE)))
-	outputs["annotationStatsPf"] = convertToPFrame(createStatsDataAndSpecByAnnotation(wfResult.getFile(ANNOTATION_STATS_FILE)))
+	outputs["sampleStatsPf"] = convertMapToPFrame(createStatsDataAndSpecBySample(wfResult.getFile(SAMPLE_STATS_FILE)))
+	outputs["annotationStatsPf"] = convertMapToPFrame(createStatsDataAndSpecByAnnotation(wfResult.getFile(ANNOTATION_STATS_FILE)))
 
 	// -------------------
 

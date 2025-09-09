@@ -32,8 +32,11 @@ wf.body(func(args) {
 			computeFilters: true
 		})
 
+		outputs["annotationPf"] = calculationResult.output("annotationPf")
+		outputs["annotationStatsPf"] = calculationResult.output("annotationStatsPf")
+		outputs["sampleStatsPf"] = calculationResult.output("sampleStatsPf")
+
 		exports["annotationPf"] = calculationResult.output("annotationPf")
-		exports["statsPf"] = calculationResult.output("statsPf")
 		exports["filtersPf"] = calculationResult.output("filtersPf")
 	}
 
