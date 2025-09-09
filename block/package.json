@@ -1,0 +1,46 @@
+{
+  "name": "@platforma-open/milaboratories.clonotype-browser-3",
+  "version": "1.0.0",
+  "scripts": {
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
+    "build": "rm -rf ./block-pack && block-tools pack",
+    "mark-stable": "block-tools mark-stable -r 's3://milab-euce1-prod-pkgs-s3-block-registry/pub/releases/?region=eu-central-1'",
+    "prepublishOnly": "block-tools pack && block-tools publish -r 's3://milab-euce1-prod-pkgs-s3-block-registry/pub/releases/?region=eu-central-1'"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@platforma-sdk/model": "catalog:",
+    "@platforma-open/milaboratories.clonotype-browser-3.workflow": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-3.model": "workspace:*",
+    "@platforma-open/milaboratories.clonotype-browser-3.ui": "workspace:*"
+  },
+  "block": {
+    "components": {
+      "workflow": "@platforma-open/milaboratories.clonotype-browser-3.workflow/dist/tengo/tpl/main.plj.gz",
+      "model": "@platforma-open/milaboratories.clonotype-browser-3.model/dist/model.json",
+      "ui": "@platforma-open/milaboratories.clonotype-browser-3.ui/dist"
+    },
+    "meta": {
+      "title": "Simple Clonotype Browser",
+      "logo": "file:../logos/block-logo.png",
+      "url": "https://github.com/platforma-open/clonotype-browser-3",
+      "support": "mailto:support@milaboratories.com",
+      "description": "Allows to browse clonotypes and annotate them for tracking and filtering",
+      "longDescription": "file:../docs/description.md",
+      "changelog": "file:./CHANGELOG.md",
+      "tags": ["annotation"],
+      "organization": {
+        "name": "MiLaboratories Inc",
+        "url": "https://milaboratories.com/",
+        "logo": "file:../logos/organization-logo.png"
+      },
+      "marketplaceRanking": 16700
+    }
+  },
+  "devDependencies": {
+    "@platforma-sdk/block-tools": "catalog:"
+  }
+}

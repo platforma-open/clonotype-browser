@@ -1,0 +1,64 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+render := import("@platforma-sdk/workflow-tengo:render")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+
+util := import(":util")
+
+doCalculations := assets.importTemplate(":do-calculations")
+exportTableTpl := assets.importTemplate(":export-table")
+
+wf.body(func(args) {
+	if is_undefined(args.inputAnchor) {
+		return {
+			outputs: {
+				tsv: smart.createNullResource()
+			},
+			exports: {}
+		}
+	}
+
+	blockId := wf.blockId().getDataAsJson()
+
+	outputs := {}
+	exports := {}
+
+	bundleBuilderForExport := wf.createPBundleBuilder()
+
+	bundleBuilderForExport.addAnchor("main", args.inputAnchor)
+	bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 0 }, { anchor: "main", idx: 1 }] }, "perSample")
+	bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 1 }] }, "perClonotype")
+	bundleBuilderForExport.addSingle({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 0 }] }, "sampleLabels")
+
+	exportResult := render.createEphemeral(exportTableTpl, {
+		columnBundle: bundleBuilderForExport.build()
+	})
+
+	outputs["tsvZip"] = exportResult.output("tsvZip")
+	outputs["exportDebug"] = exportResult.output("exportDebug")
+
+	if len(args.annotationSpecs.specs) > 0 {
+		columnBundle := util.createColumnBundle2(wf, args)
+		calculationResult := render.createEphemeral(doCalculations, {
+			blockId: blockId,
+			blockArgs: args,
+			columnBundle: columnBundle,
+			computeFilters: true
+		})
+
+		outputs["annotationPf"] = pFrames.exportFrame(calculationResult.output("annotationPf"))
+		// outputs["filtersPf"] = pFrames.exportFrame(calculationResult.output("filtersPf"))
+		outputs["annotationStatsPf"] = pFrames.exportFrame(calculationResult.output("annotationStatsPf"))
+		outputs["sampleStatsPf"] = pFrames.exportFrame(calculationResult.output("sampleStatsPf"))
+
+		exports["filtersPf"] = pFrames.exportFrame(calculationResult.output("filtersPf"))
+	}
+
+	return {
+		outputs: outputs,
+		exports: exports
+	}
+})

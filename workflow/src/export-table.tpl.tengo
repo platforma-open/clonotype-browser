@@ -1,0 +1,225 @@
+self := import("@platforma-sdk/workflow-tengo:tpl")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
+pframes := import("@platforma-sdk/workflow-tengo:pframes")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+math := import("math")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+
+util := import(":util")
+
+self.awaitState("columnBundle", "PColumnBundleWithPartitions")
+self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
+
+sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-binary-collection.software-7zip:main")
+
+cloneKeyAxisHeader := "clonotypeKey"
+
+self.body(func(inputs) {
+	columnBundle := inputs.columnBundle
+
+	columnsPerSample := columnBundle.getColumns("perSample")
+	columnsPerClonotype := columnBundle.getColumns("perClonotype")
+	sampleLabels := columnBundle.getColumn("sampleLabels")
+	sampleLabelsMap := sampleLabels.data.getDataAsJson().data
+
+	byCloneSpecs := []
+	bySampleSpecs := []
+
+	//
+	// Creating tsv files for each sample
+	//
+
+	slices.quickSortInPlaceFn(columnsPerSample, func(a, b) {
+		if is_undefined(a.spec.annotations["pl7.app/table/orderPriority"]) {
+			return false
+		}
+		if is_undefined(b.spec.annotations["pl7.app/table/orderPriority"]) {
+			return true
+		}
+		return int(a.spec.annotations["pl7.app/table/orderPriority"]) > int(b.spec.annotations["pl7.app/table/orderPriority"])
+	})
+	partitionedColumnsPerSample := slices.map(columnsPerSample, func(column) {
+		parsed := pframes.parseData(column)
+		return parsed.partition(0)
+	})
+	partitionsPerSample := {}
+	for partitioned in partitionedColumnsPerSample {
+		maps.forEach(partitioned, func(key, partition) {
+			if is_undefined(partitionsPerSample[key]) {
+				partitionsPerSample[key] = []
+			}
+			partitionsPerSample[key] = append(partitionsPerSample[key], partition)
+		})
+	}
+
+	// If no per-sample data, terminate early
+	if len(partitionsPerSample) == 0 {
+		return {
+			tsv: smart.createNullResource()
+		}
+	}
+
+	numberOfSamples := len(partitionsPerSample)
+
+	perSampleTsvFiles := {}
+	maps.forEach(partitionsPerSample, func(key, partitions) {
+		builder := pframes.tsvFileBuilder().cpu(2).mem("12GiB")
+		axisHeaderSet := false
+		for partition in partitions {
+			sampleLabel := sampleLabelsMap[key]
+			ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + key)
+			spec := maps.deepTransform(partition.getSpec(), {
+				annotations: {
+					"pl7.app/label": func(label) {
+						return label + " / " + sampleLabel
+					}
+				}
+			})
+			if !axisHeaderSet {
+				builder.setAxisHeader(spec.axesSpec[0], cloneKeyAxisHeader)
+				axisHeaderSet = true
+			}
+			bySampleSpecs += [spec]
+			builder.add({
+				spec: spec,
+				data: partition.createDataResource()
+			})
+		}
+		perSampleTsvFiles[key] = builder.build()
+	})
+
+	//
+	// Creating the per-clonotype table
+	//
+
+	// perClonotypeTsvBuilder := pframes.tsvFileBuilder()
+	// for column in columnsPerClonotype {
+	// 	if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+	// 		continue
+	// 	}
+	// 	if is_undefined(column.spec.annotations["pl7.app/label"]) {
+	// 		continue
+	// 	}
+	// 	byCloneSpecs += [column.spec]
+	// 	perClonotypeTsvBuilder.add(column)
+	// }
+	// perClonotypeTsv := perClonotypeTsvBuilder.build()
+
+	//
+	// Creating the big table
+	//
+
+	bigTableWf := pt.workflow().
+		cpu(math.max(numberOfSamples, 2)).
+		mem(string(int(math.min(math.max(numberOfSamples, 2) * 8, 128))) + "GiB")
+	// perClonotypePf := bigTableWf.frame(perClonotypeTsv, { xsvType: "tsv", inferSchema: false })
+
+	pfs := []
+
+	tsvBuilder := undefined
+	columnsInBuilder := 0
+	for column in columnsPerClonotype {
+		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+			continue
+		}
+		if is_undefined(column.spec.annotations["pl7.app/label"]) {
+			continue
+		}
+		if tsvBuilder == undefined {
+			tsvBuilder = pframes.tsvFileBuilder().cpu(1).mem("4GiB")
+			tsvBuilder.setAxisHeader(column.spec.axesSpec[0], cloneKeyAxisHeader)
+		}
+		byCloneSpecs += [column.spec]
+		tsvBuilder.add(column)
+		columnsInBuilder += 1
+		if columnsInBuilder == 4 {
+			tsv := tsvBuilder.build()
+			pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+			tsvBuilder = undefined
+			columnsInBuilder = 0
+		}
+	}
+
+	if tsvBuilder != undefined {
+		tsv := tsvBuilder.build()
+		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+	}
+
+	maps.forEach(perSampleTsvFiles, func(key, tsv) {
+		perSamplePf := bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })
+		pfs += [perSamplePf]
+	})
+	ll.assert(len(pfs) > 0, "Expected at least one table, got " + string(len(pfs)))
+
+	//
+	// Assembling join tree
+	//
+	// P0 ──┐
+	//      ├─ J01 ──┐
+	// P1 ──┘        │
+	// P2 ──┐        ├─ J0123 ──┐
+	//      ├─ J23 ──┘          │
+	// P3 ──┘                   │
+	// P4 ──┐                   ├─ J0123456 (Final Result)
+	//      ├─ J45 ──┐          │
+	// P5 ──┘        ├─ J456 ───┘
+	// P6 ───────────┘
+	//
+
+	for len(pfs) > 1 {
+		nextPerSamplePfs := []
+		for i := 1; i < len(pfs); i+=2 {
+			pf1 := pfs[i - 1]
+			pf2 := pfs[i]
+			joined := pf1.join(pf2, { on: cloneKeyAxisHeader, how: "full", coalesce: true })
+			nextPerSamplePfs = append(nextPerSamplePfs, joined)
+		}
+		if len(pfs) % 2 == 1 {
+			nextPerSamplePfs = append(nextPerSamplePfs, pfs[len(pfs) - 1])
+		}
+		pfs = nextPerSamplePfs
+	}
+
+	ll.assert(len(pfs) == 1, "Expected exactly one data frame, got " + string(len(pfs)))
+
+	bigTablePf := pfs[0]
+
+	// bigTablePf := perClonotypePf.join(pfs[0], { on: cloneKeyAxisHeader, how: "full", coalesce: true })
+
+	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
+		if is_undefined(a.annotations["pl7.app/table/orderPriority"]) {
+			return false
+		}
+		if is_undefined(b.annotations["pl7.app/table/orderPriority"]) {
+			return true
+		}
+		return int(a.annotations["pl7.app/table/orderPriority"]) > int(b.annotations["pl7.app/table/orderPriority"])
+	})
+
+	bigTablePf = bigTablePf.select(slices.map(byCloneSpecs + bySampleSpecs, func(spec) {
+		return pt.col(spec.annotations["pl7.app/label"])
+	})...)
+	bigTablePf.save("big_table.tsv")
+	bigTableWfResult := bigTableWf.run()
+	finalTsv := bigTableWfResult.getFile("big_table.tsv")
+	zipResult := exec.builder().
+		printErrStreamToStdout().
+		software(sevenZipSw).
+		cpu(4).
+		mem("2GiB").
+		addFile("clones.tsv", finalTsv).
+		arg("a").
+		arg("clones.zip").
+		arg("clones.tsv").
+		saveFile("clones.zip").
+		run()
+
+	return {
+		tsvZip: file.exportFile(zipResult.getFile("clones.zip"))
+	}
+})

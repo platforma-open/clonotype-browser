@@ -1,0 +1,41 @@
+{
+  "name": "@platforma-open/milaboratories.clonotype-browser-3.model",
+  "version": "1.0.0",
+  "description": "Block model",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup && vite build && block-tools build-model",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@types/lodash.omit": "^4.5.9",
+    "lodash.omit": "^4.5.0",
+    "@platforma-sdk/model": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/block-tools": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "tsup": "catalog:"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "splitting": false,
+    "treeshake": true,
+    "clean": true,
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "dts": true,
+    "minify": false,
+    "sourcemap": true
+  }
+}

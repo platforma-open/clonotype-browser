@@ -1,0 +1,29 @@
+{
+  "scripts": {
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
+    "build": "turbo run build",
+    "build:dev": "PL_PKG_DEV=local turbo run build",
+    "test": "PL_PKG_DEV=local turbo run test --concurrency 1",
+    "test:dry-run": "PL_PKG_DEV=local turbo run test --dry-run=json",
+    "mark-stable": "turbo run mark-stable",
+    "watch": "turbo watch build",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "devDependencies": {
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "@changesets/cli": "catalog:",
+    "js-yaml": "catalog:"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "overrides": {
+      "@milaboratories/pl-model-common": "link:/Users/aleksandr/Projects/MILAB/platforma/lib/model/common/",
+      "@platforma-sdk/model": "link:/Users/aleksandr/Projects/MILAB/platforma/sdk/model/",
+      "@platforma-sdk/ui-vue": "link:/Users/aleksandr/Projects/MILAB/platforma/sdk/ui-vue/",
+      "@platforma-sdk/workflow-tengo": "link:/Users/aleksandr/Projects/MILAB/platforma/sdk/workflow-tengo/",
+      "@milaboratories/uikit": "link:/Users/aleksandr/Projects/MILAB/platforma/lib/ui/uikit/z"
+    }
+  }
+}
