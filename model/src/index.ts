@@ -1,6 +1,5 @@
 import type {
   AnchoredPColumnSelector,
-  AnnotationScript,
   AnnotationScriptUi,
   AnnotationSpecs,
   InferHrefType,
@@ -22,21 +21,13 @@ import {
 import omit from 'lodash.omit';
 
 type BlockArgs = {
-  /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
   inputAnchor?: PlRef;
-  /** Annotation script to apply to the input anchor */
-  annotationScript: AnnotationScript;
   datasetTitle?: string;
-
-  mode: 'byClonotype' | 'bySampleAndClonotype';
   annotationSpecs: AnnotationSpecs;
 };
 
 export type UiState = {
   settingsOpen: boolean;
-  perSampleTable: {
-    tableState: PlDataTableStateV2;
-  };
   overlapTable: {
     tableState: PlDataTableStateV2;
   };
@@ -87,12 +78,6 @@ const commonExcludes: AnchoredPColumnSelector[] = [
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
-    annotationScript: {
-      title: 'My Annotation',
-      mode: 'byClonotype',
-      steps: [],
-    },
-    mode: 'byClonotype',
     annotationSpecs: {
       title: 'My Annotation',
       specs: [],
@@ -101,9 +86,6 @@ export const platforma = BlockModel.create('Heavy')
 
   .withUiState<UiState>({
     settingsOpen: true,
-    perSampleTable: {
-      tableState: createPlDataTableStateV2(),
-    },
     overlapTable: {
       tableState: createPlDataTableStateV2(),
     },
@@ -135,7 +117,7 @@ export const platforma = BlockModel.create('Heavy')
     }),
   )
 
-  .output('byClonotypeColumns', (ctx) => {
+  .output('overlapColumns', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
@@ -173,90 +155,6 @@ export const platforma = BlockModel.create('Heavy')
           };
         }).filter((e): e is PColumn<PColumnDataUniversal> => e.data !== undefined) ?? []),
     };
-  })
-
-  .output('bySampleAndClonotypeColumns', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
-    if (!anchorCtx) return undefined;
-
-    const entries = new PColumnCollection()
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool)
-      .getUniversalEntries(
-        {
-          domainAnchor: 'main',
-          axes: [
-            { anchor: 'main', idx: 0 },
-            { anchor: 'main', idx: 1 },
-          ],
-        },
-        { anchorCtx },
-      );
-    return {
-      columns: simplifyColumnEntries(entries),
-      pFrame: ctx.createPFrame(entries
-        ?.map((e) => {
-          return {
-            id: e.id as PObjectId,
-            spec: e.spec,
-            data: e.data(),
-          };
-        }).filter((e): e is PColumn<PColumnDataUniversal> => e.data !== undefined) ?? []),
-    };
-  })
-
-  .output('mainAbundanceColumn', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-
-    const ops = ctx.resultPool.getCanonicalOptions(
-      { main: ctx.args.inputAnchor },
-      {
-        axes: [
-          { anchor: 'main', idx: 0 },
-          { anchor: 'main', idx: 1 },
-        ],
-        annotations: {
-          'pl7.app/isAbundance': 'true',
-          'pl7.app/abundance/normalized': 'true',
-          'pl7.app/abundance/isPrimary': 'true',
-        },
-      },
-    );
-    if (ops === undefined || ops.length === 0) return undefined;
-    return ops[0];
-  })
-
-  .output('clonotypeColumnOptions', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-
-    return ctx.resultPool.getCanonicalOptions(
-      { main: ctx.args.inputAnchor },
-      {
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 1 },
-        ],
-        annotations: {
-          'pl7.app/table/visibility': 'default',
-        },
-      },
-    );
-  })
-
-  .output('exportedTsvZip', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
-    const tsvResource = ctx.prerun?.resolve('tsvZip');
-    if (!tsvResource) return undefined;
-    if (!tsvResource.getIsReadyOrError())
-      return undefined;
-    if (tsvResource.resourceType.name === 'Null')
-      return null;
-    return tsvResource.getRemoteFileHandle();
   })
 
   .output('overlapTable', (ctx) => {
@@ -333,9 +231,9 @@ export const platforma = BlockModel.create('Heavy')
     const columnsAfterSplitting = collection
       .getColumns([
         // annotationStatsPf without split
-        { axes: [{ }] },
+        { axes: [{}] },
         // sampleStatsPf with split sampleId
-        { axes: [{ split: true }, { }] },
+        { axes: [{ split: true }, {}] },
       ]);
 
     if (columnsAfterSplitting === undefined) return undefined;
@@ -347,23 +245,34 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('exportedTsvZip', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+    const tsvResource = ctx.prerun?.resolve('tsvZip');
+    if (!tsvResource) return undefined;
+    if (!tsvResource.getIsReadyOrError())
+      return undefined;
+    if (tsvResource.resourceType.name === 'Null')
+      return null;
+    return tsvResource.getRemoteFileHandle();
+  })
+
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Per Sample ' } as const,
-      { type: 'link', href: '/overlap', label: 'Overlap' } as const,
-      ...(ctx.args.annotationScript.steps.length > 0
-        ? [{ type: 'link', href: '/stats', label: 'Annotation Stats' } as const]
+      { type: 'link', href: '/', label: 'Annotation' } as const,
+      ...(ctx.args.annotationSpecs.specs.length > 0
+        ? [{ type: 'link', href: '/stats', label: 'Stats' } as const]
         : []),
     ];
   })
 
-  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationScript.steps.length > 0)
+  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpecs.specs.length > 0)
 
   // We enrich the input, only if we produce annotations
-  .enriches((args) => args.inputAnchor !== undefined && args.annotationScript.steps.length > 0 ? [args.inputAnchor] : [])
+  .enriches((args) => args.inputAnchor !== undefined && args.annotationSpecs.specs.length > 0 ? [args.inputAnchor] : [])
 
-  .title((ctx) => ctx.args.annotationScript.steps.length > 0
-    ? `Annotation - ${ctx.args.annotationScript.title}`
+  .title((ctx) => ctx.args.annotationSpecs.specs.length > 0
+    ? `Annotation - ${ctx.args.annotationSpecs.title}`
     : ctx.args.datasetTitle
       ? `Clonotype Browser - ${ctx.args.datasetTitle}`
       : 'Clonotype Browser')

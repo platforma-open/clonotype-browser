@@ -24,7 +24,7 @@
       "ui": "@platforma-open/milaboratories.clonotype-browser-3.ui/dist"
     },
     "meta": {
-      "title": "Simple Clonotype Browser",
+      "title": "[WIP] Clonotype Browser",
       "logo": "file:../logos/block-logo.png",
       "url": "https://github.com/platforma-open/clonotype-browser-3",
       "support": "mailto:support@milaboratories.com",
@@ -37,7 +37,7 @@
         "url": "https://milaboratories.com/",
         "logo": "file:../logos/organization-logo.png"
       },
-      "marketplaceRanking": 16700
+      "marketplaceRanking": 16500
     }
   },
   "devDependencies": {

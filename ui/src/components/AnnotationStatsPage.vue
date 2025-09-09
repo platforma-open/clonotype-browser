@@ -19,7 +19,7 @@ const tableSettings = usePlDataTableSettingsV2({
 <template>
   <PlBlockPage>
     <template #title>
-      Annotation Stats - {{ app.model.args.annotationScript.title }}
+      Annotation Stats - {{ app.model.args.annotationSpecs.title }}
     </template>
     <template #append>
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
