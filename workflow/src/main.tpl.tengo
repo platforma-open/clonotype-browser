@@ -24,12 +24,12 @@ wf.body(func(args) {
 	outputs := {}
 
 	if len(args.annotationSpecs.specs) > 0 {
-		columnBundle := util.createColumnBundle2(wf, args)
+		columnBundle := util.createColumnBundle(wf, args)
 		calculationResult := render.createEphemeral(doCalculations, {
 			blockId: blockId,
 			blockArgs: args,
 			columnBundle: columnBundle,
-			computeFilters: true
+			shoudlComputeFilters: true
 		})
 
 		outputs["annotationPf"] = calculationResult.output("annotationPf")

@@ -1,4 +1,8 @@
 rand := import("rand")
+json := import("json")
+text := import("text")
+math := import("math")
+
 self := import("@platforma-sdk/workflow-tengo:tpl")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
@@ -13,12 +17,9 @@ pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 pBuilder := import("@platforma-sdk/workflow-tengo:pframes.builder")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
-json := import("json")
-text := import("text")
-math := import("math")
+annotations := import("@platforma-sdk/workflow-tengo:annotations")
 
 util := import(":util")
-annotationsUtil := import(":annotations")
 
 // Input headers
 SAMPLE_KEY_HEADER := "sample_key"
@@ -156,8 +157,8 @@ self.body(func(inputs) {
 	blockId := inputs.blockId
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
-	computeFilters := inputs.computeFilters
 	annotationSpecs := blockArgs.annotationSpecs
+	shoudlComputeFilters := inputs.shoudlComputeFilters
 
 	outputs := {}
 
@@ -194,14 +195,17 @@ self.body(func(inputs) {
 	
 	// -------------------
 
-	result := annotationsUtil.computeAnnotations({
-		annotationScript: annotationSpecs,
+	result := annotations.computeAnnotations({
+		title: annotationSpecs.title,
+		steps: annotationSpecs.specs,
+		
 		mainAxis: { column: CLONOTYPE_KEY_HEADER, spec: clonotypeAxisSpec },
+		columnBundle: columnBundle,
+
 		blockId: blockId,
 		traceSpec: trace,
-		computeFilters: computeFilters,
 
-		columnBundle: columnBundle
+		shoudlComputeFilters: shoudlComputeFilters
 	})
 
 	annotationsAxis := { column: result.annotations.column, spec: convertColumnSpecToAxisSpec(result.annotations.spec) }
@@ -256,8 +260,6 @@ self.body(func(inputs) {
 
 	outputs["sampleStatsPf"] = convertMapToPFrame(createStatsDataAndSpecBySample(wfResult.getFile(SAMPLE_STATS_FILE)))
 	outputs["annotationStatsPf"] = convertMapToPFrame(createStatsDataAndSpecByAnnotation(wfResult.getFile(ANNOTATION_STATS_FILE)))
-
-	// -------------------
 
 	return outputs
 })
