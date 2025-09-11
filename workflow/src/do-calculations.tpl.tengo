@@ -27,7 +27,9 @@ CLONOTYPE_KEY_HEADER := "clonotype_key"
 
 // Result headers
 MAIN_COUNT_HEADER := "main_count"
+MAIN_COUNT_SUM_HEADER := "main_count_sum"
 MAIN_FRACTION_HEADER := "main_fraction"
+MAIN_FRACTION_SUM_HEADER := "main_fraction_sum"
 
 // States headers
 ANNOTATION_COUNT_HEADER := "annotation_count"
@@ -122,12 +124,12 @@ createStatsDataAndSpecBySampleFactory := func(sampleAxis, annotationsAxis, creat
 					spec: createColumnSpec("Int", "stats/" + CLONOTYPE_COUNT_HEADER, "Clonotypes Number", importAxesSpec)
 				},
 				{
-					column: MAIN_COUNT_HEADER+"_sum",
-					spec: createColumnSpec("Double", "stats/" + MAIN_COUNT_HEADER+"_sum", "Count sum", importAxesSpec)
+					column: MAIN_COUNT_SUM_HEADER,
+					spec: createColumnSpec("Double", "stats/" + MAIN_COUNT_SUM_HEADER, "Count sum", importAxesSpec)
 				},
 				{
-					column: MAIN_FRACTION_HEADER+"_sum",
-					spec: createColumnSpec("Double", "stats/" + MAIN_FRACTION_HEADER+"_sum", "Fraction sum", importAxesSpec)
+					column: MAIN_FRACTION_SUM_HEADER,
+					spec: createColumnSpec("Double", "stats/" + MAIN_FRACTION_SUM_HEADER, "Fraction sum", importAxesSpec)
 				}
 			]
 		}
@@ -242,8 +244,8 @@ self.body(func(inputs) {
 		agg(
 			pt.col(result.annotations.column).count().alias(ANNOTATION_COUNT_HEADER),
 			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER),
-			pt.col(MAIN_COUNT_HEADER).sum().alias(MAIN_COUNT_HEADER+"_sum"),
-			pt.col(MAIN_FRACTION_HEADER).sum().alias(MAIN_FRACTION_HEADER+"_sum")
+			pt.col(MAIN_COUNT_HEADER).sum().alias(MAIN_COUNT_SUM_HEADER),
+			pt.col(MAIN_FRACTION_HEADER).sum().alias(MAIN_FRACTION_SUM_HEADER)
 		).
 		save(SAMPLE_STATS_FILE)
 	
