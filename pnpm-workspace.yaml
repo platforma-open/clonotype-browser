@@ -10,19 +10,20 @@ packages:
 catalog:
   '@milaboratories/ts-configs': ^1.0.6
   '@milaboratories/build-configs': ^1.0.6
-  '@platforma-sdk/workflow-tengo': ^5.0.3
+  '@platforma-sdk/workflow-tengo': ^5.2.0
   '@platforma-sdk/model': ^1.42.20
   '@platforma-sdk/ui-vue': ^1.42.21
   '@platforma-sdk/tengo-builder': ^2.1.15
-  '@platforma-sdk/package-builder': ^2.17.1
+  '@platforma-sdk/package-builder': ^3.4.0
   '@platforma-sdk/block-tools': ^2.5.83
   '@platforma-sdk/eslint-config': ^1.0.3
+  "@platforma-sdk/blocks-deps-updater": ^2.0.0
 
   '@platforma-sdk/test': ^1.42.20
   '@milaboratories/helpers': ^1.6.20
 
-  '@platforma-open/milaboratories.runenv-python-3': ^1.1.16
-  '@platforma-open/milaboratories.software-ptransform': ^1.4.3
+  '@platforma-open/milaboratories.runenv-python-3': ^1.4.5
+  '@platforma-open/milaboratories.software-ptransform': ^1.6.0
 
   '@platforma-open/milaboratories.software-binary-collection.software-7zip': ^1.1.2
 
