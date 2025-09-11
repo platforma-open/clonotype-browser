@@ -40,13 +40,13 @@ wf.body(func(args) {
 	outputs["tsvZip"] = exportResult.output("tsvZip")
 	outputs["exportDebug"] = exportResult.output("exportDebug")
 
-	if len(args.annotationSpecs.specs) > 0 {
+	if len(args.annotationSpec.steps) > 0 {
 		columnBundle := util.createColumnBundle(wf, args)
 		calculationResult := render.createEphemeral(doCalculations, {
 			blockId: blockId,
 			blockArgs: args,
 			columnBundle: columnBundle,
-			shoudlComputeFilters: false
+			shouldComputeFilters: true
 		})
 
 		outputs["annotationPf"] = pFrames.exportFrame(calculationResult.output("annotationPf"))

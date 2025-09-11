@@ -1,7 +1,6 @@
 import type {
   AnchoredPColumnSelector,
-  AnnotationScriptUi,
-  AnnotationSpecs,
+  AnnotationSpec,
   InferHrefType,
   InferOutputsType,
   PColumn,
@@ -19,11 +18,12 @@ import {
   PColumnCollection,
 } from '@platforma-sdk/model';
 import omit from 'lodash.omit';
+import type { AnnotationSpecUi } from './types';
 
 type BlockArgs = {
   inputAnchor?: PlRef;
   datasetTitle?: string;
-  annotationSpecs: AnnotationSpecs;
+  annotationSpec: AnnotationSpec;
 };
 
 export type UiState = {
@@ -34,7 +34,7 @@ export type UiState = {
   statsTable: {
     tableState: PlDataTableStateV2;
   };
-  annotationScript: AnnotationScriptUi;
+  annotationSpec: AnnotationSpecUi;
 };
 
 const excludedAnnotationKeys = [
@@ -78,9 +78,9 @@ const commonExcludes: AnchoredPColumnSelector[] = [
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
-    annotationSpecs: {
+    annotationSpec: {
       title: 'My Annotation',
-      specs: [],
+      steps: [],
     },
   })
 
@@ -92,11 +92,11 @@ export const platforma = BlockModel.create('Heavy')
     statsTable: {
       tableState: createPlDataTableStateV2(),
     },
-    annotationScript: {
+    annotationSpec: {
+      isCreated: false,
       title: 'My Annotation',
-      mode: 'byClonotype',
       steps: [],
-    },
+    } satisfies AnnotationSpecUi,
   })
 
   .output('inputOptions', (ctx) =>
@@ -260,19 +260,19 @@ export const platforma = BlockModel.create('Heavy')
   .sections((ctx) => {
     return [
       { type: 'link', href: '/', label: 'Annotation' } as const,
-      ...(ctx.args.annotationSpecs.specs.length > 0
+      ...(ctx.args.annotationSpec.steps.length > 0
         ? [{ type: 'link', href: '/stats', label: 'Stats' } as const]
         : []),
     ];
   })
 
-  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpecs.specs.length > 0)
+  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpec.steps.length > 0)
 
   // We enrich the input, only if we produce annotations
-  .enriches((args) => args.inputAnchor !== undefined && args.annotationSpecs.specs.length > 0 ? [args.inputAnchor] : [])
+  .enriches((args) => args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0 ? [args.inputAnchor] : [])
 
-  .title((ctx) => ctx.args.annotationSpecs.specs.length > 0
-    ? `Annotation - ${ctx.args.annotationSpecs.title}`
+  .title((ctx) => ctx.args.annotationSpec.steps.length > 0
+    ? `Annotation - ${ctx.args.annotationSpec.title}`
     : ctx.args.datasetTitle
       ? `Clonotype Browser - ${ctx.args.datasetTitle}`
       : 'Clonotype Browser')
@@ -283,4 +283,5 @@ export type Platforma = typeof platforma;
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
+export * from './types';
 export type { BlockArgs };

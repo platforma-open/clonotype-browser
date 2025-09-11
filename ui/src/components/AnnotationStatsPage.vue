@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import {
   PlAgDataTableV2,
-  PlAnnotationsModal,
   PlBlockPage,
   PlBtnGhost,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
 import { useApp } from '../app';
+import AnnotationModal from './AnnotationModal.vue';
 
 const app = useApp();
 
 const tableSettings = usePlDataTableSettingsV2({
-  sourceId: () => app.model.args.annotationSpecs.specs.length > 0 ? app.model.args.annotationSpecs.specs : undefined,
+  sourceId: () => app.model.args.annotationSpec.steps.length > 0 ? app.model.args.annotationSpec.steps : undefined,
   model: () => app.model.outputs.statsTable,
 });
 </script>
@@ -19,7 +19,7 @@ const tableSettings = usePlDataTableSettingsV2({
 <template>
   <PlBlockPage>
     <template #title>
-      Annotation Stats - {{ app.model.args.annotationSpecs.title }}
+      Annotation Stats - {{ app.model.args.annotationSpec.title }}
     </template>
     <template #append>
       <PlBtnGhost icon="settings" @click.stop="app.isAnnotationModalOpen = true">
@@ -33,11 +33,5 @@ const tableSettings = usePlDataTableSettingsV2({
       show-export-button
     />
   </PlBlockPage>
-  <PlAnnotationsModal
-    v-model:annotation="app.model.ui.annotationScript"
-    v-model:opened="app.isAnnotationModalOpen"
-    :columns="app.filterColumns"
-    :hasSelectedColumns="app.hasSelectedColumns"
-    :getValuesForSelectedColumns="app.getValuesForSelectedColumns"
-  />
+  <AnnotationModal />
 </template>

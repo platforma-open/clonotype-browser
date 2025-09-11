@@ -1,10 +1,10 @@
-import type { AnnotationScriptUi, AnnotationSpecs } from '@platforma-sdk/model';
-import { convertAnnotationSpecs } from '@platforma-sdk/model';
+import type { AnnotationSpec, AnnotationSpecUi } from '@platforma-open/milaboratories.clonotype-browser-3.model';
+import { convertFilterSpecsToExpressionSpecs } from '@platforma-sdk/model';
 import { watchDebounced } from '@vueuse/core';
 
 export function processAnnotationUiStateToArgsState(
-  getUiState: () => AnnotationScriptUi,
-  getArgsState: () => AnnotationSpecs,
+  getUiState: () => AnnotationSpecUi,
+  getArgsState: () => AnnotationSpec,
 ) {
   watchDebounced(getUiState, () => {
     try {
@@ -12,7 +12,7 @@ export function processAnnotationUiStateToArgsState(
       const argsState = getArgsState();
 
       argsState.title = uiState.title;
-      argsState.specs = convertAnnotationSpecs(uiState.steps);
+      argsState.steps = convertFilterSpecsToExpressionSpecs(uiState.steps);
     } catch (err) {
       console.error('Error while compiling annotation UI state to Args:', err);
     }

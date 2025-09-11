@@ -40,7 +40,7 @@ createColumnBundle := func(wf, args) {
 	bundleBuilder := wf.createPBundleBuilder()
 	bundleBuilder.addAnchor("main", args.inputAnchor)
 
-	expressions := slices.map(args.annotationSpecs.specs, func(step) { return step.expression })
+	expressions := slices.map(args.annotationSpec.steps, func(step) { return step.expression })
 	columns := annotations.extractColumnsFromExpressions(expressions)
 
 	for column in columns {

@@ -5,15 +5,13 @@ import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
 import OverlapPage from './components/OverlapPage.vue';
-import { migrateUiState } from './migration';
 import { processAnnotationUiStateToArgsState } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
-  migrateUiState(app.model.ui);
   processAnnotationUiStateToArgsState(
-    () => app.model.ui.annotationScript,
-    () => app.model.args.annotationSpecs,
+    () => app.model.ui.annotationSpec,
+    () => app.model.args.annotationSpec,
   );
 
   const selectedColumns = ref({

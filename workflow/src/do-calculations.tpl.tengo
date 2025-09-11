@@ -159,12 +159,12 @@ self.body(func(inputs) {
 	blockId := inputs.blockId
 	blockArgs := inputs.blockArgs
 	columnBundle := inputs.columnBundle
-	annotationSpecs := blockArgs.annotationSpecs
-	shoudlComputeFilters := inputs.shoudlComputeFilters
+	annotationSpec := blockArgs.annotationSpec
+	shouldComputeFilters := inputs.shouldComputeFilters
 
 	outputs := {}
 
-	if len(annotationSpecs.specs) == 0 {
+	if len(annotationSpec.steps) == 0 {
 		return outputs
 	}
 
@@ -187,7 +187,7 @@ self.body(func(inputs) {
 
 	trace := pSpec.makeTrace(anchorSpec, {
 		type: "milaboratories.clonotype-annotation",
-		label: annotationSpecs.title,
+		label: annotationSpec.title,
 		importance: 20,
 		id: blockId
 	})
@@ -198,8 +198,8 @@ self.body(func(inputs) {
 	// -------------------
 
 	result := annotations.computeAnnotations({
-		title: annotationSpecs.title,
-		steps: annotationSpecs.specs,
+		title: annotationSpec.title,
+		steps: annotationSpec.steps,
 		
 		mainAxis: { column: CLONOTYPE_KEY_HEADER, spec: clonotypeAxisSpec },
 		columnBundle: columnBundle,
@@ -207,7 +207,7 @@ self.body(func(inputs) {
 		blockId: blockId,
 		traceSpec: trace,
 
-		shoudlComputeFilters: shoudlComputeFilters
+		shouldComputeFilters: shouldComputeFilters
 	})
 
 	annotationsAxis := { column: result.annotations.column, spec: convertColumnSpecToAxisSpec(result.annotations.spec) }

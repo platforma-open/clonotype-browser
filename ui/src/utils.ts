@@ -1,6 +1,15 @@
 import { deepClone, isNil } from '@milaboratories/helpers';
+import type { AnnotationSpecUi } from '@platforma-open/milaboratories.clonotype-browser-3.model';
 import type { PObjectId } from '@platforma-sdk/model';
 import { getAxisId, getRawPlatformaInstance, type PFrameHandle, type PlSelectionModel } from '@platforma-sdk/model';
+
+export function getDefaultAnnotationScript(): AnnotationSpecUi {
+  return {
+    isCreated: false,
+    title: 'My Annotation',
+    steps: [],
+  };
+}
 
 export async function getValuesForSelectedColumns(
   selectedColumns: PlSelectionModel,
