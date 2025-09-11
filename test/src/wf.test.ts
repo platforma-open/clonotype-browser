@@ -2,7 +2,6 @@ import type {
   BlockArgs,
   BlockOutputs,
   platforma,
-  SimplifiedUniversalPColumnEntry,
 } from '@platforma-open/milaboratories.clonotype-browser-3.model';
 import { blockSpec as clonotypingBlockSpec } from '@platforma-open/milaboratories.mixcr-clonotyping-2';
 import type {
@@ -16,8 +15,8 @@ import {
 } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaboratories.samples-and-data';
 import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { AnnotationScript, InferBlockState, SUniversalPColumnId } from '@platforma-sdk/model';
-import { wrapOutputs } from '@platforma-sdk/model';
+import type { AnnotationSpec, FilterSpecUi, InferBlockState, SimplifiedUniversalPColumnEntry, SUniversalPColumnId } from '@platforma-sdk/model';
+import { convertFilterSpecsToExpressionSpecs, wrapOutputs } from '@platforma-sdk/model';
 import type { ML, RawHelpers } from '@platforma-sdk/test';
 import { awaitStableState, blockTest } from '@platforma-sdk/test';
 import { blockSpec as annotationBlockSpec } from 'this-block';
@@ -203,7 +202,7 @@ function findColumnId(columns: SimplifiedUniversalPColumnEntry[] | undefined, la
 
 // Test for byClonotype mode
 blockTest(
-  'simple project byClonotype mode',
+  'simple project annotations',
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
     const {
@@ -213,11 +212,10 @@ blockTest(
     // Initial annotation block state set to trigger column calculation
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs4.inputOptions[0].ref,
-      annotationScript: {
+      annotationSpec: {
         title: 'My Annotation',
-        mode: 'byClonotype',
         steps: [],
-      } satisfies AnnotationScript,
+      } satisfies AnnotationSpec,
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -226,13 +224,13 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
-    console.dir({ byClonotypeColumns: outputs5.byClonotypeColumns?.columns }, { depth: 8 });
+    console.dir({ overlapColumns: outputs5.overlapColumns?.columns }, { depth: 8 });
 
     // Find column IDs from byClonotypeColumns
-    const readCount652Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Number Of Reads / SRR11233652'));
-    const readFraction652Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233652'));
-    const readFraction664Column = findColumnId(outputs5.byClonotypeColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233664'));
-    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns?.columns, 'Best V gene');
+    const readCount652Column = findColumnId(outputs5.overlapColumns?.columns, (l) => l.includes('Number Of Reads / SRR11233652'));
+    const readFraction652Column = findColumnId(outputs5.overlapColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233652'));
+    const readFraction664Column = findColumnId(outputs5.overlapColumns?.columns, (l) => l.includes('Fraction of reads / SRR11233664'));
+    const vGeneColumn = findColumnId(outputs5.overlapColumns?.columns, 'Best V gene');
 
     // Ensure all column references are defined before using them
     expect(readCount652Column, 'Read Count 652 Column').toBeDefined();
@@ -247,42 +245,27 @@ blockTest(
 
     // Cast to SUniversalPColumnId after checks
 
-    const annotationScript: AnnotationScript = {
+    const filterSteps: FilterSpecUi[] = [
+      {
+        label: 'Medium Read Count (Sample 652)',
+        filter: {
+          type: 'and',
+          filters: [
+            { type: 'greaterThanOrEqual', column: readCount652Column, x: 1 },
+            { type: 'lessThanOrEqual', column: readCount652Column, x: 1000 },
+          ],
+        },
+      },
+    ];
+
+    const annotationSpec: AnnotationSpec = {
       title: 'My Annotation',
-      mode: 'byClonotype',
-      steps: [
-        {
-          filter: {
-            type: 'and',
-            filters: [
-              { type: 'numericalComparison', lhs: 1, rhs: readCount652Column },
-              { type: 'numericalComparison', lhs: readCount652Column, rhs: 1000 },
-            ],
-          },
-          label: 'Medium Read Count (Sample 652)',
-        },
-        {
-          filter: { type: 'numericalComparison', lhs: readFraction664Column, rhs: readFraction652Column, minDiff: 0.01 },
-          label: 'Significantly More Abundant in Sample 652',
-        },
-        {
-          filter: { type: 'pattern', column: vGeneColumn, predicate: { type: 'containSubsequence', value: 'IGHV3' } },
-          label: 'IGHV3 Family',
-        },
-        {
-          filter: { type: 'numericalComparison', lhs: { transformer: 'rank', column: readCount652Column, descending: true }, rhs: 2, allowEqual: true },
-          label: 'Top 2 by Read Count (Sample 652)',
-        },
-        {
-          filter: { type: 'numericalComparison', lhs: { transformer: 'sortedCumulativeSum', column: readFraction664Column, descending: true }, rhs: 0.5, allowEqual: true },
-          label: 'Top 50% by Read Fraction (Sample 664)',
-        },
-      ],
+      steps: convertFilterSpecsToExpressionSpecs(filterSteps),
     };
 
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
-      annotationScript,
+      annotationSpec,
     } satisfies BlockArgs);
 
     const annotationStableState3 = (await awaitStableState(
@@ -291,7 +274,7 @@ blockTest(
     )) as InferBlockState<typeof platforma>;
 
     const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
-    console.dir({ byClonotypeOutputs: outputs6 }, { depth: 8 });
+    console.dir({ outputs: outputs6 }, { depth: 8 });
 
     expect(outputs6.overlapTable, 'Overlap Table').toBeDefined();
     expect(outputs6.statsTable, 'Stats Table').toBeDefined();
@@ -304,7 +287,7 @@ blockTest(
     const annotationData = await ml.driverKit.pFrameDriver.getData(outputs6.overlapTable!.fullTableHandle, [annotationIdx]);
     expect(annotationData[0].data, 'Annotation Data').toBeDefined();
     expect(annotationData[0].data.length, 'Annotation Data Length').toBeGreaterThan(0);
-    expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.startsWith('Top 2'))), 'Annotation contains "Top 2"').toBe(true);
+    expect(annotationData[0].data.some((val) => Boolean(val?.toString()?.includes('Medium Read Count'))), 'Annotation contains label').toBe(true);
 
     const statsShape = await ml.driverKit.pFrameDriver.getShape(outputs6.statsTable!.fullTableHandle);
     const statsData = await ml.driverKit.pFrameDriver.getData(outputs6.statsTable!.fullTableHandle, [...Array(statsShape.columns).keys()]);
@@ -315,136 +298,4 @@ blockTest(
   },
 );
 
-// Test for bySampleAndClonotype mode
-blockTest(
-  'simple project bySampleAndClonotype mode',
-  { timeout: 300000 },
-  async ({ rawPrj: project, ml, helpers, expect }) => {
-    const {
-      annotationBlockId, outputs4, // s652_sampleId, s664_sampleId,
-    } = await setupProject({ rawPrj: project, ml, helpers, expect });
-
-    // Initial annotation block state set to trigger column calculation
-    await project.setBlockArgs(annotationBlockId, {
-      inputAnchor: outputs4.inputOptions[0].ref,
-      annotationScript: {
-        title: 'My Annotation',
-        mode: 'bySampleAndClonotype', // Change mode here
-        steps: [],
-      } satisfies AnnotationScript,
-    } satisfies BlockArgs);
-
-    const annotationStableState2 = (await awaitStableState(
-      project.getBlockState(annotationBlockId),
-      300000,
-    )) as InferBlockState<typeof platforma>;
-
-    const outputs5 = wrapOutputs<BlockOutputs>(annotationStableState2.outputs);
-    console.dir({ bySampleAndClonotypeColumns: outputs5.bySampleAndClonotypeColumns }, { depth: 8 });
-
-    // Find column IDs from bySampleAndClonotypeColumns
-    // Note: In this mode, columns represent values per sample-clonotype pair directly
-    const readCountColumn = findColumnId(outputs5.bySampleAndClonotypeColumns?.columns, 'Number Of Reads');
-    const readFractionColumn = findColumnId(outputs5.bySampleAndClonotypeColumns?.columns, 'Fraction of reads');
-    // Find V gene from byClonotypeColumns (still available, represents clonotype property)
-    const vGeneColumn = findColumnId(outputs5.byClonotypeColumns?.columns, 'Best V gene');
-
-    expect(readCountColumn, 'Read Count Column').toBeDefined();
-    expect(readFractionColumn, 'Read Fraction Column').toBeDefined();
-    expect(vGeneColumn, 'V Gene Column').toBeDefined();
-
-    if (!readCountColumn || !readFractionColumn || !vGeneColumn) {
-      throw new Error('Required column references are undefined');
-    }
-
-    // Define annotation steps using bySampleAndClonotype specific filters
-    const annotationScript: AnnotationScript = {
-      title: 'My Annotation',
-      mode: 'bySampleAndClonotype',
-      steps: [
-        {
-          filter: { // Filter reads within each sample independently
-            type: 'and',
-            filters: [
-              { type: 'numericalComparison', lhs: 1, rhs: readCountColumn },
-              { type: 'numericalComparison', lhs: readCountColumn, rhs: 1000 },
-            ],
-          },
-          label: 'Medium Read Count (Per Sample)',
-        },
-        {
-          filter: { // Filter based on V gene family (clonotype property)
-            type: 'pattern', column: vGeneColumn, predicate: { type: 'containSubsequence', value: 'IGHV3' },
-          },
-          label: 'IGHV3 Family',
-        },
-        {
-          filter: { // Rank within each sample
-            type: 'numericalComparison',
-            lhs: { transformer: 'rank', column: readCountColumn, descending: true },
-            rhs: 2,
-            allowEqual: true,
-          },
-          label: 'Top 2 by Read Count (Per Sample)',
-        },
-        {
-          filter: { // Cumulative sum within each sample
-            type: 'numericalComparison',
-            lhs: { transformer: 'sortedCumulativeSum', column: readFractionColumn, descending: true },
-            rhs: 0.5,
-            allowEqual: true,
-          },
-          label: 'Top 50% by Read Fraction (Per Sample)',
-        },
-        // Example of IsNA filter (though less interesting with required read count filter above)
-        // {
-        //   filter: { type: 'isNA', column: readCountColumn },
-        //   label: 'Present in Sample (isNA check - should not appear)',
-        // }
-      ],
-    };
-
-    await project.setBlockArgs(annotationBlockId, {
-      inputAnchor: outputs5.inputOptions[0].ref,
-      annotationScript,
-    } satisfies BlockArgs);
-
-    const annotationStableState3 = (await awaitStableState(
-      project.getBlockState(annotationBlockId),
-      300000,
-    )) as InferBlockState<typeof platforma>;
-
-    const outputs6 = wrapOutputs<BlockOutputs>(annotationStableState3.outputs);
-    console.dir({ bySampleAndClonotypeOutputs: outputs6 }, { depth: 8 });
-
-    expect(outputs6.overlapTable, 'Overlap Table').toBeDefined();
-    expect(outputs6.statsTable, 'Stats Table').toBeDefined();
-
-    // --- Assertions for bySampleAndClonotype ---
-    // const columnSpecs = await ml.driverKit.pFrameDriver.getSpec(outputs6.table!);
-    // console.dir({ bySampleAndClonotypeColSpecs: columnSpecs }, { depth: 8 });
-
-    // Check for sample ID column and annotation column
-    // const annotationIdx = columnSpecs.findIndex((col) => col.spec.name === 'pl7.app/vdj/annotation');
-    // expect(annotationIdx, 'Annotation Column Index').toBeGreaterThanOrEqual(0);
-
-    // Fetch Sample ID and Annotation data
-    // const data = await ml.driverKit.pFrameDriver.getData(outputs6.table!, [annotationIdx]);
-    // const annotationData = data[0].data;
-
-    // expect(annotationData, 'Annotation Data').toBeDefined();
-    // expect(annotationData.length, 'Annotation Data Length').toBeGreaterThan(0);
-
-    // Check if a specific label is present
-    // expect(annotationData.some((val) => Boolean(val?.toString()?.startsWith('Top 2'))), 'Annotation contains "Top 2"').toBe(true);
-
-    // Check Stats Table
-    const statsShape = await ml.driverKit.pFrameDriver.getShape(outputs6.statsTable!.fullTableHandle);
-    const statsData = await ml.driverKit.pFrameDriver.getData(outputs6.statsTable!.fullTableHandle, [...Array(statsShape.columns).keys()]);
-    console.dir({ bySampleAndClonotypeStatsData: statsData }, { depth: 8 });
-
-    expect(statsData[0].data, 'Stats Data').toBeDefined();
-    expect(statsData[0].data.length, 'Stats Data Length').toBeGreaterThan(0);
-    // Further stats table assertions could go here (e.g., check presence of expected labels)
-  },
-);
+// removed obsolete bySampleAndClonotype test: mode is no longer part of annotation API
