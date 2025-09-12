@@ -25,8 +25,8 @@ catalogs:
       specifier: ^1.13.0
       version: 1.13.0
     '@platforma-open/milaboratories.runenv-python-3':
-      specifier: ^1.4.5
-      version: 1.4.5
+      specifier: ^1.4.6
+      version: 1.4.6
     '@platforma-open/milaboratories.samples-and-data':
       specifier: ^1.10.7
       version: 1.10.7
@@ -37,8 +37,8 @@ catalogs:
       specifier: ^1.1.2
       version: 1.1.2
     '@platforma-open/milaboratories.software-ptransform':
-      specifier: ^1.6.0
-      version: 1.6.0
+      specifier: ^1.6.4
+      version: 1.6.4
     '@platforma-sdk/block-tools':
       specifier: ^2.5.83
       version: 2.5.83
@@ -52,8 +52,8 @@ catalogs:
       specifier: ^1.42.20
       version: 1.42.20
     '@platforma-sdk/package-builder':
-      specifier: ^3.4.0
-      version: 3.4.0
+      specifier: ^3.5.2
+      version: 3.5.2
     '@platforma-sdk/tengo-builder':
       specifier: ^2.1.15
       version: 2.1.15
@@ -195,21 +195,21 @@ importers:
     dependencies:
       '@platforma-open/milaboratories.runenv-python-3':
         specifier: 'catalog:'
-        version: 1.4.5
+        version: 1.4.6
     devDependencies:
       '@platforma-sdk/package-builder':
         specifier: 'catalog:'
-        version: 3.4.0
+        version: 3.5.2
 
   software/annotator:
     dependencies:
       '@platforma-open/milaboratories.runenv-python-3':
         specifier: 'catalog:'
-        version: 1.4.5
+        version: 1.4.6
     devDependencies:
       '@platforma-sdk/package-builder':
         specifier: 'catalog:'
-        version: 3.4.0
+        version: 3.5.2
 
   test:
     dependencies:
@@ -334,7 +334,7 @@ importers:
         version: 1.1.2
       '@platforma-open/milaboratories.software-ptransform':
         specifier: 'catalog:'
-        version: 1.6.0
+        version: 1.6.4
       '@platforma-sdk/workflow-tengo':
         specifier: 'catalog:'
         version: 5.2.0
@@ -1367,11 +1367,14 @@ packages:
   '@platforma-open/milaboratories.runenv-python-3.12.10-atls@1.1.7':
     resolution: {integrity: sha512-vfbHB8ZQdP0ubtc3MBp3boPMad/LSAjBd8a1N9D5fkeIkj3plA8WECcLUshvjgs2xpBSyBPEhaQMvmGUOEjHtA==}
 
+  '@platforma-open/milaboratories.runenv-python-3.12.10-sccoda@1.2.6':
+    resolution: {integrity: sha512-+rJ47WXnWX4d0r+01KYbeBD2xwF7sxnUkyMu5Vf0WOA5xD+bBMR5GrF64ztFuAgbF5kyW9aklGjTfrZ/HAJAUw==}
+
   '@platforma-open/milaboratories.runenv-python-3.12.10@1.2.5':
     resolution: {integrity: sha512-0Eamvb+Q843/UbpD+8uKHYLFG7Q2icvC6x+GXwG4ZZ0zsAJlsSr2//zsSivFL8Vg7orC5i9FQCL+q0dkFpw6FQ==}
 
-  '@platforma-open/milaboratories.runenv-python-3@1.4.5':
-    resolution: {integrity: sha512-3B8H3rNku/2Gfcup8/HzCljhRQjXsmj7MAqdSpb8WUdtLUYSK7kDCkzY76GvsyKACljNiD9G/Z/m1X0aYoUi3w==}
+  '@platforma-open/milaboratories.runenv-python-3@1.4.6':
+    resolution: {integrity: sha512-2gM7I6Qwq3DWo1jCSJ1MJVxnNMnIaJeNKXN5WTWTGgEgCqt7s0mQmPBQHbISKSYLvx60nKo9ny+Wi0mdpiVOWw==}
 
   '@platforma-open/milaboratories.samples-and-data.model@1.10.0':
     resolution: {integrity: sha512-b8YAx2pXQOSTe8sppR4bMOZ8sNN42RUSQuzOaHNQR4ZZWSnmslksEM9p/EMO/1JyL1hUW92dcpQtK/FH3QcMcQ==}
@@ -1403,8 +1406,8 @@ packages:
   '@platforma-open/milaboratories.software-ptexter@1.1.1':
     resolution: {integrity: sha512-nTKuFoDm+IhlD3uCktYrpjJ1pJ8TUrGOGAACbLoPwu65iRPOjohmrBZxFux+7eill+aJmqEsy+xF41Dw4mfnkg==}
 
-  '@platforma-open/milaboratories.software-ptransform@1.6.0':
-    resolution: {integrity: sha512-/Z+88+V9ZcDI4eQxNrVqFxa+OuADY2GdTrY4T0kfRommbJylif+rZ4WMJ56Q/H70Kcd4v+H9moXb+WA4s02aiA==}
+  '@platforma-open/milaboratories.software-ptransform@1.6.4':
+    resolution: {integrity: sha512-DUHczUe9xk0jSGSlKqSWPU6bpLVTO5QsoX7hHC0hR/1yEpMmQ2RZM/zXCKHuYn3gdC0UnWI9RX6W/RZx+c+7Nw==}
 
   '@platforma-open/milaboratories.software-small-binaries.guided-command@1.0.4':
     resolution: {integrity: sha512-LD8XQDnR+L9oRD7JXE0VWGmv1/0cm+J71flrwBUWeIbuaenPC8Nsza8oy7JjLJ8AX+bm8XAyyJALuqBBqkL95Q==}
@@ -1468,8 +1471,8 @@ packages:
   '@platforma-sdk/model@1.42.20':
     resolution: {integrity: sha512-4Fch1999BRlIKdc70ICwy+/NqC8H1p/dlsR1E4d8SwW//pGZ08XnPCyaEYwOWkB6zWdrb9IOEAekzK2BgWS/ag==}
 
-  '@platforma-sdk/package-builder@3.4.0':
-    resolution: {integrity: sha512-YtZdGA0LObOCTwBR7Px7w79pVOIlTp/Fp4nUt+H64B4DHtpQee9pWn8UdQ6ZP3jtnLF5DHtetYVpDdH0ZixruA==}
+  '@platforma-sdk/package-builder@3.5.2':
+    resolution: {integrity: sha512-3TIUiSgn1tVq7sGxCRRkn3Hwf9oDXBv6Lx0DY/fSz7QgCLxaAhbyHH8E36J50jZFCfrF+v+LA+YuVZnQSmNesA==}
     hasBin: true
 
   '@platforma-sdk/tengo-builder@2.1.15':
@@ -7753,13 +7756,16 @@ snapshots:
 
   '@platforma-open/milaboratories.runenv-python-3.12.10-atls@1.1.7': {}
 
+  '@platforma-open/milaboratories.runenv-python-3.12.10-sccoda@1.2.6': {}
+
   '@platforma-open/milaboratories.runenv-python-3.12.10@1.2.5': {}
 
-  '@platforma-open/milaboratories.runenv-python-3@1.4.5':
+  '@platforma-open/milaboratories.runenv-python-3@1.4.6':
     dependencies:
       '@platforma-open/milaboratories.runenv-python-3.10.11': 1.1.7
       '@platforma-open/milaboratories.runenv-python-3.12.10': 1.2.5
       '@platforma-open/milaboratories.runenv-python-3.12.10-atls': 1.1.7
+      '@platforma-open/milaboratories.runenv-python-3.12.10-sccoda': 1.2.6
 
   '@platforma-open/milaboratories.samples-and-data.model@1.10.0':
     dependencies:
@@ -7791,7 +7797,7 @@ snapshots:
 
   '@platforma-open/milaboratories.software-ptexter@1.1.1': {}
 
-  '@platforma-open/milaboratories.software-ptransform@1.6.0': {}
+  '@platforma-open/milaboratories.software-ptransform@1.6.4': {}
 
   '@platforma-open/milaboratories.software-small-binaries.guided-command@1.0.4': {}
 
@@ -7877,7 +7883,7 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.23.8
 
-  '@platforma-sdk/package-builder@3.4.0':
+  '@platforma-sdk/package-builder@3.5.2':
     dependencies:
       '@aws-sdk/client-s3': 3.859.0
       '@aws-sdk/lib-storage': 3.859.0(@aws-sdk/client-s3@3.859.0)
