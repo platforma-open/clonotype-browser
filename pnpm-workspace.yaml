@@ -57,7 +57,7 @@ catalog:
 
   # other blocks used in tests
 
-  '@platforma-open/milaboratories.samples-and-data': ^1.10.7
-  '@platforma-open/milaboratories.samples-and-data.model': ^1.10.0
-  '@platforma-open/milaboratories.mixcr-clonotyping-2': ^2.8.2
-  '@platforma-open/milaboratories.mixcr-clonotyping-2.model': ^1.13.0
+  '@platforma-open/milaboratories.samples-and-data': ^1.10.11
+  '@platforma-open/milaboratories.samples-and-data.model': ^1.11.1
+  '@platforma-open/milaboratories.mixcr-clonotyping-2': ^2.12.2
+  '@platforma-open/milaboratories.mixcr-clonotyping-2.model': ^1.16.1
