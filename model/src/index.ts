@@ -1,6 +1,5 @@
 import type {
   AnchoredPColumnSelector,
-  AnnotationSpec,
   InferHrefType,
   InferOutputsType,
   PColumn,
@@ -18,7 +17,7 @@ import {
   PColumnCollection,
 } from '@platforma-sdk/model';
 import omit from 'lodash.omit';
-import type { AnnotationSpecUi } from './types';
+import type { AnnotationSpec, AnnotationSpecUi } from './types';
 
 type BlockArgs = {
   inputAnchor?: PlRef;

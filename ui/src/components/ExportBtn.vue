@@ -14,7 +14,7 @@ async function exportTsv() {
     if (handle !== undefined) {
       const pl = getRawPlatformaInstance();
       const contentArray = await pl.blobDriver.getContent(handle);
-      const contentBlob = new Blob([contentArray], { type: 'application/zip' });
+      const contentBlob = new Blob([contentArray as BlobPart], { type: 'application/zip' });
       const url = URL.createObjectURL(contentBlob);
       const a = document.createElement('a');
       a.href = url;
