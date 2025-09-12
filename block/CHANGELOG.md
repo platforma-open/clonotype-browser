@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.6.9
+
+### Patch Changes
+
+- 7ef3261: update test dependencies
+
 ## 1.6.8
 
 ### Patch Changes
