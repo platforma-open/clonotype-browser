@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-2.model",
-  "version": "1.10.4",
+  "version": "1.10.5",
   "description": "Block model",
   "type": "module",
   "main": "dist/index.cjs",
