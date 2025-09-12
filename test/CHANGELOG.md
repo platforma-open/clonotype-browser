@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.test
 
+## 1.3.9
+
+### Patch Changes
+
+- 1e303f3: update dependencies
+- Updated dependencies [1e303f3]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.10.6
+
 ## 1.3.8
 
 ### Patch Changes
