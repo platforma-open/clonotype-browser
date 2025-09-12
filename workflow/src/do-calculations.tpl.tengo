@@ -203,11 +203,10 @@ self.body(func(inputs) {
 		
 		mainAxis: { column: CLONOTYPE_KEY_HEADER, spec: clonotypeAxisSpec },
 		columnBundle: columnBundle,
+		shouldComputeFilters: shouldComputeFilters,
 
-		blockId: blockId,
-		traceSpec: trace,
-
-		shouldComputeFilters: shouldComputeFilters
+		createAxisSpec: createAxisSpec,
+		createColumnSpec: createColumnSpec
 	})
 
 	annotationsAxis := { column: result.annotations.column, spec: convertColumnSpecToAxisSpec(result.annotations.spec) }
