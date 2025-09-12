@@ -34,8 +34,8 @@ catalogs:
       specifier: ^1.10.0
       version: 1.10.0
     '@platforma-open/milaboratories.software-binary-collection.software-7zip':
-      specifier: ^1.1.2
-      version: 1.1.2
+      specifier: ^1.2.0
+      version: 1.2.0
     '@platforma-open/milaboratories.software-ptransform':
       specifier: ^1.6.0
       version: 1.6.0
@@ -218,7 +218,13 @@ importers:
         version: link:../model
       '@platforma-open/milaboratories.mixcr-clonotyping-2':
         specifier: 'catalog:'
+<<<<<<< Updated upstream
         version: 2.8.2(typescript@5.6.3)
+||||||| Stash base
+        version: 2.12.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)
+=======
+        version: 2.12.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)
+>>>>>>> Stashed changes
       '@platforma-open/milaboratories.mixcr-clonotyping-2.model':
         specifier: 'catalog:'
         version: 1.13.0
@@ -331,7 +337,7 @@ importers:
         version: link:../software/annotator
       '@platforma-open/milaboratories.software-binary-collection.software-7zip':
         specifier: 'catalog:'
-        version: 1.1.2
+        version: 1.2.0
       '@platforma-open/milaboratories.software-ptransform':
         specifier: 'catalog:'
         version: 1.6.0
@@ -1385,8 +1391,8 @@ packages:
   '@platforma-open/milaboratories.samples-and-data@1.10.7':
     resolution: {integrity: sha512-6K02RsZ3PqcTKott1nmqVHkzkIaV6BexlsNhOP2RTwtYjleGE1STg9chhfzmfwgLRq6OUk8MTjd9lL/BKMztdQ==}
 
-  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.1.2':
-    resolution: {integrity: sha512-1eI8X9vcy6N0AO5oqYwkGNmGnnidp3ikrhKlBI+t7BnmZ4d/63qOLWxCsTuRBOUYL5iRKVvDnhIFE87vk/n1nQ==}
+  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.0':
+    resolution: {integrity: sha512-to1+IiMBh51dpUKdbanAYf2bFk9VE+CmkmrAUZE8lRNbC2bFanEybt/OJ3PxjGfViVRV7Ir/YZ1r4G0LTYH+tw==}
 
   '@platforma-open/milaboratories.software-mixcr@4.7.0-190-develop':
     resolution: {integrity: sha512-pIo7em6XJ+iEJq05Z5HjQXWXG4H0bgWgvnD/q7MTX/IkZZSiJlfhD/DBoSf+SERTAOdB3LEmH6DvlAl1TD8rUg==}
@@ -7419,7 +7425,121 @@ snapshots:
       - d3-scale-chromatic
       - supports-color
 
+<<<<<<< Updated upstream
   '@milaboratories/pframes-rs-node@1.0.57(@milaboratories/pl-model-common@1.19.9)':
+||||||| Stash base
+  '@milaboratories/miplots4@1.0.145(d3-dispatch@3.0.1)':
+    dependencies:
+      '@d3fc/d3fc-chart': 5.1.9(d3-array@3.2.4)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(d3-scale@4.0.2)(d3-selection@3.0.0)(d3-shape@3.2.0)
+      '@d3fc/d3fc-pointer': 3.0.3(d3-dispatch@3.0.1)(d3-selection@3.0.0)
+      '@d3fc/d3fc-webgl': 3.2.1(d3-scale@4.0.2)(d3-shape@3.2.0)
+      '@stdlib/stats-anova1': 0.2.2
+      '@stdlib/stats-kruskal-test': 0.2.2
+      '@stdlib/stats-ttest': 0.2.2
+      '@stdlib/stats-ttest2': 0.2.2
+      '@stdlib/stats-wilcoxon': 0.2.2
+      '@types/d3-array': 3.2.1
+      '@types/d3-axis': 3.0.6
+      '@types/d3-color': 3.1.3
+      '@types/d3-drag': 3.0.7
+      '@types/d3-format': 3.0.4
+      '@types/d3-hierarchy': 3.1.7
+      '@types/d3-polygon': 3.0.2
+      '@types/d3-quadtree': 3.0.6
+      '@types/d3-random': 3.0.3
+      '@types/d3-scale': 4.0.9
+      '@types/d3-selection': 3.0.11
+      '@types/d3-shape': 3.1.7
+      '@types/d3-zoom': 3.0.8
+      '@types/kdbush': 3.0.5
+      '@types/lodash': 4.17.20
+      '@types/node': 18.15.3
+      '@types/rbush': 4.0.0
+      '@types/react': 18.3.24
+      '@types/react-dom': 18.3.7(@types/react@18.3.24)
+      d3-array: 3.2.4
+      d3-axis: 3.0.0
+      d3-color: 3.1.0
+      d3-drag: 3.0.0
+      d3-format: 3.1.0
+      d3-hierarchy: 3.1.2
+      d3-polygon: 3.0.1
+      d3-quadtree: 3.0.1
+      d3-random: 3.0.1
+      d3-scale: 4.0.2
+      d3-selection: 3.0.0
+      d3-shape: 3.2.0
+      d3-zoom: 3.0.0
+      kdbush: 4.0.2
+      lodash: 4.17.21
+      rbush: 4.0.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - d3-dispatch
+      - d3-path
+      - d3-scale-chromatic
+      - supports-color
+
+  '@milaboratories/pframes-rs-node@1.0.76':
+=======
+  '@milaboratories/miplots4@1.0.145(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)':
+    dependencies:
+      '@d3fc/d3fc-chart': 5.1.9(d3-array@3.2.4)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(d3-scale@4.0.2)(d3-selection@3.0.0)(d3-shape@3.2.0)
+      '@d3fc/d3fc-pointer': 3.0.3(d3-dispatch@3.0.1)(d3-selection@3.0.0)
+      '@d3fc/d3fc-webgl': 3.2.1(d3-scale@4.0.2)(d3-shape@3.2.0)
+      '@stdlib/stats-anova1': 0.2.2
+      '@stdlib/stats-kruskal-test': 0.2.2
+      '@stdlib/stats-ttest': 0.2.2
+      '@stdlib/stats-ttest2': 0.2.2
+      '@stdlib/stats-wilcoxon': 0.2.2
+      '@types/d3-array': 3.2.1
+      '@types/d3-axis': 3.0.6
+      '@types/d3-color': 3.1.3
+      '@types/d3-drag': 3.0.7
+      '@types/d3-format': 3.0.4
+      '@types/d3-hierarchy': 3.1.7
+      '@types/d3-polygon': 3.0.2
+      '@types/d3-quadtree': 3.0.6
+      '@types/d3-random': 3.0.3
+      '@types/d3-scale': 4.0.9
+      '@types/d3-selection': 3.0.11
+      '@types/d3-shape': 3.1.7
+      '@types/d3-zoom': 3.0.8
+      '@types/kdbush': 3.0.5
+      '@types/lodash': 4.17.20
+      '@types/node': 18.15.3
+      '@types/rbush': 4.0.0
+      '@types/react': 18.3.24
+      '@types/react-dom': 18.3.7(@types/react@18.3.24)
+      d3-array: 3.2.4
+      d3-axis: 3.0.0
+      d3-color: 3.1.0
+      d3-drag: 3.0.0
+      d3-format: 3.1.0
+      d3-hierarchy: 3.1.2
+      d3-polygon: 3.0.1
+      d3-quadtree: 3.0.1
+      d3-random: 3.0.1
+      d3-scale: 4.0.2
+      d3-selection: 3.0.0
+      d3-shape: 3.2.0
+      d3-zoom: 3.0.0
+      kdbush: 4.0.2
+      lodash: 4.17.21
+      rbush: 4.0.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - d3-dispatch
+      - d3-path
+      - d3-scale-chromatic
+      - supports-color
+
+  '@milaboratories/pframes-rs-node@1.0.76':
+>>>>>>> Stashed changes
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.0
       '@milaboratories/pl-model-common': 1.19.9
@@ -7688,8 +7808,15 @@ snapshots:
       '@platforma-sdk/model': 1.42.20
       zod: 3.23.8
 
+<<<<<<< Updated upstream
   '@platforma-open/milaboratories.mixcr-clonotyping-2.ui@1.13.0(typescript@5.6.3)':
+||||||| Stash base
+  '@platforma-open/milaboratories.mixcr-clonotyping-2.ui@1.15.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)':
+=======
+  '@platforma-open/milaboratories.mixcr-clonotyping-2.ui@1.15.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)':
+>>>>>>> Stashed changes
     dependencies:
+<<<<<<< Updated upstream
       '@milaboratories/helpers': 1.6.19
       '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.13.0
       '@platforma-sdk/model': 1.42.20
@@ -7697,6 +7824,23 @@ snapshots:
       '@vueuse/core': 13.5.0(vue@3.5.16(typescript@5.6.3))
       ag-grid-enterprise: 33.3.2
       ag-grid-vue3: 33.3.2(vue@3.5.16(typescript@5.6.3))
+||||||| Stash base
+      '@milaboratories/helpers': 1.8.0
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.16.1
+      '@platforma-sdk/model': 1.43.2
+      '@platforma-sdk/ui-vue': 1.43.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)
+      '@vueuse/core': 13.9.0(vue@3.5.16(typescript@5.6.3))
+      ag-grid-enterprise: 34.0.2
+      ag-grid-vue3: 34.0.2(vue@3.5.16(typescript@5.6.3))
+=======
+      '@milaboratories/helpers': 1.8.0
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.16.1
+      '@platforma-sdk/model': 1.43.2
+      '@platforma-sdk/ui-vue': 1.43.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)
+      '@vueuse/core': 13.9.0(vue@3.5.16(typescript@5.6.3))
+      ag-grid-enterprise: 34.0.2
+      ag-grid-vue3: 34.0.2(vue@3.5.16(typescript@5.6.3))
+>>>>>>> Stashed changes
       utility-types: 3.11.0
       vue: 3.5.16(typescript@5.6.3)
       zod: 3.23.8
@@ -7724,12 +7868,30 @@ snapshots:
       '@platforma-open/milaboratories.software-mixcr': 4.7.0-190-develop
       '@platforma-sdk/workflow-tengo': 4.14.1
 
+<<<<<<< Updated upstream
   '@platforma-open/milaboratories.mixcr-clonotyping-2@2.8.2(typescript@5.6.3)':
+||||||| Stash base
+  '@platforma-open/milaboratories.mixcr-clonotyping-2@2.12.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)':
+=======
+  '@platforma-open/milaboratories.mixcr-clonotyping-2@2.12.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)':
+>>>>>>> Stashed changes
     dependencies:
+<<<<<<< Updated upstream
       '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.13.0
       '@platforma-open/milaboratories.mixcr-clonotyping-2.ui': 1.13.0(typescript@5.6.3)
       '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow': 2.23.2
       '@platforma-sdk/model': 1.42.20
+||||||| Stash base
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.16.1
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.ui': 1.15.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow': 3.5.2
+      '@platforma-sdk/model': 1.43.2
+=======
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.model': 1.16.1
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.ui': 1.15.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)
+      '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow': 3.5.2
+      '@platforma-sdk/model': 1.43.2
+>>>>>>> Stashed changes
     transitivePeerDependencies:
       - async-validator
       - axios
@@ -7779,7 +7941,7 @@ snapshots:
       '@platforma-open/milaboratories.samples-and-data.workflow': 1.12.3
       '@platforma-sdk/model': 1.42.20
 
-  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.1.2': {}
+  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.0': {}
 
   '@platforma-open/milaboratories.software-mixcr@4.7.0-190-develop': {}
 
@@ -7972,8 +8134,15 @@ snapshots:
       - typescript
       - universal-cookie
 
+<<<<<<< Updated upstream
   '@platforma-sdk/workflow-tengo@4.14.1':
+||||||| Stash base
+  '@platforma-sdk/ui-vue@1.43.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)':
+=======
+  '@platforma-sdk/ui-vue@1.43.2(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)(sortablejs@1.15.6)(typescript@5.6.3)':
+>>>>>>> Stashed changes
     dependencies:
+<<<<<<< Updated upstream
       '@milaboratories/software-pframes-conv': 2.2.2
       '@platforma-open/milaboratories.software-ptabler': 1.8.0
       '@platforma-open/milaboratories.software-small-binaries': 1.15.21
@@ -7983,6 +8152,77 @@ snapshots:
       '@milaboratories/software-pframes-conv': 2.2.2
       '@platforma-open/milaboratories.software-ptabler': 1.11.2
       '@platforma-open/milaboratories.software-small-binaries': 1.15.21
+||||||| Stash base
+      '@milaboratories/biowasm-tools': 2.0.0
+      '@milaboratories/miplots4': 1.0.145(d3-dispatch@3.0.1)
+      '@milaboratories/uikit': 2.4.15(typescript@5.6.3)
+      '@platforma-sdk/model': 1.43.2
+      '@types/d3-format': 3.0.4
+      '@types/node': 20.16.15
+      '@types/semver': 7.7.0
+      '@vueuse/core': 13.9.0(vue@3.5.16(typescript@5.6.3))
+      '@vueuse/integrations': 13.4.0(sortablejs@1.15.6)(vue@3.5.16(typescript@5.6.3))
+      ag-grid-enterprise: 34.2.0
+      ag-grid-vue3: 34.2.0(vue@3.5.16(typescript@5.6.3))
+      canonicalize: 2.1.0
+      d3-format: 3.1.0
+      lru-cache: 11.1.0
+      vue: 3.5.16(typescript@5.6.3)
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - async-validator
+      - axios
+      - change-case
+      - d3-dispatch
+      - d3-path
+      - d3-scale-chromatic
+      - drauu
+      - focus-trap
+      - fuse.js
+      - idb-keyval
+      - jwt-decode
+      - nprogress
+      - qrcode
+      - sortablejs
+      - supports-color
+      - typescript
+      - universal-cookie
+=======
+      '@milaboratories/biowasm-tools': 2.0.0
+      '@milaboratories/miplots4': 1.0.145(d3-dispatch@3.0.1)(d3-path@3.1.0)(d3-scale-chromatic@3.1.0)
+      '@milaboratories/uikit': 2.4.15(typescript@5.6.3)
+      '@platforma-sdk/model': 1.43.2
+      '@types/d3-format': 3.0.4
+      '@types/node': 20.16.15
+      '@types/semver': 7.7.0
+      '@vueuse/core': 13.9.0(vue@3.5.16(typescript@5.6.3))
+      '@vueuse/integrations': 13.4.0(sortablejs@1.15.6)(vue@3.5.16(typescript@5.6.3))
+      ag-grid-enterprise: 34.2.0
+      ag-grid-vue3: 34.2.0(vue@3.5.16(typescript@5.6.3))
+      canonicalize: 2.1.0
+      d3-format: 3.1.0
+      lru-cache: 11.1.0
+      vue: 3.5.16(typescript@5.6.3)
+      zod: 3.23.8
+    transitivePeerDependencies:
+      - async-validator
+      - axios
+      - change-case
+      - d3-dispatch
+      - d3-path
+      - d3-scale-chromatic
+      - drauu
+      - focus-trap
+      - fuse.js
+      - idb-keyval
+      - jwt-decode
+      - nprogress
+      - qrcode
+      - sortablejs
+      - supports-color
+      - typescript
+      - universal-cookie
+>>>>>>> Stashed changes
 
   '@platforma-sdk/workflow-tengo@5.2.0':
     dependencies:
