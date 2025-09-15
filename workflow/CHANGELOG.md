@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.8.3
+
+### Patch Changes
+
+- 39fef38: technical release
+- Updated dependencies [39fef38]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.6
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.6
+
 ## 1.8.2
 
 ### Patch Changes
