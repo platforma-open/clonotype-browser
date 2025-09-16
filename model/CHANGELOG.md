@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.10.9
+
+### Patch Changes
+
+- b353438: technical release
+
 ## 1.10.8
 
 ### Patch Changes

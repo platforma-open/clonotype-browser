@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-  "version": "1.7.9",
+  "version": "1.7.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
