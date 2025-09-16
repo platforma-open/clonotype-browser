@@ -34,7 +34,7 @@ catalogs:
       specifier: ^1.11.2
       version: 1.11.2
     '@platforma-open/milaboratories.software-binary-collection.software-7zip':
-      specifier: ^1.2.4
+      specifier: ^1.2.0
       version: 1.2.4
     '@platforma-open/milaboratories.software-ptransform':
       specifier: ^1.6.4
