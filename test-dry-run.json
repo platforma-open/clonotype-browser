@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "32mLMJ1MCf0oix6J6ooBs3GblmA",
+  "id": "32nGfZJQA0M799mgoIrquHjFeJQ",
   "version": "1",
   "turboVersion": "2.5.4",
   "monorepo": true,
@@ -39,12 +39,12 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "7d6b64ff59385e1c",
+      "hash": "bf26122b3163b301",
       "inputs": {
-        "CHANGELOG.md": "2eb3a5049ccae87da220a71b84dab2d93ee14259",
+        "CHANGELOG.md": "cd411e1a08a6b3a93a3e3ecb592b3dae9bca77ed",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "17e643c1f9e4ab80e5ab8c33c5fdc3d8be7bffe8"
+        "package.json": "897d6dedd9800bcfefa58be5763cb1cce00f8a4f"
       },
       "hashOfExternalDependencies": "55f5f68fc7e786e3",
       "cache": {
@@ -114,21 +114,19 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "0fde10296dca29ef",
+      "hash": "80e6f974eaeabc6e",
       "inputs": {
-        "CHANGELOG.md": "2eb3a5049ccae87da220a71b84dab2d93ee14259",
+        "CHANGELOG.md": "cd411e1a08a6b3a93a3e3ecb592b3dae9bca77ed",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "17e643c1f9e4ab80e5ab8c33c5fdc3d8be7bffe8"
+        "package.json": "897d6dedd9800bcfefa58be5763cb1cce00f8a4f"
       },
       "hashOfExternalDependencies": "55f5f68fc7e786e3",
       "cache": {
@@ -188,7 +186,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -272,9 +269,7 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
@@ -349,7 +344,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -444,9 +438,7 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
@@ -532,7 +524,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -617,9 +608,7 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
@@ -693,7 +682,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -703,7 +691,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "fabf90ff0add6a75",
+      "hash": "0d7b734d8e380216",
       "inputs": {
         "CHANGELOG.md": "56d201c2346ac0aec779098e2dd2380520922dbe",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -718,7 +706,7 @@
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "e7d5b2219ed2be506f65c5e7b9a6412264afaf36"
       },
-      "hashOfExternalDependencies": "06d35c6c1b14f747",
+      "hashOfExternalDependencies": "8751ee00332a81fc",
       "cache": {
         "local": false,
         "remote": false,
@@ -783,16 +771,14 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "f9d5aa05eb7b476f",
+      "hash": "75f837f8975bd80e",
       "inputs": {
         "CHANGELOG.md": "56d201c2346ac0aec779098e2dd2380520922dbe",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -807,7 +793,7 @@
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "e7d5b2219ed2be506f65c5e7b9a6412264afaf36"
       },
-      "hashOfExternalDependencies": "06d35c6c1b14f747",
+      "hashOfExternalDependencies": "8751ee00332a81fc",
       "cache": {
         "local": false,
         "remote": true,
@@ -866,7 +852,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -962,9 +947,7 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
@@ -1049,7 +1032,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -1059,11 +1041,11 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "044fadc06f482b75",
+      "hash": "6671ceee0d715e0b",
       "inputs": {
-        "CHANGELOG.md": "f8e8a534b49c0b83ce1e37bda913f793d66f1cc3",
+        "CHANGELOG.md": "16f9a90f34c8346bfcc8bc7738beeb5e895d0e16",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "c5857e94fecb5c0515ed32ed501c8fb75f306680",
+        "package.json": "9b7c1855b024f66ec3ae2d86e59ce4a87cd8729b",
         "src/do-calculations.tpl.tengo": "20b22b0b4572e870ffa2b0abec6f11e03c40781e",
         "src/export-table.tpl.tengo": "b61f780b1d1fc12ddbcd3895768e8e8d65b8f046",
         "src/main.tpl.tengo": "a4c0e559313af620a4be99913a5be55d00b18e02",
@@ -1072,7 +1054,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "d396c459feb14e7f",
+      "hashOfExternalDependencies": "f22cf1dc8761950d",
       "cache": {
         "local": false,
         "remote": true,
@@ -1139,20 +1121,18 @@
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
-        "passthrough": [
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0"
-        ]
+        "passthrough": []
       }
     },
     {
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "2b2a67a36396a9c6",
+      "hash": "001ea03a97b0c9fe",
       "inputs": {
-        "CHANGELOG.md": "f8e8a534b49c0b83ce1e37bda913f793d66f1cc3",
+        "CHANGELOG.md": "16f9a90f34c8346bfcc8bc7738beeb5e895d0e16",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "c5857e94fecb5c0515ed32ed501c8fb75f306680",
+        "package.json": "9b7c1855b024f66ec3ae2d86e59ce4a87cd8729b",
         "src/do-calculations.tpl.tengo": "20b22b0b4572e870ffa2b0abec6f11e03c40781e",
         "src/export-table.tpl.tengo": "b61f780b1d1fc12ddbcd3895768e8e8d65b8f046",
         "src/main.tpl.tengo": "a4c0e559313af620a4be99913a5be55d00b18e02",
@@ -1161,7 +1141,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "d396c459feb14e7f",
+      "hashOfExternalDependencies": "f22cf1dc8761950d",
       "cache": {
         "local": false,
         "remote": false,
@@ -1219,7 +1199,6 @@
         "inferred": [],
         "passthrough": [
           "PL_ADDRESS=83f9c7fec1cc29c9c3d71b605baa76ebebe1a51c052c0bfad1e37e9883b994fa",
-          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_TEST_PASSWORD=c638833f69bbfb3c267afa0a74434812436b8f08a81fd263c6be6871de4f1265",
           "PL_TEST_USER=f85ac825d102b9f2d546aa1679ea991ae845994c1343730d564f3fcd0a2168c3"
         ]
@@ -1229,7 +1208,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "50cefcbd308df77951826e5cbeae666aaf764ad7",
+    "sha": "533c4d283c54dfe8cc78267d65b84a65f3c95414",
     "branch": "main"
   }
 }

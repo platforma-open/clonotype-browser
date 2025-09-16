@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.8.7
+
+### Patch Changes
+
+- 0dcdb3b: Bring 7zip with docker support
+
 ## 1.8.6
 
 ### Patch Changes
