@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.7.9
+
+### Patch Changes
+
+- d252b3a: fix: export TSV not working
+- Updated dependencies [d252b3a]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.10.8
+
 ## 1.7.8
 
 ### Patch Changes

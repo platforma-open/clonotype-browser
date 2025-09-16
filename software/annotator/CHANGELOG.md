@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.3.7
+
+### Patch Changes
+
+- d252b3a: fix: export TSV not working
+
 ## 1.3.6
 
 ### Patch Changes

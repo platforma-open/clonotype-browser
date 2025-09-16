@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.8.5
+
+### Patch Changes
+
+- d252b3a: fix: export TSV not working
+- Updated dependencies [d252b3a]
+  - @platforma-open/milaboratories.clonotype-browser-2.annotation2filters@1.2.8
+  - @platforma-open/milaboratories.clonotype-browser-2.annotator@1.3.7
+
 ## 1.8.4
 
 ### Patch Changes

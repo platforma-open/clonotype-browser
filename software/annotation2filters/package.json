@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "scripts": {
     "build": "pl-pkg build",
     "prepublishOnly": "pl-pkg prepublish",
