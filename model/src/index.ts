@@ -11,7 +11,7 @@ import type {
   PlDataTableStateV2,
   PlRef,
   PObjectId,
-  SUniversalPColumnId
+  SUniversalPColumnId,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
@@ -29,6 +29,8 @@ type BlockArgs = {
   /** Annotation script to apply to the input anchor */
   annotationScript: AnnotationScript;
   datasetTitle?: string;
+  /** Enables export all */
+  runExportAll: boolean;
 };
 
 export type UiState = {
@@ -99,6 +101,7 @@ export const platforma = BlockModel.create('Heavy')
       mode: 'byClonotype',
       steps: [],
     },
+    runExportAll: false,
   })
 
   .withUiState<UiState>({
@@ -256,7 +259,7 @@ export const platforma = BlockModel.create('Heavy')
   .output('exportedTsvZip', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
-    const tsvResource = ctx.prerun?.resolve('tsvZip');
+    const tsvResource = ctx.prerun?.resolve({ field: 'tsvZip', assertFieldType: 'Input', allowPermanentAbsence: true });
     if (!tsvResource) return undefined;
     if (!tsvResource.getIsReadyOrError())
       return undefined;

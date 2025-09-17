@@ -8,6 +8,10 @@ const app = useApp();
 const exporting = ref(false);
 
 async function exportTsv() {
+  if (!app.model.args.runExportAll) {
+    app.model.args.runExportAll = true;
+    return;
+  }
   exporting.value = true;
   try {
     const handle = app.model.outputs.exportedTsvZip?.handle;
@@ -32,9 +36,9 @@ async function exportTsv() {
 
 <template>
   <PlBtnGhost
-    :icon="app.model.outputs.exportedTsvZip === null ? 'close' : 'download'"
-    :disabled="app.model.outputs.exportedTsvZip === null"
-    :loading="exporting || (app.model.outputs.exportedTsvZip?.handle === undefined && app.model.outputs.exportedTsvZip !== null)"
+    :icon="app.model.args.runExportAll ? (app.model.outputs.exportedTsvZip === null ? 'close' : 'download') : 'play'"
+    :disabled="app.model.args.runExportAll ? app.model.outputs.exportedTsvZip === null : false"
+    :loading="exporting || (app.model.args.runExportAll ? (app.model.outputs.exportedTsvZip?.handle === undefined && app.model.outputs.exportedTsvZip !== null) : false)"
     @click.stop="exportTsv"
   >
     Export All
