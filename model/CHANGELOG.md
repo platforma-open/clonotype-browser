@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.11.0
+
+### Minor Changes
+
+- edcf8c5: Export all is disabled by default, requires activation
+
 ## 1.10.9
 
 ### Patch Changes

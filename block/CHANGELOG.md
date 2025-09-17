@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.7.0
+
+### Minor Changes
+
+- edcf8c5: Export all is disabled by default, requires activation
+
+### Patch Changes
+
+- Updated dependencies [edcf8c5]
+  - @platforma-open/milaboratories.clonotype-browser-2.workflow@1.9.0
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.11.0
+  - @platforma-open/milaboratories.clonotype-browser-2.ui@1.8.0
+
 ## 1.6.16
 
 ### Patch Changes
