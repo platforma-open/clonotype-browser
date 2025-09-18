@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotation2filters
 
+## 1.2.11
+
+### Patch Changes
+
+- 13bd11f: technical release
+
 ## 1.2.10
 
 ### Patch Changes
