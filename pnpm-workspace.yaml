@@ -1,6 +1,4 @@
 packages:
-  - software/annotator
-  - software/annotation2filters
   - workflow
   - model
   - ui
@@ -8,6 +6,7 @@ packages:
   - test
 
 catalog:
+  '@milaboratories/ts-builder': ^1.0.5
   '@milaboratories/ts-configs': ^1.0.6
   '@milaboratories/build-configs': ^1.0.6
   '@platforma-sdk/workflow-tengo': ^5.0.3
@@ -27,24 +26,15 @@ catalog:
   '@platforma-open/milaboratories.software-binary-collection.software-7zip': ^1.1.2
 
   'vue': 3.5.13
-  'vue-tsc': ^2.2.10
 
   'canonicalize': ~2.1.0
   'lodash': ^4.17.17
   '@types/lodash': ^4.17.20
 
-  'zod': ~3.23.8
-  'utility-types': ^3.11.0
-
   'typescript': ~5.6.3
-  'tsup': ~8.3.5
   'turbo': ^2.5.4
   'eslint': ^9.30.1
-
-  'vite': ^6.3.5
   'vitest': ^2.1.9
-  '@vitejs/plugin-vue': ^5.2.4
-  'rollup-plugin-sourcemaps2': ^0.5.2
 
   '@vueuse/core': ^13.5.0
 
@@ -52,7 +42,6 @@ catalog:
   'ag-grid-vue3': *ag-grid
 
   '@changesets/cli': ^2.29.5
-  "js-yaml": "^4.1.0"
 
   # other blocks used in tests
 
