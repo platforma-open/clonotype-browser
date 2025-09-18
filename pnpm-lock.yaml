@@ -34,8 +34,8 @@ catalogs:
       specifier: ^1.11.2
       version: 1.11.2
     '@platforma-open/milaboratories.software-binary-collection.software-7zip':
-      specifier: 1.2.4
-      version: 1.2.4
+      specifier: 1.2.3
+      version: 1.2.3
     '@platforma-open/milaboratories.software-ptransform':
       specifier: ^1.6.4
       version: 1.6.4
@@ -331,7 +331,7 @@ importers:
         version: link:../software/annotator
       '@platforma-open/milaboratories.software-binary-collection.software-7zip':
         specifier: 'catalog:'
-        version: 1.2.4
+        version: 1.2.3
       '@platforma-open/milaboratories.software-ptransform':
         specifier: 'catalog:'
         version: 1.6.4
@@ -1418,8 +1418,8 @@ packages:
   '@platforma-open/milaboratories.samples-and-data@1.10.13':
     resolution: {integrity: sha512-uJ1pzL7o99jd/SrOhx8z9L8y65s1cKDWh+DYchOPXPsJdwdAcUYGnKnI5lDejy7bnCs74L7WBagGGpI8uOyevQ==}
 
-  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.4':
-    resolution: {integrity: sha512-4sHbwb2TBbWnre1V7uUA4bKwvIJSa39BmvdTU6E2NEM8q6Pzb4l2E1ql9PKlNs50XE+f5YsLRG5oBxSIUdlkbA==}
+  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.3':
+    resolution: {integrity: sha512-zLVKYekRwSuDKxMi6pBSAZvA55kHYLLEKrHzN3rkQQRBcHdbehau+ygVfCQETOBvqY23it8cwfC8TJzvQFNQcA==}
 
   '@platforma-open/milaboratories.software-mixcr@4.7.0-233-develop':
     resolution: {integrity: sha512-vXzOaIcTsVhHWR6pYx6gaXwpfHSfOoYMwUhUYxAQNI0mRlp7lb215t9R8woDwdGp7WTovyCrSo3zvMTa4E1DBQ==}
@@ -8071,7 +8071,7 @@ snapshots:
       '@platforma-open/milaboratories.samples-and-data.workflow': 1.13.2
       '@platforma-sdk/model': 1.43.2
 
-  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.4': {}
+  '@platforma-open/milaboratories.software-binary-collection.software-7zip@1.2.3': {}
 
   '@platforma-open/milaboratories.software-mixcr@4.7.0-233-develop': {}
 
