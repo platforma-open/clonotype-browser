@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.8.0
+
+### Minor Changes
+
+- cc64b26: Update dependencies
+
 ## 1.7.2
 
 ### Patch Changes
