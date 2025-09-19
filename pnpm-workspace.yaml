@@ -14,7 +14,7 @@ catalog:
   '@platforma-sdk/model': ^1.42.20
   '@platforma-sdk/ui-vue': 1.42.21
   '@platforma-sdk/tengo-builder': ^2.1.15
-  '@platforma-sdk/package-builder': ^3.5.2
+  '@platforma-sdk/package-builder': ^3.7.0
   '@platforma-sdk/block-tools': ^2.5.83
   '@platforma-sdk/eslint-config': ^1.0.3
   "@platforma-sdk/blocks-deps-updater": ^2.0.0
