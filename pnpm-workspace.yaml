@@ -22,7 +22,7 @@ catalog:
   '@platforma-sdk/test': ^1.43.3
   '@milaboratories/helpers': ^1.8.0
 
-  '@platforma-open/milaboratories.runenv-python-3': ^1.4.6
+  '@platforma-open/milaboratories.runenv-python-3': ^1.4.12
   '@platforma-open/milaboratories.software-ptransform': ^1.6.4
 
   '@platforma-open/milaboratories.software-binary-collection.software-7zip': 1.2.3
