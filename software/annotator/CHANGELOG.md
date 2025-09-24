@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.3.11
+
+### Patch Changes
+
+- 4f36a93: technical release
+
 ## 1.3.10
 
 ### Patch Changes
