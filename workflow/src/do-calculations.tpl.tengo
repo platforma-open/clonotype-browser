@@ -201,7 +201,7 @@ self.body(func(inputs) {
 		title: annotationSpec.title,
 		steps: annotationSpec.steps,
 		
-		mainAxis: { column: CLONOTYPE_KEY_HEADER, spec: clonotypeAxisSpec },
+		mainAxes: [{ column: CLONOTYPE_KEY_HEADER, spec: clonotypeAxisSpec }],
 		columnBundle: columnBundle,
 		shouldComputeFilters: shouldComputeFilters,
 
