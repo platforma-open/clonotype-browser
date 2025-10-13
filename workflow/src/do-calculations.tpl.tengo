@@ -132,7 +132,7 @@ self.body(func(inputs) {
 
 	// Do not pre-run if no 2-axis columns are used in "Per Sample" mode
 	// Run mode is locked already in this scenario
-	if (mode == "bySampleAndClonotype" && nTwoAxe == 0) {
+	if ((mode == "bySampleAndClonotype" && nTwoAxe == 0) || numberOfColumns == 0) {
 		return {annotationPf: smart.createNullResource(), 
 				statsPf: smart.createNullResource(),
 				filtersPf: smart.createNullResource()}
