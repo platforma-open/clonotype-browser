@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.8.2
+
+### Patch Changes
+
+- Updated dependencies [b84d87f]
+- Updated dependencies [b1f9300]
+  - @platforma-open/milaboratories.clonotype-browser-2.workflow@1.10.0
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.12.0
+  - @platforma-open/milaboratories.clonotype-browser-2.ui@1.9.0
+
 ## 1.8.1
 
 ### Patch Changes

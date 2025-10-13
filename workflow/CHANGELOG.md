@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.10.0
+
+### Minor Changes
+
+- b84d87f: Fix user issue
+
 ## 1.9.3
 
 ### Patch Changes

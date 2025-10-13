@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.12.0
+
+### Minor Changes
+
+- b84d87f: Fix user issue
+
+### Patch Changes
+
+- b1f9300: Do not allow user per sample filters with only global columns
+
 ## 1.11.3
 
 ### Patch Changes
