@@ -22,6 +22,7 @@ import {
   PColumnCollection,
 } from '@platforma-sdk/model';
 import omit from 'lodash.omit';
+import { isAnnotationScriptValid } from './validation';
 
 type BlockArgs = {
   /** Anchor column from the clonotyping output (must have sampleId and clonotypeKey axes) */
@@ -412,7 +413,12 @@ export const platforma = BlockModel.create('Heavy')
     ];
   })
 
-  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationScript.steps.length > 0)
+  .argsValid((ctx) => {
+    if (ctx.args.inputAnchor === undefined || ctx.args.annotationScript.steps.length === 0) {
+      return false;
+    }
+    return isAnnotationScriptValid(ctx.args.annotationScript);
+  })
 
   // We enrich the input, only if we produce annotations
   .enriches((args) => args.inputAnchor !== undefined && args.annotationScript.steps.length > 0 ? [args.inputAnchor] : [])
@@ -425,8 +431,9 @@ export const platforma = BlockModel.create('Heavy')
 
   .done(2);
 
+export { isAnnotationScriptValid } from './validation';
+export type { BlockArgs };
 export type Platforma = typeof platforma;
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
-export type { BlockArgs };

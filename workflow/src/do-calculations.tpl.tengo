@@ -99,6 +99,7 @@ self.body(func(inputs) {
 	needsClonoTable := (mode == "byClonotype")
 	needsSampleTable := (mode == "bySampleAndClonotype")
 
+	nTwoAxe := 0
 	for colId in scriptColumns {
 		colSpec := columnBundle.getSpec(colId)
 		numAxes := len(colSpec.axesSpec)
@@ -117,6 +118,7 @@ self.body(func(inputs) {
 			if mode == "byClonotype" {
 				ll.panic("Column %s has 2 axes but mode is 'byClonotype'. The script expects only 1-axis columns in this mode.", colId)
 			}
+			nTwoAxe += 1
 			sampleTableBuilder.add(columnBundle.getColumn(colId))
 			header := sampleTableBuilder.getHeader(colId)
 			spec := sampleTableBuilder.getSpec(colId)
@@ -126,6 +128,14 @@ self.body(func(inputs) {
 		} else {
 			ll.panic("Column %s has an unexpected number of axes (%d), expected 1 or 2.", colId, numAxes)
 		}
+	}
+
+	// Do not pre-run if no 2-axis columns are used in "Per Sample" mode
+	// Run mode is locked already in this scenario
+	if ((mode == "bySampleAndClonotype" && nTwoAxe == 0) || numberOfColumns == 0) {
+		return {annotationPf: smart.createNullResource(), 
+				statsPf: smart.createNullResource(),
+				filtersPf: smart.createNullResource()}
 	}
 
 	finalAnnotationScript := maps.deepMerge(util.transformAnnotationScriptColumns(
