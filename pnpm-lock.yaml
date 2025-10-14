@@ -8572,7 +8572,7 @@ snapshots:
       '@milaboratories/ts-helpers': 1.4.7
       '@platforma-sdk/block-tools': 2.6.6
       '@platforma-sdk/model': 1.43.2
-      '@platforma-sdk/workflow-tengo': 5.2.0
+      '@platforma-sdk/workflow-tengo': ^5.3.3
       canonicalize: 2.1.0
       denque: 2.1.0
       es-toolkit: 1.39.10
@@ -8908,7 +8908,7 @@ snapshots:
   '@platforma-open/milaboratories.mixcr-clonotyping-2.workflow@3.5.2':
     dependencies:
       '@platforma-open/milaboratories.software-mixcr': 4.7.0-233-develop
-      '@platforma-sdk/workflow-tengo': 5.3.0
+      '@platforma-sdk/workflow-tengo': ^5.3.3
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2@2.12.2(d3-dispatch@3.0.1)(sortablejs@1.15.6)(typescript@5.6.3)':
     dependencies:
@@ -8959,7 +8959,7 @@ snapshots:
 
   '@platforma-open/milaboratories.samples-and-data.workflow@1.13.2':
     dependencies:
-      '@platforma-sdk/workflow-tengo': 5.3.0
+      '@platforma-sdk/workflow-tengo': ^5.3.3
 
   '@platforma-open/milaboratories.samples-and-data@1.10.13':
     dependencies:
