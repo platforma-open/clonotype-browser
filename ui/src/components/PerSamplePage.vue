@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { isAnnotationScriptValid } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { type PlRef, plRefsEqual } from '@platforma-sdk/model';
 import {
   PlAgDataTableV2,
+  PlAlert,
   PlAnnotationsModal,
   PlBlockPage,
   PlBtnGhost,
@@ -9,10 +11,13 @@ import {
   PlSlideModal,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
+import { computed } from 'vue';
 import { useApp } from '../app';
 import ExportBtn from './ExportBtn.vue';
 
 const app = useApp();
+
+const isScriptValid = computed(() => isAnnotationScriptValid(app.model.args.annotationScript));
 
 function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
@@ -44,6 +49,9 @@ const tableSettings = usePlDataTableSettingsV2({
         Settings
       </PlBtnGhost>
     </template>
+    <PlAlert v-if="!isScriptValid" type="warn">
+      {{ "Warning: When annotating in 'Per Sample' mode, at least one filter must use a property that is specific to each sample. Please adjust your filter settings." }}
+    </PlAlert>
     <PlAgDataTableV2
       ref="tableInstance"
       v-model="app.model.ui.perSampleTable.tableState"
