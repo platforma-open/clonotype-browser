@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.8.4
+
+### Patch Changes
+
+- 0584eae: Support parquet format (update SDK)
+
 ## 1.8.3
 
 ### Patch Changes

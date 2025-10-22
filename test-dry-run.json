@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "344RWq3q0TeJtJL3i54SI6m5isY",
+  "id": "34R3e3kOHnDyBAiuJNVreqYFeI5",
   "version": "1",
   "turboVersion": "2.5.4",
   "monorepo": true,
@@ -39,14 +39,14 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "589fbf978756340f",
+      "hash": "1e538ae770770921",
       "inputs": {
-        "CHANGELOG.md": "5f04387d6f64aec703c6f337ff055ebc9c991978",
+        "CHANGELOG.md": "8379e75b4e0077bbd5e3f95ccfee8d2f3f46d341",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "06e0e789be4c8e6e8c692f8e7bc60ccbb044226a"
+        "package.json": "2d669fa6921ff629b46d4a5fb569c5c871e92778"
       },
-      "hashOfExternalDependencies": "141d7831f586f60a",
+      "hashOfExternalDependencies": "321fbd542285b075",
       "cache": {
         "local": false,
         "remote": true,
@@ -121,14 +121,14 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2",
-      "hash": "5796fba1f8c7a8f9",
+      "hash": "89e1c706829f62b5",
       "inputs": {
-        "CHANGELOG.md": "5f04387d6f64aec703c6f337ff055ebc9c991978",
+        "CHANGELOG.md": "8379e75b4e0077bbd5e3f95ccfee8d2f3f46d341",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "06e0e789be4c8e6e8c692f8e7bc60ccbb044226a"
+        "package.json": "2d669fa6921ff629b46d4a5fb569c5c871e92778"
       },
-      "hashOfExternalDependencies": "141d7831f586f60a",
+      "hashOfExternalDependencies": "321fbd542285b075",
       "cache": {
         "local": false,
         "remote": false,
@@ -195,7 +195,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
-      "hash": "5e3168c6ccbd6418",
+      "hash": "2b6a0d50c00913c7",
       "inputs": {
         "CHANGELOG.md": "0613c6e67683643de15b2b9c8da15eccc5e51b13",
         "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
@@ -205,7 +205,7 @@
         "src/main.py": "dc8581fd1eff718dde81441cc90d6a760f4e12c1",
         "src/requirements.txt": "8381bfd0ed12ea82afcf7dd44b15e21c3af7a98b"
       },
-      "hashOfExternalDependencies": "8d68aef3805030fa",
+      "hashOfExternalDependencies": "f7cf7795c4b571af",
       "cache": {
         "local": false,
         "remote": true,
@@ -276,7 +276,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotation2filters",
-      "hash": "9b8b1f6ccdd2d7a6",
+      "hash": "5808b861ce2538f4",
       "inputs": {
         "CHANGELOG.md": "0613c6e67683643de15b2b9c8da15eccc5e51b13",
         "itest/go1.sh": "238b01a919a554aee06e28791df64cabeb4e8e61",
@@ -286,7 +286,7 @@
         "src/main.py": "dc8581fd1eff718dde81441cc90d6a760f4e12c1",
         "src/requirements.txt": "8381bfd0ed12ea82afcf7dd44b15e21c3af7a98b"
       },
-      "hashOfExternalDependencies": "8d68aef3805030fa",
+      "hashOfExternalDependencies": "f7cf7795c4b571af",
       "cache": {
         "local": false,
         "remote": false,
@@ -353,7 +353,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
-      "hash": "5895b07a6403d3ba",
+      "hash": "70754ef32a44f1e3",
       "inputs": {
         "CHANGELOG.md": "a166f42868492245fcc1784ddce5e31a735e702d",
         "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
@@ -374,7 +374,7 @@
         "src/main.py": "f3da2af257c628c4dcb239df3ecea8bd675ee4fb",
         "src/requirements.txt": "8381bfd0ed12ea82afcf7dd44b15e21c3af7a98b"
       },
-      "hashOfExternalDependencies": "8d68aef3805030fa",
+      "hashOfExternalDependencies": "f7cf7795c4b571af",
       "cache": {
         "local": false,
         "remote": true,
@@ -445,7 +445,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.annotator#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.annotator",
-      "hash": "ff42bbcbe475215b",
+      "hash": "d3bb02788bc2e499",
       "inputs": {
         "CHANGELOG.md": "a166f42868492245fcc1784ddce5e31a735e702d",
         "itest/example2/clonotype_properties.tsv": "069a79e7007e090aa7fe6576e8028464f2e4925a",
@@ -466,7 +466,7 @@
         "src/main.py": "f3da2af257c628c4dcb239df3ecea8bd675ee4fb",
         "src/requirements.txt": "8381bfd0ed12ea82afcf7dd44b15e21c3af7a98b"
       },
-      "hashOfExternalDependencies": "8d68aef3805030fa",
+      "hashOfExternalDependencies": "f7cf7795c4b571af",
       "cache": {
         "local": false,
         "remote": false,
@@ -533,7 +533,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
-      "hash": "aa478288b4b771a7",
+      "hash": "d43c2549b50212cb",
       "inputs": {
         "CHANGELOG.md": "d34f3036480c977ad502c291600e9cd2d0f4c8eb",
         "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
@@ -543,7 +543,7 @@
         "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
         "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97"
       },
-      "hashOfExternalDependencies": "552fa70c8398867a",
+      "hashOfExternalDependencies": "9df612fbcc09c2a4",
       "cache": {
         "local": false,
         "remote": true,
@@ -616,7 +616,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.model#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.model",
-      "hash": "97cf1a710b447e28",
+      "hash": "16b39c00a1cb188d",
       "inputs": {
         "CHANGELOG.md": "d34f3036480c977ad502c291600e9cd2d0f4c8eb",
         "eslint.config.mjs": "4daf8bcd2db39a1e4f37741a032e3191d3bf7c36",
@@ -626,7 +626,7 @@
         "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
         "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97"
       },
-      "hashOfExternalDependencies": "552fa70c8398867a",
+      "hashOfExternalDependencies": "9df612fbcc09c2a4",
       "cache": {
         "local": false,
         "remote": false,
@@ -693,7 +693,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "12cefa5b6f0e5351",
+      "hash": "66931e92cae9886a",
       "inputs": {
         "CHANGELOG.md": "dcfc60a60fef863fda473f9d30a6a8c5bfc65473",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -704,11 +704,11 @@
         "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
         "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
         "package.json": "4efdff95ace865c7ed5ca5d2a0b33ccc7541b78c",
-        "src/wf.test.ts": "1e1c8aea47f1773d1d1214c987663d4554a3d2ba",
+        "src/wf.test.ts": "60dd2ad282c9dccf09d131133360208817091894",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "e7d5b2219ed2be506f65c5e7b9a6412264afaf36"
       },
-      "hashOfExternalDependencies": "b1aaea4bcc9bd73b",
+      "hashOfExternalDependencies": "695aa9a9f315e357",
       "cache": {
         "local": false,
         "remote": false,
@@ -780,7 +780,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.test",
-      "hash": "c6889b6cf39e2aed",
+      "hash": "197645584bf1ad9b",
       "inputs": {
         "CHANGELOG.md": "dcfc60a60fef863fda473f9d30a6a8c5bfc65473",
         "assets/SRR11233652_sampledBulk_R1.fastq.gz": "55548ce48e66feef408dfb65007e9e3e0c21e36f",
@@ -791,11 +791,11 @@
         "assets/SRR11233664_sampledBulk_R2.fastq.gz": "9aac728039aeb72ad3f8b947111e941240d79a9c",
         "eslint.config.mjs": "031f2cccbb6ca350658f4c29c62d42e44882d43d",
         "package.json": "4efdff95ace865c7ed5ca5d2a0b33ccc7541b78c",
-        "src/wf.test.ts": "1e1c8aea47f1773d1d1214c987663d4554a3d2ba",
+        "src/wf.test.ts": "60dd2ad282c9dccf09d131133360208817091894",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "e7d5b2219ed2be506f65c5e7b9a6412264afaf36"
       },
-      "hashOfExternalDependencies": "b1aaea4bcc9bd73b",
+      "hashOfExternalDependencies": "695aa9a9f315e357",
       "cache": {
         "local": false,
         "remote": true,
@@ -863,7 +863,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "b742a80ea0678ca1",
+      "hash": "42247b50851dd725",
       "inputs": {
         "CHANGELOG.md": "b40927ea608964babcaafad89eb54e168f5b48e8",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
@@ -883,7 +883,7 @@
         "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
         "vite.config.ts": "855c5945ed32eb1a8a137b5d2a31b83f62fce5f0"
       },
-      "hashOfExternalDependencies": "88dbeaaf68e3b046",
+      "hashOfExternalDependencies": "12ffe05eb0c59e49",
       "cache": {
         "local": false,
         "remote": true,
@@ -956,7 +956,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.ui#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.ui",
-      "hash": "d61c3402fc0397cf",
+      "hash": "c3283552ea90b15c",
       "inputs": {
         "CHANGELOG.md": "b40927ea608964babcaafad89eb54e168f5b48e8",
         "eslint.config.mjs": "23034ce843c37d4f42512e22d64252f0f29b280f",
@@ -976,7 +976,7 @@
         "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
         "vite.config.ts": "855c5945ed32eb1a8a137b5d2a31b83f62fce5f0"
       },
-      "hashOfExternalDependencies": "88dbeaaf68e3b046",
+      "hashOfExternalDependencies": "12ffe05eb0c59e49",
       "cache": {
         "local": false,
         "remote": false,
@@ -1043,7 +1043,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "437eec45566b0702",
+      "hash": "940cd92bfadc0a9c",
       "inputs": {
         "CHANGELOG.md": "b7c61caab57844162feda11bc8fa243e6cd20a9c",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
@@ -1056,7 +1056,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "8f0ff9c3939569e2",
+      "hashOfExternalDependencies": "6721b71ca1edb38c",
       "cache": {
         "local": false,
         "remote": true,
@@ -1130,7 +1130,7 @@
       "taskId": "@platforma-open/milaboratories.clonotype-browser-2.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.clonotype-browser-2.workflow",
-      "hash": "52b1b90fbfb2d018",
+      "hash": "c1dcc94aee55cf5d",
       "inputs": {
         "CHANGELOG.md": "b7c61caab57844162feda11bc8fa243e6cd20a9c",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
@@ -1143,7 +1143,7 @@
         "tsconfig.json": "0d3f6ef3c7eda614a600412e813ed60c6974f9f2",
         "vitest.config.mts": "526d8598f7834023b2114425a9f91c0b61f60475"
       },
-      "hashOfExternalDependencies": "8f0ff9c3939569e2",
+      "hashOfExternalDependencies": "6721b71ca1edb38c",
       "cache": {
         "local": false,
         "remote": false,
@@ -1210,7 +1210,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "8b29437c89b87950c97df8280f235d622ac5ab77",
+    "sha": "c0954ef5ef595fe8674bcd2db0e57aed036187e7",
     "branch": "main"
   }
 }
