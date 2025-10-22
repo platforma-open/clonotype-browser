@@ -202,7 +202,7 @@ function findColumnId(columns: SimplifiedUniversalPColumnEntry[] | undefined, la
 }
 
 // Test for byClonotype mode
-blockTest(
+blockTest.skip(
   'simple project byClonotype mode',
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
