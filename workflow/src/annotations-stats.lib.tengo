@@ -1,0 +1,169 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+annotations := import("@platforma-sdk/workflow-tengo:annotations")
+
+util := import(":util")
+
+// Input headers
+SAMPLE_KEY_HEADER := "sample_key"
+CLONOTYPE_KEY_HEADER := "clonotype_key"
+// States headers
+ANNOTATION_COUNT_HEADER := "annotation_count"
+CLONOTYPE_COUNT_HEADER := "clonotype_count"
+// Result headers
+MAIN_COUNT_HEADER := "main_count"
+MAIN_COUNT_SUM_HEADER := "main_count_sum"
+MAIN_FRACTION_HEADER := "main_fraction"
+MAIN_FRACTION_SUM_HEADER := "main_fraction_sum"
+// Result file
+SAMPLE_STATS_FILE := "sample_stats.tsv"
+ANNOTATION_STATS_FILE := "annotation_stats.tsv"
+
+convertMapToPFrame := func(mapEntities) {
+	pf := pFrames.pFrameBuilder()
+	for k, v in mapEntities {
+		pf.add(k, v.spec, v.data)
+	}
+	return pf.build()
+}
+
+convertColumnSpecToAxisSpec := func(spec) {
+	return {
+		type: spec.valueType,
+		name: spec.name,
+		domain: spec.domain,
+		annotations: spec.annotations
+	}
+}
+
+createColumnSpec := func(type, name, label, axesSpec) {
+	blockId := wf.getBlockId()
+	return {
+		kind: "PColumn",
+		valueType: type,
+		name: "pl7.app/clonotypeAnnotation/" + name,
+		domain: {
+			"pl7.app/clonotypeAnnotationRunId": blockId
+		},
+		axesSpec: axesSpec,
+		annotations: {
+			"pl7.app/label": label
+		}
+	}
+}
+
+createStatsDataAndSpecByAnnotation := func(file, annotationsAxis) {
+	importSpec := {
+		storageFormat: "Binary",
+		partitionKeyLength: 0,
+		axes: [annotationsAxis],
+		columns: [
+			{
+				column: ANNOTATION_COUNT_HEADER,
+				spec: createColumnSpec("Long", "stats/" + ANNOTATION_COUNT_HEADER, "Total Count of Annotations", [annotationsAxis.spec])
+			},
+			{
+				column: CLONOTYPE_COUNT_HEADER,
+				spec: createColumnSpec("Long", "stats/" + CLONOTYPE_COUNT_HEADER, "Total Number of Clonotypes", [annotationsAxis.spec])
+			}
+		]
+	}
+
+	return xsv.importFile(file, "tsv", importSpec, { splitDataAndSpec: true })
+}
+
+createStatsDataAndSpecBySample := func(file, importAxes) {
+	importAxesSpec := slices.map(importAxes, func(v) { return v.spec })
+	importSpec := {
+		storageFormat: "Binary",
+		partitionKeyLength: 1,
+		axes: importAxes,
+		columns: [
+			{
+				column: ANNOTATION_COUNT_HEADER,
+				spec: createColumnSpec("Int", "stats/" + ANNOTATION_COUNT_HEADER, "Annotations count", importAxesSpec)
+			},
+			{
+				column: CLONOTYPE_COUNT_HEADER,
+				spec: createColumnSpec("Int", "stats/" + CLONOTYPE_COUNT_HEADER, "Clonotypes Number", importAxesSpec)
+			},
+			{
+				column: MAIN_COUNT_SUM_HEADER,
+				spec: createColumnSpec("Double", "stats/" + MAIN_COUNT_SUM_HEADER, "Count sum", importAxesSpec)
+			},
+			{
+				column: MAIN_FRACTION_SUM_HEADER,
+				spec: createColumnSpec("Double", "stats/" + MAIN_FRACTION_SUM_HEADER, "Fraction sum", importAxesSpec)
+			}
+		]
+	}
+
+	return xsv.importFile(file, "tsv", importSpec, { splitDataAndSpec: true });
+}
+
+computeClonotypeAnnotationsStats := func(inputs) {
+	annotation := inputs.annotation
+	columnBundle := inputs.columnBundle
+	mainCount := columnBundle.getColumn(util.mainCountColumn)
+	mainFraction := columnBundle.getColumn(util.mainFractionColumn)
+	sampleAxisSpec := columnBundle.getColumn(inputs.inputAnchor).spec.axesSpec[0]
+	clonotypeAxisSpec := columnBundle.getColumn(inputs.inputAnchor).spec.axesSpec[1]
+
+	wf := pt.workflow()
+	
+	statsBySampleFileBuilder := pFrames.tsvFileBuilder()
+	statsBySampleFileBuilder.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
+	statsBySampleFileBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
+	statsBySampleFileBuilder.add(annotation, { header: annotation.column })
+	statsBySampleFileBuilder.add(mainCount, { header: MAIN_COUNT_HEADER })
+	statsBySampleFileBuilder.add(mainFraction, { header: MAIN_FRACTION_HEADER })
+	statsBySampleFile := statsBySampleFileBuilder.build()
+
+	wf.frame(statsBySampleFile, { format: "tsv" }).
+		groupBy(SAMPLE_KEY_HEADER, annotation.column).
+		agg(
+			pt.col(annotation.column).count().alias(ANNOTATION_COUNT_HEADER),
+			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER),
+			pt.col(MAIN_COUNT_HEADER).sum().alias(MAIN_COUNT_SUM_HEADER),
+			pt.col(MAIN_FRACTION_HEADER).sum().alias(MAIN_FRACTION_SUM_HEADER)
+		).
+		save(SAMPLE_STATS_FILE)
+
+	statsByClonoFileBuilder := pFrames.tsvFileBuilder()
+	statsByClonoFileBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
+	statsByClonoFileBuilder.add(annotation, { header: annotation.column })
+	statsByClonoFile := statsByClonoFileBuilder.build()	
+	wf.frame(statsByClonoFile, { format: "tsv" }).
+		select(CLONOTYPE_KEY_HEADER, annotation.column).
+		groupBy(annotation.column).
+		agg(
+			pt.col(annotation.column).count().alias(ANNOTATION_COUNT_HEADER),
+			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER)
+		).
+		save(ANNOTATION_STATS_FILE)
+
+	wfResult := wf.run()
+
+	annotationsAxis := { column: annotation.column, spec: convertColumnSpecToAxisSpec(annotation.spec) }	
+	statsDataAndSpecByAnnotation := createStatsDataAndSpecByAnnotation(
+		wfResult.getFile(ANNOTATION_STATS_FILE),
+		annotationsAxis
+	)
+	statsDataAndSpecBySample := createStatsDataAndSpecBySample(
+		wfResult.getFile(SAMPLE_STATS_FILE),
+		[{ column: SAMPLE_KEY_HEADER, spec: sampleAxisSpec }, annotationsAxis]
+	)
+
+	return {
+		sampleStatsPf: convertMapToPFrame(statsDataAndSpecBySample),
+		annotationStatsPf: convertMapToPFrame(statsDataAndSpecByAnnotation)
+	}
+}
+
+export ll.toStrict({
+	computeClonotypeAnnotationsStats: computeClonotypeAnnotationsStats
+})

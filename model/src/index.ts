@@ -247,7 +247,7 @@ export const platforma = BlockModel.create('Heavy')
   .output('exportedTsvZip', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
-    const tsvResource = ctx.prerun?.resolve('tsvZip');
+    const tsvResource = ctx.prerun?.resolve({ field: 'tsvZip', assertFieldType: 'Input', allowPermanentAbsence: true });
     if (!tsvResource) return undefined;
     if (!tsvResource.getIsReadyOrError())
       return undefined;
@@ -284,3 +284,4 @@ export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './types';
 export type { BlockArgs };
+

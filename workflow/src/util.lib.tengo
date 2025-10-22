@@ -1,5 +1,6 @@
 rand := import("rand")
 json := import("json")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 assets := import("@platforma-sdk/workflow-tengo:assets")
@@ -7,6 +8,7 @@ render := import("@platforma-sdk/workflow-tengo:render")
 pBundle := import("@platforma-sdk/workflow-tengo:pframes.bundle")
 sets := import("@platforma-sdk/workflow-tengo:sets")
 maps := import("@platforma-sdk/workflow-tengo:maps")
+pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 strings := import("@platforma-sdk/workflow-tengo:strings")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
@@ -36,24 +38,34 @@ mainCountColumn := {
 	}
 }
 
-createColumnBundle := func(wf, args) {
+createColumnBundle := func(args) {
 	bundleBuilder := wf.createPBundleBuilder()
 	bundleBuilder.addAnchor("main", args.inputAnchor)
-
-	expressions := slices.map(args.annotationSpec.steps, func(step) { return step.expression })
-	columns := annotations.extractColumnsFromExpressions(expressions)
-
-	for column in columns {
-		bundleBuilder.addById(column)
-	}
-
 	bundleBuilder.addById(mainFractionColumn)
 	bundleBuilder.addById(mainCountColumn)
 	return bundleBuilder.build()
 }
 
+getAnnotationAxesSpec := func(args) {
+	inputAnchor := args.columnBundle.getColumn(args.inputAnchor)
+
+	if is_undefined(inputAnchor) || is_undefined(inputAnchor.spec) {
+		return undefined
+	}
+
+	if len(inputAnchor.spec.axesSpec) != 2 {
+		ll.panic("Input anchor must have exactly 2 axes (sample, clonotype), found %d", len(inputAnchor.spec.axesSpec))
+	}
+
+	// sampleAxisSpec := inputAnchor.spec.axesSpec[0]
+	clonotypeAxisSpec := inputAnchor.spec.axesSpec[1]
+
+	return [clonotypeAxisSpec]
+}
+
 export ll.toStrict({
 	mainCountColumn: mainCountColumn,
 	mainFractionColumn: mainFractionColumn,
-	createColumnBundle: createColumnBundle
+	createColumnBundle: createColumnBundle,
+	getAnnotationAxesSpec: getAnnotationAxesSpec
 })

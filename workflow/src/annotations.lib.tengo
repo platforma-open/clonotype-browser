@@ -1,0 +1,44 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+annotations := import("@platforma-sdk/workflow-tengo:annotations")
+
+util := import(":util")
+
+convertToPFrame := func(...entities) {
+	return slices.reduce(entities, func(acc, v) {
+		acc.add(v.column, v.spec, v.data)
+		return acc
+	}, pFrames.pFrameBuilder()).build()
+}
+
+computeClonotypeAnnotations := func(inputs) {
+	title := inputs.title
+	steps := inputs.steps
+	inputAnchor := inputs.inputAnchor
+	annotationAxesSpec := inputs.annotationAxesSpec
+	shouldComputeFilters := inputs.shouldComputeFilters
+
+    if len(steps) == 0 {
+		ll.panic("No annotation steps provided")
+	}
+
+	result := annotations.computeAnnotations({
+		title: title,
+		steps: steps,
+		inputAnchor: inputAnchor,
+		resultAxesSpec: annotationAxesSpec,
+		shouldComputeFilters: shouldComputeFilters
+	})
+
+	return {
+		annotationColumn: result.annotationColumn,
+        annotationPf: convertToPFrame(result.annotationColumn),
+		filtersColumns: result.annotationFilterColumns,
+        filtersPf: convertToPFrame(result.annotationFilterColumns...)
+    }
+}
+
+export ll.toStrict({
+	computeClonotypeAnnotations: computeClonotypeAnnotations
+})

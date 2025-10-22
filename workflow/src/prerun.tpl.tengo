@@ -7,51 +7,60 @@ render := import("@platforma-sdk/workflow-tengo:render")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 util := import(":util")
+annotations := import(":annotations")
+annotationsStats := import(":annotations-stats")
 
-doCalculations := assets.importTemplate(":do-calculations")
 exportTableTpl := assets.importTemplate(":export-table")
 
-wf.body(func(args) {
-	if is_undefined(args.inputAnchor) {
-		return {
-			outputs: {
-				tsv: smart.createNullResource()
-			},
-			exports: {}
-		}
+wf.prepare(func(args) {
+	return {
+		columnBundle: util.createColumnBundle(args)
 	}
+})
 
-	blockId := wf.blockId().getDataAsJson()
-
+wf.body(func(args) {
 	outputs := {}
 	exports := {}
 
-	bundleBuilderForExport := wf.createPBundleBuilder()
+	// Export TSVs
 
-	bundleBuilderForExport.addAnchor("main", args.inputAnchor)
-	bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 0 }, { anchor: "main", idx: 1 }] }, "perSample")
-	bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 1 }] }, "perClonotype")
-	bundleBuilderForExport.addSingle({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 0 }] }, "sampleLabels")
-
-	exportResult := render.createEphemeral(exportTableTpl, {
-		columnBundle: bundleBuilderForExport.build()
-	})
-
-	outputs["tsvZip"] = exportResult.output("tsvZip")
-	outputs["exportDebug"] = exportResult.output("exportDebug")
-
-	if len(args.annotationSpec.steps) > 0 {
-		columnBundle := util.createColumnBundle(wf, args)
-		calculationResult := render.createEphemeral(doCalculations, {
-			blockId: blockId,
-			blockArgs: args,
-			columnBundle: columnBundle,
-			shouldComputeFilters: true
+	if (!is_undefined(args.inputAnchor)) {
+		bundleBuilderForExport := wf.createPBundleBuilder()
+		bundleBuilderForExport.addAnchor("main", args.inputAnchor)
+		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 0 }, { anchor: "main", idx: 1 }] }, "perSample")
+		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 1 }] }, "perClonotype")
+		bundleBuilderForExport.addSingle({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 0 }] }, "sampleLabels")
+		exportResult := render.createEphemeral(exportTableTpl, {
+			columnBundle: bundleBuilderForExport.build()
 		})
 
-		outputs["annotationPf"] = pFrames.exportFrame(calculationResult.output("annotationPf"))
-		outputs["annotationStatsPf"] = pFrames.exportFrame(calculationResult.output("annotationStatsPf"))
-		outputs["sampleStatsPf"] = pFrames.exportFrame(calculationResult.output("sampleStatsPf"))
+		outputs["tsvZip"] = exportResult.output("tsvZip")
+	}
+	
+	// Annotations computation
+
+	annotationSpec := args.annotationSpec
+	annotationAxesSpec := util.getAnnotationAxesSpec(args)
+
+	if !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
+		computedAnnotations := annotations.computeClonotypeAnnotations({
+			title: annotationSpec.title,
+			steps: annotationSpec.steps,
+			inputAnchor: args.inputAnchor,
+			annotationAxesSpec: annotationAxesSpec,
+			shouldComputeFilters: false
+		})
+
+		outputs["annotationPf"] = pFrames.exportFrame(computedAnnotations.annotationPf)
+
+		computedStats := annotationsStats.computeClonotypeAnnotationsStats({
+			inputAnchor: args.inputAnchor,
+			annotation: computedAnnotations.annotationColumn,
+			columnBundle: args.columnBundle
+		})
+
+		outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
+		outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
 	}
 
 	return {

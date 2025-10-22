@@ -21,8 +21,8 @@
       "@milaboratories/pl-model-common": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/model/common/",
       "@platforma-sdk/model": "link:/Users/aleksandr/GIT/MILAB/platforma/sdk/model/",
       "@platforma-sdk/ui-vue": "link:/Users/aleksandr/GIT/MILAB/platforma/sdk/ui-vue/",
-      "@platforma-sdk/workflow-tengo": "link:/Users/aleksandr/GIT/MILAB/platforma/sdk/workflow-tengo/",
-      "@milaboratories/uikit": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/ui/uikit/z"
+      "@milaboratories/uikit": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/ui/uikit/",
+      "@platforma-sdk/workflow-tengo": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/workflow-tengo/package.tgz"
     }
   }
 }

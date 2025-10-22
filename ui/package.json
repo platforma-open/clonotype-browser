@@ -7,7 +7,6 @@
     "watch": "ts-builder build --target browser --watch",
     "build": "ts-builder build --target browser",
     "type-check": "ts-builder types --target browser",
-    "@milaboratories/ts-builder": "catalog:",
     "lint": "eslint ."
   },
   "dependencies": {
