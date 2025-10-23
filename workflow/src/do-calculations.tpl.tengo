@@ -95,6 +95,13 @@ self.body(func(inputs) {
 	sampleSchemaMap[CLONOTYPE_KEY_HEADER] = { column: CLONOTYPE_KEY_HEADER, type: clonotypeAxisSpec.type }
 
 	headerMap := {}
+	headerCounter := 0
+	getHeader := func(colId) {
+		headerCounter += 1
+		header := "header_" + string(headerCounter)
+		headerMap[colId] = header
+		return header
+	}
 
 	needsClonoTable := (mode == "byClonotype")
 	needsSampleTable := (mode == "bySampleAndClonotype")
@@ -104,27 +111,23 @@ self.body(func(inputs) {
 		colSpec := columnBundle.getSpec(colId)
 		numAxes := len(colSpec.axesSpec)
 
-
+		header := getHeader(colId)
 		if numAxes == 1 {
 			// Belongs in clonotype table
-			clonoTableBuilder.add(columnBundle.getColumn(colId))
-			header := clonoTableBuilder.getHeader(colId)
+			clonoTableBuilder.add(columnBundle.getColumn(colId), { header: header })
 			spec := clonoTableBuilder.getSpec(colId)
 			clonoSchemaMap[header] = { column: header, type: spec.valueType }
 			needsClonoTable = true // Mark true if any 1-axis col is used, even in bySample mode
-			headerMap[colId] = header
 		} else if numAxes == 2 {
 			// Belongs in sample-clonotype table
 			if mode == "byClonotype" {
 				ll.panic("Column %s has 2 axes but mode is 'byClonotype'. The script expects only 1-axis columns in this mode.", colId)
 			}
 			nTwoAxe += 1
-			sampleTableBuilder.add(columnBundle.getColumn(colId))
-			header := sampleTableBuilder.getHeader(colId)
+			sampleTableBuilder.add(columnBundle.getColumn(colId), { header: header })
 			spec := sampleTableBuilder.getSpec(colId)
 			sampleSchemaMap[header] = { column: header, type: spec.valueType }
 			needsSampleTable = true
-			headerMap[colId] = header
 		} else {
 			ll.panic("Column %s has an unexpected number of axes (%d), expected 1 or 2.", colId, numAxes)
 		}
