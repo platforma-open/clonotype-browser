@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.10.2
+
+### Patch Changes
+
+- d2bab07: SDK update
+
 ## 1.10.1
 
 ### Patch Changes

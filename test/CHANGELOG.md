@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.test
 
+## 1.3.19
+
+### Patch Changes
+
+- d2bab07: SDK update
+
 ## 1.3.18
 
 ### Patch Changes
