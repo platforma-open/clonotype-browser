@@ -202,7 +202,7 @@ function findColumnId(columns: SimplifiedUniversalPColumnEntry[] | undefined, la
 }
 
 // Test for byClonotype mode
-blockTest.skip(
+blockTest(
   'simple project byClonotype mode',
   { timeout: 300000 },
   async ({ rawPrj: project, ml, helpers, expect }) => {
@@ -218,6 +218,7 @@ blockTest.skip(
         mode: 'byClonotype',
         steps: [],
       } satisfies AnnotationScript,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -283,6 +284,7 @@ blockTest.skip(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
       annotationScript,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState3 = (await awaitStableState(
@@ -332,6 +334,7 @@ blockTest(
         mode: 'bySampleAndClonotype', // Change mode here
         steps: [],
       } satisfies AnnotationScript,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -407,6 +410,7 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
       annotationScript,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState3 = (await awaitStableState(
