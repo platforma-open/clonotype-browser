@@ -1229,8 +1229,8 @@ packages:
   '@platforma-open/milaboratories.software-mixcr@4.7.0-190-develop':
     resolution: {integrity: sha512-pIo7em6XJ+iEJq05Z5HjQXWXG4H0bgWgvnD/q7MTX/IkZZSiJlfhD/DBoSf+SERTAOdB3LEmH6DvlAl1TD8rUg==}
 
-  '@platforma-open/milaboratories.software-ptabler@1.12.9':
-    resolution: {integrity: sha512-o0kbNbsFY33pHPnAzY0UI6lMP5Zq8J0lQsnZb9c0UZSr+dPS6UMSNo1iODQwZQVzLHRvPsqG2aUO5Liv6GOtfA==}
+  '@platforma-open/milaboratories.software-ptabler@1.12.11':
+    resolution: {integrity: sha512-ccX6t4xbA37rSSDz9EuCoLNFLZv4idQTbAraPB6dZsajD4KR0EoFYoOSYle3ct+Aji1Ipfxu3qPkOyWHiqgGZw==}
 
   '@platforma-open/milaboratories.software-ptexter@1.1.1':
     resolution: {integrity: sha512-nTKuFoDm+IhlD3uCktYrpjJ1pJ8TUrGOGAACbLoPwu65iRPOjohmrBZxFux+7eill+aJmqEsy+xF41Dw4mfnkg==}
@@ -1299,8 +1299,8 @@ packages:
     resolution: {integrity: sha512-tNk8184Qk+YZ5ZZT67nWbqQKn0mG8qXvXEPOoJAQmlTx3sajt2DGl+9MQtzZnbiWjbgRgAsDUTn1DOihrXb8pg==}
 
   '@platforma-sdk/workflow-tengo@file:../platforma/sdk/workflow-tengo/package.tgz':
-    resolution: {integrity: sha512-fyPRfbk6M9oxIbli78JdXRC0ovtKUnGXKQLxZz8a3WX3ol+2u+OcSuL/HKdT12Df0pAIgNOAS3EAoFf3HzgfFQ==, tarball: file:../platforma/sdk/workflow-tengo/package.tgz}
-    version: 5.3.9
+    resolution: {integrity: sha512-1HvURlenfBvGgCI6/UMPFUbY2XmeAUjTk+NWsBJkhDqh4WmFUvM3oqazceIdBPfv3EYVRXcHuamTEWry9V7GBQ==, tarball: file:../platforma/sdk/workflow-tengo/package.tgz}
+    version: 5.4.3
 
   '@protobuf-ts/grpc-transport@2.11.1':
     resolution: {integrity: sha512-l6wrcFffY+tuNnuyrNCkRM8hDIsAZVLA8Mn7PKdVyYxITosYh60qW663p9kL6TWXYuDCL3oxH8ih3vLKTDyhtg==}
@@ -5781,7 +5781,7 @@ snapshots:
 
   '@platforma-open/milaboratories.software-mixcr@4.7.0-190-develop': {}
 
-  '@platforma-open/milaboratories.software-ptabler@1.12.9': {}
+  '@platforma-open/milaboratories.software-ptabler@1.12.11': {}
 
   '@platforma-open/milaboratories.software-ptexter@1.1.1': {}
 
@@ -5901,7 +5901,7 @@ snapshots:
   '@platforma-sdk/workflow-tengo@file:../platforma/sdk/workflow-tengo/package.tgz':
     dependencies:
       '@milaboratories/software-pframes-conv': 2.2.9
-      '@platforma-open/milaboratories.software-ptabler': 1.12.9
+      '@platforma-open/milaboratories.software-ptabler': 1.12.11
       '@platforma-open/milaboratories.software-ptexter': 1.1.1
       '@platforma-open/milaboratories.software-small-binaries': 1.15.23
 

@@ -32,10 +32,10 @@ computeClonotypeAnnotations := func(inputs) {
 	})
 
 	return {
-		annotationColumn: result.annotationColumn,
-        annotationPf: convertToPFrame(result.annotationColumn),
-		filtersColumns: result.annotationFilterColumns,
-        filtersPf: convertToPFrame(result.annotationFilterColumns...)
+		annotationsColumn: result.annotationsColumn,
+        annotationsPf: convertToPFrame(result.annotationsColumn),
+		filtersColumns: result.annotationsFiltersColumns,
+        filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
     }
 }
 
