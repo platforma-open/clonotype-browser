@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotation2filters
 
+## 1.2.14
+
+### Patch Changes
+
+- d68e259: updating dependencies
+
 ## 1.2.13
 
 ### Patch Changes

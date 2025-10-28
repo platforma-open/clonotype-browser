@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.12.2
+
+### Patch Changes
+
+- d68e259: updating dependencies
+
 ## 1.12.1
 
 ### Patch Changes

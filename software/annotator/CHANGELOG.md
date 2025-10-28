@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.annotator
 
+## 1.3.13
+
+### Patch Changes
+
+- d68e259: updating dependencies
+
 ## 1.3.12
 
 ### Patch Changes
