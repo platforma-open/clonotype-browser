@@ -36,7 +36,7 @@ function checkObjectForTwoAxes(obj: unknown): boolean {
         if (isTwoAxes(parsed) || checkObjectForTwoAxes(parsed)) {
           return true;
         }
-      } catch (e) {
+      } catch {
         // Not a json string
       }
     } else if (checkObjectForTwoAxes(value)) {
