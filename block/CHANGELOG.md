@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2
 
+## 1.8.8
+
+### Patch Changes
+
+- aa0e808: Updated metadata
+
 ## 1.8.7
 
 ### Patch Changes
