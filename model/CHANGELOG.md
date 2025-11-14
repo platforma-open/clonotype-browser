@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.model
 
+## 1.12.3
+
+### Patch Changes
+
+- ea9d984: update sdk
+
 ## 1.12.2
 
 ### Patch Changes
