@@ -28,7 +28,7 @@
       "logo": "file:../logos/block-logo.png",
       "url": "https://github.com/platforma-open/clonotype-browser-2",
       "support": "mailto:support@milaboratories.com",
-      "description": "Allows to browse clonotypes and annotate them for tracking and filtering",
+      "description": "Interactive browser for exploring and annotating T/B cell clonotypes with custom tags for tracking, filtering, and downstream analysis.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:./CHANGELOG.md",
       "tags": [
