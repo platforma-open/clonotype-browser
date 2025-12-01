@@ -1,6 +1,6 @@
 import type { Platforma } from '@platforma-open/milaboratories.clonotype-browser-3.model';
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-3.model';
-import type { PlSelectionModel, SimplifiedUniversalPColumnEntry } from '@platforma-sdk/model';
+import type { PlSelectionModel } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
@@ -23,22 +23,19 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   const hasSelectedColumns = computed(() => {
     return selectedColumns.value.selectedKeys.length > 0;
   });
-  const filterColumns = computed((): SimplifiedUniversalPColumnEntry[] => {
-    return app.model.outputs.overlapColumns?.columns ?? [];
-  });
 
   return {
-    getValuesForSelectedColumns: () => {
-      const pFrame = app.model.outputs.overlapColumns?.pFrame;
-      return pFrame == null ? Promise.resolve(undefined) : getValuesForSelectedColumns(selectedColumns.value, [pFrame]);
-    },
+    progress: () => app.model.outputs.annotationsIsComputing ?? false,
     selectedColumns,
     hasSelectedColumns,
     isAnnotationModalOpen,
-    filterColumns,
     routes: {
       '/': () => OverlapPage,
       '/stats': () => AnnotationStatsPage,
+    },
+    getValuesForSelectedColumns: () => {
+      const pFrame = app.model.outputs.overlapColumns?.pFrame;
+      return pFrame == null ? Promise.resolve(undefined) : getValuesForSelectedColumns(selectedColumns.value, [pFrame]);
     },
   };
 }, { debug: false });

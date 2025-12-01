@@ -106,7 +106,7 @@ createStatsDataAndSpecBySample := func(file, importAxes) {
 }
 
 computeClonotypeAnnotationsStats := func(inputs) {
-	annotation := inputs.annotation
+	annotations := inputs.annotations
 	columnBundle := inputs.columnBundle
 	mainCount := columnBundle.getColumn(util.mainCountColumn)
 	mainFraction := columnBundle.getColumn(util.mainFractionColumn)
@@ -118,15 +118,15 @@ computeClonotypeAnnotationsStats := func(inputs) {
 	statsBySampleFileBuilder := pFrames.tsvFileBuilder()
 	statsBySampleFileBuilder.setAxisHeader(sampleAxisSpec, SAMPLE_KEY_HEADER)
 	statsBySampleFileBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
-	statsBySampleFileBuilder.add(annotation, { header: annotation.column })
+	statsBySampleFileBuilder.add(annotations, { header: annotations.column })
 	statsBySampleFileBuilder.add(mainCount, { header: MAIN_COUNT_HEADER })
 	statsBySampleFileBuilder.add(mainFraction, { header: MAIN_FRACTION_HEADER })
 	statsBySampleFile := statsBySampleFileBuilder.build()
 
 	wf.frame(statsBySampleFile, { format: "tsv" }).
-		groupBy(SAMPLE_KEY_HEADER, annotation.column).
+		groupBy(SAMPLE_KEY_HEADER, annotations.column).
 		agg(
-			pt.col(annotation.column).count().alias(ANNOTATION_COUNT_HEADER),
+			pt.col(annotations.column).count().alias(ANNOTATION_COUNT_HEADER),
 			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER),
 			pt.col(MAIN_COUNT_HEADER).sum().alias(MAIN_COUNT_SUM_HEADER),
 			pt.col(MAIN_FRACTION_HEADER).sum().alias(MAIN_FRACTION_SUM_HEADER)
@@ -135,20 +135,20 @@ computeClonotypeAnnotationsStats := func(inputs) {
 
 	statsByClonoFileBuilder := pFrames.tsvFileBuilder()
 	statsByClonoFileBuilder.setAxisHeader(clonotypeAxisSpec, CLONOTYPE_KEY_HEADER)
-	statsByClonoFileBuilder.add(annotation, { header: annotation.column })
+	statsByClonoFileBuilder.add(annotations, { header: annotations.column })
 	statsByClonoFile := statsByClonoFileBuilder.build()	
 	wf.frame(statsByClonoFile, { format: "tsv" }).
-		select(CLONOTYPE_KEY_HEADER, annotation.column).
-		groupBy(annotation.column).
+		select(CLONOTYPE_KEY_HEADER, annotations.column).
+		groupBy(annotations.column).
 		agg(
-			pt.col(annotation.column).count().alias(ANNOTATION_COUNT_HEADER),
+			pt.col(annotations.column).count().alias(ANNOTATION_COUNT_HEADER),
 			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER)
 		).
 		save(ANNOTATION_STATS_FILE)
 
 	wfResult := wf.run()
 
-	annotationsAxis := { column: annotation.column, spec: convertColumnSpecToAxisSpec(annotation.spec) }	
+	annotationsAxis := { column: annotations.column, spec: convertColumnSpecToAxisSpec(annotations.spec) }	
 	statsDataAndSpecByAnnotation := createStatsDataAndSpecByAnnotation(
 		wfResult.getFile(ANNOTATION_STATS_FILE),
 		annotationsAxis

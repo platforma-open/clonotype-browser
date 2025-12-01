@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@platforma-open/milaboratories.clonotype-browser-3.model": "workspace:*",
+    "@milaboratories/pl-model-common": "catalog:",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",
     "ag-grid-enterprise": "catalog:",

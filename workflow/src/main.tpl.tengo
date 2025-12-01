@@ -28,7 +28,7 @@ wf.body(func(args) {
 			shouldComputeFilters: true
 		})
 
-		exports["annotationPf"] = computedAnnotations.annotationPf
+		exports["annotationsPf"] = computedAnnotations.annotationsPf
 		exports["filtersPf"] = computedAnnotations.filtersPf
 	}
 

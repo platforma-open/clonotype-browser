@@ -1,22 +1,18 @@
 import type {
   AnchoredPColumnSelector,
+  AxesSpec,
   InferHrefType,
-  InferOutputsType,
-  PColumn,
-  PColumnDataUniversal,
-  PColumnEntryUniversal,
-  PlDataTableStateV2,
+  InferOutputsType, PColumnEntryUniversal, PlDataTableStateV2,
   PlRef,
-  PObjectId,
-  SimplifiedUniversalPColumnEntry,
 } from '@platforma-sdk/model';
 import {
+  Annotation,
   BlockModel,
   createPlDataTableStateV2,
   createPlDataTableV2,
   PColumnCollection,
+  PColumnName,
 } from '@platforma-sdk/model';
-import omit from 'lodash.omit';
 import type { AnnotationSpec, AnnotationSpecUi } from './types';
 
 type BlockArgs = {
@@ -36,31 +32,41 @@ export type UiState = {
   annotationSpec: AnnotationSpecUi;
 };
 
-const excludedAnnotationKeys = [
-  'pl7.app/table/orderPriority',
-  'pl7.app/table/visibility',
-  'pl7.app/trace',
-];
+function getLabelColumns(entries: PColumnEntryUniversal[]) {
+  const labelColumns: PColumnEntryUniversal[] = [];
 
-const simplifyColumnEntries = (
-  entries: PColumnEntryUniversal[] | undefined,
-): SimplifiedUniversalPColumnEntry[] | undefined => {
-  if (!entries) {
-    return undefined;
+  for (const entry of entries) {
+    if (entry.spec.name === PColumnName.Label) {
+      labelColumns.push(entry);
+    }
   }
 
-  const ret = entries.map((entry) => {
-    const filteredAnnotations = entry.spec.annotations
-      ? omit(entry.spec.annotations, excludedAnnotationKeys)
-      : undefined;
+  return labelColumns;
+}
 
+function prepareToAdvancedFilters(
+  entries: PColumnEntryUniversal[],
+  anchorAxesSpec: AxesSpec,
+) {
+  const labelColumns = getLabelColumns(entries);
+  const ret = entries.map((entry) => {
+    const axesSpec = entry.spec.axesSpec;
     return {
       id: entry.id,
+      spec: entry.spec,
       label: entry.label,
-      obj: {
-        valueType: entry.spec.valueType,
-        annotations: filteredAnnotations,
-      },
+      axesToBeFixed: axesSpec.length > anchorAxesSpec.length
+        ? axesSpec.slice(anchorAxesSpec.length).map((axis, i) => {
+          const labelColumn = labelColumns.find((c) => {
+            return c.spec.axesSpec[0].name === axis.name;
+          });
+
+          return {
+            idx: anchorAxesSpec.length + i,
+            label: labelColumn?.label ?? axis.annotations?.[Annotation.Label] ?? axis.name,
+          };
+        })
+        : undefined,
     };
   });
 
@@ -78,7 +84,7 @@ export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
     annotationSpec: {
-      title: 'My Annotation',
+      title: '',
       steps: [],
     },
   })
@@ -92,8 +98,7 @@ export const platforma = BlockModel.create('Heavy')
       tableState: createPlDataTableStateV2(),
     },
     annotationSpec: {
-      isCreated: false,
-      title: 'My Annotation',
+      title: '',
       steps: [],
     } satisfies AnnotationSpecUi,
   })
@@ -116,11 +121,21 @@ export const platforma = BlockModel.create('Heavy')
     }),
   )
 
+  .output('annotationsIsComputing', (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return false;
+    if (ctx.args.annotationSpec.steps.length === 0) return false;
+
+    const annotationsPf = ctx.prerun?.resolve('annotationsPf');
+
+    return annotationsPf === undefined;
+  })
+
   .output('overlapColumns', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
-    if (!anchorCtx) return undefined;
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    if (anchorCtx == null || anchorSpec == null) return undefined;
 
     const entries = new PColumnCollection()
       .addColumnProvider(ctx.resultPool)
@@ -143,16 +158,12 @@ export const platforma = BlockModel.create('Heavy')
         }],
         { anchorCtx },
       );
+
+    if (!entries) return undefined;
+
     return {
-      columns: simplifyColumnEntries(entries),
-      pFrame: ctx.createPFrame(entries
-        ?.map((e) => {
-          return {
-            id: e.id as PObjectId,
-            spec: e.spec,
-            data: e.data(),
-          };
-        }).filter((e): e is PColumn<PColumnDataUniversal> => e.data !== undefined) ?? []),
+      pFrame: ctx.createPFrame(entries),
+      columns: prepareToAdvancedFilters(entries, anchorSpec.axesSpec),
     };
   })
 
@@ -165,7 +176,7 @@ export const platforma = BlockModel.create('Heavy')
 
     const collection = new PColumnCollection();
 
-    const annotation = ctx.prerun?.resolve({ field: 'annotationPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    const annotation = ctx.prerun?.resolve({ field: 'annotationsPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
     if (annotation) collection.addColumns(annotation);
 
     // result pool is added after the pre-run ouptus so that pre-run results take precedence
@@ -271,7 +282,7 @@ export const platforma = BlockModel.create('Heavy')
   .enriches((args) => args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0 ? [args.inputAnchor] : [])
 
   .title((ctx) => ctx.args.annotationSpec.steps.length > 0
-    ? `Annotation - ${ctx.args.annotationSpec.title}`
+    ? `Clonotype Annotation - ${ctx.args.annotationSpec.title}`
     : ctx.args.datasetTitle
       ? `Clonotype Browser - ${ctx.args.datasetTitle}`
       : 'Clonotype Browser')
@@ -284,4 +295,3 @@ export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './types';
 export type { BlockArgs };
-
