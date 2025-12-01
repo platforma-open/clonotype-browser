@@ -51,11 +51,11 @@ wf.body(func(args) {
 			shouldComputeFilters: false
 		})
 
-		outputs["annotationPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
+		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
 
 		computedStats := annotationsStats.computeClonotypeAnnotationsStats({
 			inputAnchor: args.inputAnchor,
-			annotation: computedAnnotations.annotationsColumn,
+			annotations: computedAnnotations.annotationsColumn,
 			columnBundle: args.columnBundle
 		})
 

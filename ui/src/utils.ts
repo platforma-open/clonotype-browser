@@ -5,8 +5,7 @@ import { getAxisId, getRawPlatformaInstance, type PFrameHandle, type PlSelection
 
 export function getDefaultAnnotationScript(): AnnotationSpecUi {
   return {
-    isCreated: false,
-    title: 'My Annotation',
+    title: '',
     steps: [],
   };
 }
