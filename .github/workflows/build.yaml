@@ -4,10 +4,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
-      - 'main'
+      - "main"
   push:
     branches:
-      - 'main'
+      - "main"
   workflow_dispatch: {}
 jobs:
   init:
@@ -22,19 +22,20 @@ jobs:
       - init
     uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
-      app-name: 'Block: Clonotype Browser 2'
-      app-name-slug: 'block-clonotype-browser-2'
+      gha-runner-label: "ubuntu-large-amd64"
+      app-name: "Block: Clonotype Browser 2"
+      app-name-slug: "block-clonotype-browser-2"
       # pl-docker-tag: '1.34.2'
-      node-version: '20.x'
-      build-script-name: 'build'
+      node-version: "20.x"
+      build-script-name: "build"
       pnpm-recursive-build: false
       test: true
-      test-script-name: 'test'
+      test-script-name: "test"
       pnpm-recursive-tests: false
-      team-id: 'ciplopen'
-      publish-to-public: 'true'
-      package-path: 'block'
-      create-tag: 'true'
+      team-id: "ciplopen"
+      publish-to-public: "true"
+      package-path: "block"
+      create-tag: "true"
 
       npmrc-config: |
         {
