@@ -14,13 +14,90 @@ util := import(":util")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
+self.awaitState("inputAnchor", "ResourceReady")
 
 sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-binary-collection.software-7zip:main")
 
 cloneKeyAxisHeader := "clonotypeKey"
 
+// Process linked columns and return frames and updated byCloneSpecs
+processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyAxisHeader, bigTableWf, byCloneSpecs) {
+	linkedFrames := []
+	updatedByCloneSpecs := byCloneSpecs
+	
+	for linker, data in linkedColumns {
+		// Collect and filter linked columns (similar to columnsPerClonotype filtering)
+		linkedColsForLinker := []
+		for name, _ in data.columns {
+			col := columnBundle.getColumn(name)
+			if is_undefined(col) {
+				continue
+			}
+			// Apply same filtering as columnsPerClonotype
+			if col.spec.name == "pl7.app/vdj/sequence/annotation" {
+				continue
+			}
+			if is_undefined(col.spec.annotations["pl7.app/label"]) {
+				continue
+			}
+			linkedColsForLinker = append(linkedColsForLinker, col)
+		}
+		
+		// Sort linked columns by orderPriority (similar to columnsPerSample)
+		slices.quickSortInPlaceFn(linkedColsForLinker, func(a, b) {
+			if is_undefined(a.spec.annotations["pl7.app/table/orderPriority"]) {
+				return false
+			}
+			if is_undefined(b.spec.annotations["pl7.app/table/orderPriority"]) {
+				return true
+			}
+			return int(a.spec.annotations["pl7.app/table/orderPriority"]) > int(b.spec.annotations["pl7.app/table/orderPriority"])
+		})
+		
+		// Skip if no valid linked columns after filtering
+		if len(linkedColsForLinker) == 0 {
+			continue
+		}
+		
+		linkedTsvBuilder := pframes.tsvFileBuilder().cpu(1).mem("4GiB")
+		linkedTsvBuilder.setAxisHeader(datasetSpec.axesSpec[1], cloneKeyAxisHeader)
+		
+		// Get the linker column using its anchorRef
+		if !is_undefined(data.anchorRef) {
+			linkerCol := columnBundle.getColumn(data.anchorRef)
+			if !is_undefined(linkerCol) {
+				// Add linker column (like in antibody-tcr-lead-selection lines 213-226)
+				clusterAxisName := "cluster_" + linker
+				if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[1].name {
+					linkedTsvBuilder.add(linkerCol, {header: "linker." + linker})
+					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[0], clusterAxisName)
+				} else if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[0].name {
+					linkedTsvBuilder.add(linkerCol, {header: "linker." + linker})
+					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[1], clusterAxisName)
+				}
+			}
+		}
+		
+		// Add filtered and sorted linked columns
+		for col in linkedColsForLinker {
+			linkedTsvBuilder.add(col)
+			updatedByCloneSpecs += [col.spec]
+		}
+		
+		linkedTsv := linkedTsvBuilder.build()
+		linkedFrames = append(linkedFrames, bigTableWf.frame(linkedTsv, { xsvType: "tsv", inferSchema: false }))
+	}
+	
+	return {
+		frames: linkedFrames,
+		byCloneSpecs: updatedByCloneSpecs
+	}
+}
+
 self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
+	inputAnchor := inputs.inputAnchor
+	linkedColumns := inputs.linkedColumns
 
 	columnsPerSample := columnBundle.getColumns("perSample")
 	columnsPerClonotype := columnBundle.getColumns("perClonotype")
@@ -148,6 +225,15 @@ self.body(func(inputs) {
 	if tsvBuilder != undefined {
 		tsv := tsvBuilder.build()
 		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+	}
+
+	datasetSpec := columnBundle.getSpec(inputAnchor)
+
+	// Process linked columns
+	if !is_undefined(linkedColumns) {
+		linkedResult := processLinkedColumns(columnBundle, datasetSpec, linkedColumns, cloneKeyAxisHeader, bigTableWf, byCloneSpecs)
+		pfs += linkedResult.frames
+		byCloneSpecs = linkedResult.byCloneSpecs
 	}
 
 	maps.forEach(perSampleTsvFiles, func(key, tsv) {
