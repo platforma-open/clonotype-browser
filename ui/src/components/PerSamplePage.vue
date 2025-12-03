@@ -11,7 +11,7 @@ import {
   PlSlideModal,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useApp } from '../app';
 import ExportBtn from './ExportBtn.vue';
 
@@ -23,10 +23,25 @@ function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
   if (ref) {
     app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
+    // @ts-expect-error - linkedColumns will be available after model types are regenerated
+    app.model.args.linkedColumns = (app.model.outputs as Record<string, unknown>).linkedColumns ?? {};
   } else {
     app.model.args.datasetTitle = undefined;
+    app.model.args.linkedColumns = {};
   }
 }
+
+// Keep linkedColumns in sync with output when it changes
+watch(
+  () => (app.model.outputs as Record<string, unknown>).linkedColumns,
+  (linkedColumns) => {
+    if (app.model.args.inputAnchor) {
+      // @ts-expect-error - linkedColumns will be available after model types are regenerated
+      app.model.args.linkedColumns = linkedColumns ?? {};
+    }
+  },
+  { deep: true },
+);
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.args.inputAnchor,
@@ -77,3 +92,4 @@ const tableSettings = usePlDataTableSettingsV2({
     :getValuesForSelectedColumns="app.getValuesForSelectedColumns"
   />
 </template>
+
