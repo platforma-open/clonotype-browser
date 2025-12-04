@@ -123,6 +123,7 @@ function getLinkedColumns(
   const linkedColumns: PColumn<PColumnDataUniversal>[] = [];
 
   // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
+  let linkerIndex = 0;
   for (const idx of [0, 1]) {
     let axesToMatch;
     if (idx === 0) {
@@ -154,15 +155,16 @@ function getLinkedColumns(
 
     // For each linker, use it as an anchor to get columns on the other side
     for (const linkerOption of linkerOptions) {
+      const anchorName = `linker-${linkerIndex}`;
       const linkerAnchorSpec: Record<string, PlRef> = {
-        linker: linkerOption.ref,
+        [anchorName]: linkerOption.ref,
       };
 
       // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
       const linkedProps = ctx.resultPool.getAnchoredPColumns(
         linkerAnchorSpec,
         [{
-          axes: [{ anchor: 'linker', idx: idx }],
+          axes: [{ anchor: anchorName, idx: idx }],
         }],
       );
 
@@ -171,6 +173,8 @@ function getLinkedColumns(
           ...linkedProps.filter((p) => !isLabelColumn(p.spec)),
         );
       }
+
+      linkerIndex++;
     }
   }
 
