@@ -25,6 +25,14 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 	linkedFrames := []
 	updatedByCloneSpecs := byCloneSpecs
 	
+	// Count number of linkers
+	numLinkers := 0
+	for _ in linkedColumns {
+		numLinkers += 1
+	}
+	usePrefix := numLinkers > 1
+	
+	linkerIndex := 1  // 1-based index for linker numbering
 	for linker, data in linkedColumns {
 		// Collect and filter linked columns (similar to columnsPerClonotype filtering)
 		linkedColsForLinker := []
@@ -62,12 +70,14 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 		linkedTsvBuilder := pframes.tsvFileBuilder().cpu(1).mem("4GiB")
 		linkedTsvBuilder.setAxisHeader(datasetSpec.axesSpec[1], cloneKeyAxisHeader)
 		
+		// Define cluster axis name for this linker
+		clusterAxisName := "cluster_" + linker
+		
 		// Get the linker column using its anchorRef
 		if !is_undefined(data.anchorRef) {
 			linkerCol := columnBundle.getColumn(data.anchorRef)
 			if !is_undefined(linkerCol) {
 				// Add linker column (like in antibody-tcr-lead-selection lines 213-226)
-				clusterAxisName := "cluster_" + linker
 				if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[1].name {
 					linkedTsvBuilder.add(linkerCol, {header: "linker." + linker})
 					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[0], clusterAxisName)
@@ -78,14 +88,34 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 			}
 		}
 		
-		// Add filtered and sorted linked columns
+		// Add filtered and sorted linked columns with unique headers
 		for col in linkedColsForLinker {
-			linkedTsvBuilder.add(col)
-			updatedByCloneSpecs += [col.spec]
+			colLabel := col.spec.annotations["pl7.app/label"]
+			// Only add suffix if there are multiple linkers
+			uniqueHeader := colLabel
+			if usePrefix {
+				uniqueHeader = colLabel + " (" + string(linkerIndex) + ")"
+			}
+			
+			// Set axis headers for any axes that are not the main clonotypeKey axis
+			for axisIdx, axis in col.spec.axesSpec {
+				if axis.name != datasetSpec.axesSpec[1].name {
+					axisHeaderName := clusterAxisName + "_" + string(axisIdx)
+					linkedTsvBuilder.setAxisHeader(axis, axisHeaderName)
+				}
+			}
+			
+			linkedTsvBuilder.add(col, {header: uniqueHeader})
+			// Update the spec's label to match the header we used
+			updatedSpec := maps.clone(col.spec)
+			updatedSpec.annotations["pl7.app/label"] = uniqueHeader
+			updatedByCloneSpecs += [updatedSpec]
 		}
 		
 		linkedTsv := linkedTsvBuilder.build()
 		linkedFrames = append(linkedFrames, bigTableWf.frame(linkedTsv, { xsvType: "tsv", inferSchema: false }))
+		
+		linkerIndex += 1
 	}
 	
 	return {
@@ -200,6 +230,27 @@ self.body(func(inputs) {
 
 	tsvBuilder := undefined
 	columnsInBuilder := 0
+	columnNameCounts := {}  // Track how many times each column name appears
+	datasetSpec := columnBundle.getSpec(inputAnchor)
+	columnIndex := 0
+	
+	// First pass: count occurrences of each column name
+	for column in columnsPerClonotype {
+		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
+			continue
+		}
+		if is_undefined(column.spec.annotations["pl7.app/label"]) {
+			continue
+		}
+		baseLabel := column.spec.annotations["pl7.app/label"]
+		if is_undefined(columnNameCounts[baseLabel]) {
+			columnNameCounts[baseLabel] = 0
+		}
+		columnNameCounts[baseLabel] += 1
+	}
+	
+	// Second pass: add columns with appropriate headers
+	columnNameOccurrences := {}  // Track which occurrence we're on for each column name
 	for column in columnsPerClonotype {
 		if column.spec.name == "pl7.app/vdj/sequence/annotation"{
 			continue
@@ -211,8 +262,39 @@ self.body(func(inputs) {
 			tsvBuilder = pframes.tsvFileBuilder().cpu(1).mem("4GiB")
 			tsvBuilder.setAxisHeader(column.spec.axesSpec[0], cloneKeyAxisHeader)
 		}
-		byCloneSpecs += [column.spec]
-		tsvBuilder.add(column)
+		
+		// Set axis headers for any axes that are not the main clonotypeKey axis
+		for axisIdx, axis in column.spec.axesSpec {
+			if axis.name != datasetSpec.axesSpec[1].name {
+				// Generate unique axis header name based on column index and axis index
+				axisHeaderName := "axis_" + string(columnIndex) + "_" + string(axisIdx)
+				tsvBuilder.setAxisHeader(axis, axisHeaderName)
+			}
+		}
+		columnIndex += 1
+		
+		// Make header unique if column name appears more than once
+		baseLabel := column.spec.annotations["pl7.app/label"]
+		header := baseLabel
+		
+		if columnNameCounts[baseLabel] > 1 {
+			// This column name appears multiple times, add suffix
+			if is_undefined(columnNameOccurrences[baseLabel]) {
+				columnNameOccurrences[baseLabel] = 0
+			}
+			columnNameOccurrences[baseLabel] += 1
+			// First occurrence keeps original name, subsequent ones get "(1)", "(2)", etc.
+			if columnNameOccurrences[baseLabel] > 1 {
+				header = baseLabel + " (" + string(columnNameOccurrences[baseLabel] - 1) + ")"
+			}
+		}
+		
+		// Update spec with unique header
+		updatedSpec := maps.clone(column.spec)
+		updatedSpec.annotations["pl7.app/label"] = header
+		byCloneSpecs += [updatedSpec]
+		
+		tsvBuilder.add(column, {header: header})
 		columnsInBuilder += 1
 		if columnsInBuilder == 4 {
 			tsv := tsvBuilder.build()
@@ -226,8 +308,6 @@ self.body(func(inputs) {
 		tsv := tsvBuilder.build()
 		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
 	}
-
-	datasetSpec := columnBundle.getSpec(inputAnchor)
 
 	// Process linked columns
 	if !is_undefined(linkedColumns) {
