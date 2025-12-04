@@ -19,6 +19,7 @@ import {
   createPlDataTableSheet,
   createPlDataTableStateV2,
   createPlDataTableV2,
+  deriveLabels,
   getUniquePartitionKeys,
   isLabelColumn,
   PColumnCollection,
@@ -105,6 +106,49 @@ const copmmonExcludes: AnchoredPColumnSelector[] = [
 ];
 
 /**
+ * Updates linked column labels to use labels derived from trace information.
+ * This ensures that columns from linkers show distinguishing labels when multiple
+ * linkers are present (e.g., "Cluster Size / Clustering (sim:..., ident:..., cov:...)").
+ */
+function updateLinkedColumnLabels(columns: PColumn<PColumnDataUniversal>[]): PColumn<PColumnDataUniversal>[] {
+  if (columns.length === 0) {
+    return columns;
+  }
+
+  // Derive labels using trace information
+  const derivedLabels = deriveLabels(
+    columns,
+    (col) => col.spec,
+    { includeNativeLabel: true },
+  );
+
+  // Create a map of column id to derived label
+  const labelMap = new Map<string, string>();
+  for (const { value, label } of derivedLabels) {
+    labelMap.set(value.id, label);
+  }
+
+  // Update columns with derived labels
+  return columns.map((col) => {
+    const derivedLabel = labelMap.get(col.id);
+    if (derivedLabel !== undefined) {
+      // Create a deep copy of annotations to avoid mutating shared objects
+      const newAnnotations = col.spec.annotations
+        ? { ...col.spec.annotations, 'pl7.app/label': derivedLabel }
+        : { 'pl7.app/label': derivedLabel };
+      return {
+        ...col,
+        spec: {
+          ...col.spec,
+          annotations: newAnnotations,
+        },
+      };
+    }
+    return col;
+  });
+}
+
+/**
  * Gets columns linked through linker columns.
  * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
  * This function finds linker columns and resolves the columns on the "other side" of the link.
@@ -178,7 +222,12 @@ function getLinkedColumns(
     }
   }
 
-  return { linkerColumns, linkedColumns };
+  // Deduplicate column names using trace-based labels only if there are two or more linker columns
+  const deduplicatedLinkedColumns = linkerColumns.length >= 2
+    ? updateLinkedColumnLabels(linkedColumns)
+    : linkedColumns;
+
+  return { linkerColumns, linkedColumns: deduplicatedLinkedColumns };
 }
 
 /**
@@ -511,9 +560,16 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
+    // Get them BEFORE we modify any columns to avoid affecting the collection
     const linked = getLinkedColumns(ctx, ctx.args.inputAnchor, anchorSpec);
-    if (linked) {
-      columns.push(...linked.linkerColumns, ...linked.linkedColumns);
+
+    // Filter out linked columns that are already in the main columns array to avoid duplicates
+    const existingColumnIds = new Set(columns.map((c) => c.id));
+    const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+    const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+
+    if (newLinkedColumns.length > 0 || newLinkerColumns.length > 0) {
+      columns.push(...newLinkerColumns, ...newLinkedColumns);
     }
 
     columns.forEach((column) => {
@@ -578,15 +634,23 @@ export const platforma = BlockModel.create('Heavy')
       {
         anchorCtx,
         exclude: copmmonExcludes,
+        overrideLabelAnnotation: false,
       },
     );
 
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
+    // Get them BEFORE we modify any columns to avoid affecting the collection
     const linked = getLinkedColumns(ctx, ctx.args.inputAnchor, anchorSpec);
-    if (linked) {
-      columns.push(...linked.linkerColumns, ...linked.linkedColumns);
+
+    // Filter out linked columns that are already in the main columns array to avoid duplicates
+    const existingColumnIds = new Set(columns.map((c) => c.id));
+    const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+    const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+
+    if (newLinkedColumns.length > 0 || newLinkerColumns.length > 0) {
+      columns.push(...newLinkerColumns, ...newLinkedColumns);
     }
 
     return createPlDataTableV2(
