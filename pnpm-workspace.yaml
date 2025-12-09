@@ -11,15 +11,15 @@ catalog:
   '@milaboratories/ts-configs': ^1.0.6
   '@milaboratories/build-configs': ^1.0.8
   '@platforma-sdk/workflow-tengo': ^5.6.5
-  '@platforma-sdk/model': 1.45.26
-  '@platforma-sdk/ui-vue': 1.45.26
+  '@platforma-sdk/model': 1.46.0
+  '@platforma-sdk/ui-vue': 1.47.0
   '@platforma-sdk/tengo-builder': ^2.3.14
   '@platforma-sdk/package-builder': ^3.10.7
   '@platforma-sdk/block-tools': ^2.6.25
   '@platforma-sdk/eslint-config': ^1.1.0
   "@platforma-sdk/blocks-deps-updater": ^2.0.0
 
-  '@platforma-sdk/test': ^1.46.4
+  '@platforma-sdk/test': ^1.46.5
   '@milaboratories/helpers': ^1.12.0
 
   '@platforma-open/milaboratories.runenv-python-3': ^1.7.5
@@ -27,7 +27,7 @@ catalog:
 
   '@platforma-open/milaboratories.software-binary-collection.software-7zip': 1.2.3
 
-  'vue': ^3.5.16
+  'vue': ^3.5.24
   'vue-tsc': ^2.2.10
 
   'canonicalize': ~2.1.0

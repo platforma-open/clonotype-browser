@@ -90,6 +90,7 @@ const tableSettings = usePlDataTableSettingsV2({
     :columns="app.filterColumns"
     :hasSelectedColumns="app.hasSelectedColumns"
     :getValuesForSelectedColumns="app.getValuesForSelectedColumns"
+    :getSuggestOptions="app.getSuggestOptions"
   />
 </template>
 

@@ -59,12 +59,10 @@ export type UiState = {
   annotationScript: AnnotationScriptUi;
 };
 
-export type SimplifiedPColumnSpec = Pick<PColumnSpec, 'valueType' | 'annotations'>;
-
 export type SimplifiedUniversalPColumnEntry = {
   id: SUniversalPColumnId;
   label: string;
-  obj: SimplifiedPColumnSpec;
+  spec: PColumnSpec;
 };
 
 const excludedAnnotationKeys = [
@@ -88,8 +86,8 @@ const simplifyColumnEntries = (
     return {
       id: entry.id,
       label: entry.label,
-      obj: {
-        valueType: entry.spec.valueType,
+      spec: {
+        ...entry.spec,
         annotations: filteredAnnotations,
       },
     };
@@ -149,6 +147,53 @@ function updateLinkedColumnLabels(columns: PColumn<PColumnDataUniversal>[]): PCo
 }
 
 /**
+ * Helper function to find linker options for both axis positions.
+ * Returns an array of objects containing linker information for processing.
+ */
+function findLinkerOptions(
+  ctx: RenderCtx<BlockArgs, UiState>,
+  anchor: PlRef,
+  anchorSpec: PColumnSpec,
+): Array<{
+  idx: number;
+  linkerOption: { ref: PlRef; label?: string };
+  anchorName: string;
+}> {
+  const linkerInfos: Array<{
+    idx: number;
+    linkerOption: { ref: PlRef; label?: string };
+    anchorName: string;
+  }> = [];
+
+  // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
+  let linkerIndex = 0;
+  for (const idx of [0, 1]) {
+    // Calculate axes to match based on which position the anchor axis is in
+    const axesToMatch = idx === 0
+      ? [{}, anchorSpec.axesSpec[1]] // clonotypeKey in second axis of the linker
+      : [anchorSpec.axesSpec[1], {}]; // clonotypeKey in first axis of the linker
+
+    // Get linker refs to use as anchors for finding linked columns
+    const linkerOptions = ctx.resultPool.getOptions([{
+      axes: axesToMatch,
+      annotations: { 'pl7.app/isLinkerColumn': 'true' },
+    }]);
+
+    // For each linker, create an info object
+    for (const linkerOption of linkerOptions) {
+      linkerInfos.push({
+        idx,
+        linkerOption,
+        anchorName: `linker-${linkerIndex}`,
+      });
+      linkerIndex++;
+    }
+  }
+
+  return linkerInfos;
+}
+
+/**
  * Gets columns linked through linker columns.
  * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
  * This function finds linker columns and resolves the columns on the "other side" of the link.
@@ -166,17 +211,11 @@ function getLinkedColumns(
   const linkerColumns: PColumn<PColumnDataUniversal>[] = [];
   const linkedColumns: PColumn<PColumnDataUniversal>[] = [];
 
-  // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
-  let linkerIndex = 0;
+  // Get linker columns for both axis positions
   for (const idx of [0, 1]) {
-    let axesToMatch;
-    if (idx === 0) {
-      // clonotypeKey in second axis of the linker
-      axesToMatch = [{}, anchorSpec.axesSpec[1]];
-    } else {
-      // clonotypeKey in first axis of the linker
-      axesToMatch = [anchorSpec.axesSpec[1], {}];
-    }
+    const axesToMatch = idx === 0
+      ? [{}, anchorSpec.axesSpec[1]]
+      : [anchorSpec.axesSpec[1], {}];
 
     // Get linker columns that connect to our anchor's clonotypeKey axis
     const linkers = ctx.resultPool.getAnchoredPColumns(
@@ -190,35 +229,27 @@ function getLinkedColumns(
     if (linkers) {
       linkerColumns.push(...linkers);
     }
+  }
 
-    // Get linker refs to use as anchors for finding linked columns
-    const linkerOptions = ctx.resultPool.getOptions([{
-      axes: axesToMatch,
-      annotations: { 'pl7.app/isLinkerColumn': 'true' },
-    }]);
+  // Process linker options to find linked columns
+  const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
+  for (const { idx, linkerOption, anchorName } of linkerInfos) {
+    const linkerAnchorSpec: Record<string, PlRef> = {
+      [anchorName]: linkerOption.ref,
+    };
 
-    // For each linker, use it as an anchor to get columns on the other side
-    for (const linkerOption of linkerOptions) {
-      const anchorName = `linker-${linkerIndex}`;
-      const linkerAnchorSpec: Record<string, PlRef> = {
-        [anchorName]: linkerOption.ref,
-      };
+    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(
+      linkerAnchorSpec,
+      [{
+        axes: [{ anchor: anchorName, idx }],
+      }],
+    );
 
-      // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-      const linkedProps = ctx.resultPool.getAnchoredPColumns(
-        linkerAnchorSpec,
-        [{
-          axes: [{ anchor: anchorName, idx: idx }],
-        }],
+    if (linkedProps) {
+      linkedColumns.push(
+        ...linkedProps.filter((p) => !isLabelColumn(p.spec)),
       );
-
-      if (linkedProps) {
-        linkedColumns.push(
-          ...linkedProps.filter((p) => !isLabelColumn(p.spec)),
-        );
-      }
-
-      linkerIndex++;
     }
   }
 
@@ -246,83 +277,62 @@ function getLinkedColumnsForArgs(
 ): Record<string, LinkedColumnEntry> | undefined {
   const result: Record<string, LinkedColumnEntry> = {};
 
-  // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
-  let i = 0;
-  for (const idx of [0, 1]) {
-    let axesToMatch;
-    if (idx === 0) {
-      // clonotypeKey in second axis of the linker
-      axesToMatch = [{}, anchorSpec.axesSpec[1]];
-    } else {
-      // clonotypeKey in first axis of the linker
-      axesToMatch = [anchorSpec.axesSpec[1], {}];
-    }
+  // Process linker options to find linked columns
+  const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
+  for (const { idx, linkerOption, anchorName } of linkerInfos) {
+    const linkerAnchorSpec: Record<string, PlRef> = {
+      [anchorName]: linkerOption.ref,
+    };
 
-    // Get linker refs to use as anchors for finding linked columns
-    const linkerOptions = ctx.resultPool.getOptions([{
-      axes: axesToMatch,
-      annotations: { 'pl7.app/isLinkerColumn': 'true' },
-    }]);
+    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(
+      linkerAnchorSpec,
+      [{
+        axes: [{ anchor: anchorName, idx }],
+      }],
+    );
 
-    // For each linker, use it as an anchor to get columns on the other side
-    for (const linkerOption of linkerOptions) {
-      const anchorName = `linker-${i}`;
-      const linkerAnchorSpec: Record<string, PlRef> = {
-        [anchorName]: linkerOption.ref,
-      };
-
-      // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-      const linkedProps = ctx.resultPool.getAnchoredPColumns(
-        linkerAnchorSpec,
-        [{
-          axes: [{ anchor: anchorName, idx }],
-        }],
-      );
-
-      if (linkedProps && linkedProps.length > 0) {
-        // Filter out label columns and serialize queries
-        const columns = linkedProps
-          .filter((p) => !isLabelColumn(p.spec))
-          .map((p) => {
-            // Create AnchoredPColumnSelector query for this column
-            // We need to match by the column's spec properties
-            const query: AnchoredPColumnSelector = {
-              axes: [{ anchor: anchorName, idx }],
-            };
-
-            // Add domain if present
-            if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
-              // Convert domain to string values only (no anchor refs) for serialization
-              const domain: Record<string, string> = {};
-              for (const [key, value] of Object.entries(p.spec.domain)) {
-                if (typeof value === 'string') {
-                  domain[key] = value;
-                }
-              }
-              if (Object.keys(domain).length > 0) {
-                query.domain = domain;
-              }
-            }
-
-            // Add name if it's not a generic column
-            if (p.spec.name) {
-              query.name = p.spec.name;
-            }
-
-            // Serialize to JSON string
-            return JSON.stringify(query);
-          });
-
-        if (columns.length > 0) {
-          result[anchorName] = {
-            anchorName,
-            anchorRef: linkerOption.ref,
-            columns,
+    if (linkedProps && linkedProps.length > 0) {
+      // Filter out label columns and serialize queries
+      const columns = linkedProps
+        .filter((p) => !isLabelColumn(p.spec))
+        .map((p) => {
+          // Create AnchoredPColumnSelector query for this column
+          // We need to match by the column's spec properties
+          const query: AnchoredPColumnSelector = {
+            axes: [{ anchor: anchorName, idx }],
           };
-        }
-      }
 
-      i++;
+          // Add domain if present
+          if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
+            // Convert domain to string values only (no anchor refs) for serialization
+            const domain: Record<string, string> = {};
+            for (const [key, value] of Object.entries(p.spec.domain)) {
+              if (typeof value === 'string') {
+                domain[key] = value;
+              }
+            }
+            if (Object.keys(domain).length > 0) {
+              query.domain = domain;
+            }
+          }
+
+          // Add name if it's not a generic column
+          if (p.spec.name) {
+            query.name = p.spec.name;
+          }
+
+          // Serialize to JSON string
+          return JSON.stringify(query);
+        });
+
+      if (columns.length > 0) {
+        result[anchorName] = {
+          anchorName,
+          anchorRef: linkerOption.ref,
+          columns,
+        };
+      }
     }
   }
 
@@ -568,8 +578,23 @@ export const platforma = BlockModel.create('Heavy')
     const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
     const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
 
-    if (newLinkedColumns.length > 0 || newLinkerColumns.length > 0) {
-      columns.push(...newLinkerColumns, ...newLinkedColumns);
+    // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
+    if (newLinkerColumns.length > 0) {
+      const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
+        ...linkerColumn,
+        spec: {
+          ...linkerColumn.spec,
+          annotations: {
+            ...linkerColumn.spec.annotations,
+            'pl7.app/table/visibility': 'hidden',
+          },
+        },
+      }));
+      columns.push(...hiddenLinkerColumns);
+    }
+
+    if (newLinkedColumns.length > 0) {
+      columns.push(...newLinkedColumns);
     }
 
     columns.forEach((column) => {
@@ -649,8 +674,23 @@ export const platforma = BlockModel.create('Heavy')
     const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
     const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
 
-    if (newLinkedColumns.length > 0 || newLinkerColumns.length > 0) {
-      columns.push(...newLinkerColumns, ...newLinkedColumns);
+    // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
+    if (newLinkerColumns.length > 0) {
+      const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
+        ...linkerColumn,
+        spec: {
+          ...linkerColumn.spec,
+          annotations: {
+            ...linkerColumn.spec.annotations,
+            'pl7.app/table/visibility': 'hidden',
+          },
+        },
+      }));
+      columns.push(...hiddenLinkerColumns);
+    }
+
+    if (newLinkedColumns.length > 0) {
+      columns.push(...newLinkedColumns);
     }
 
     return createPlDataTableV2(
