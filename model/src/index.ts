@@ -30,7 +30,12 @@ import { isAnnotationScriptValid } from './validation';
 export type LinkedColumnEntry = {
   anchorName: string;
   anchorRef: PlRef;
-  columns: string[]; // Array of JSON-serialized AnchoredPColumnSelector queries
+  columns: Record<string, string>; // Map from JSON-serialized query to derived label
+};
+
+export type TableInputs = {
+  byClonotypeLabels: Record<string, string>; // Map from spec key to derived label
+  linkedColumns: Record<string, LinkedColumnEntry>;
 };
 
 type BlockArgs = {
@@ -41,8 +46,8 @@ type BlockArgs = {
   datasetTitle?: string;
   /** Enables export all */
   runExportAll: boolean;
-  /** Linked columns through linker columns (e.g., cluster-related columns) */
-  linkedColumns?: Record<string, LinkedColumnEntry>;
+  /** Table export inputs: labels and linked columns */
+  tableInputs?: TableInputs;
 };
 
 export type UiState = {
@@ -63,6 +68,7 @@ export type SimplifiedUniversalPColumnEntry = {
   id: SUniversalPColumnId;
   label: string;
   spec: PColumnSpec;
+  derivedLabel?: string; // Label derived from trace information
 };
 
 const excludedAnnotationKeys = [
@@ -70,6 +76,40 @@ const excludedAnnotationKeys = [
   'pl7.app/table/visibility',
   'pl7.app/trace',
 ];
+
+/**
+ * Derives labels for columns using trace information.
+ * Does NOT handle duplicate labels - that's left to the workflow layer.
+ * Returns a map from column id to derived label.
+ */
+/**
+ * Helper function to derive labels using trace information.
+ * This is used to generate labels that include trace context (e.g., "Cluster Size / Clustering 1")
+ * when multiple similar columns need to be distinguished.
+ */
+function deriveLabelsFromTrace(
+  columns: PColumn<PColumnDataUniversal>[],
+): Map<string, string> {
+  if (columns.length === 0) {
+    return new Map();
+  }
+
+  // Use existing deriveLabels utility with trace information
+  const derivedLabels = deriveLabels(
+    columns,
+    (col) => col.spec,
+    { includeNativeLabel: true },
+  );
+
+  // Create a simple map - no suffix handling
+  const labelMap = new Map<string, string>();
+  for (const { value, label } of derivedLabels) {
+    // value is the column itself, value.id is the column id
+    labelMap.set(value.id as string, label);
+  }
+
+  return labelMap;
+}
 
 const simplifyColumnEntries = (
   entries: PColumnEntryUniversal[] | undefined,
@@ -83,6 +123,10 @@ const simplifyColumnEntries = (
       ? omit(entry.spec.annotations, excludedAnnotationKeys)
       : undefined;
 
+    // Use label annotation instead of deriving from trace
+    // const derivedLabel = entry.spec.annotations?.['pl7.app/label'];
+    const derivedLabel = entry.label;
+
     return {
       id: entry.id,
       label: entry.label,
@@ -90,6 +134,7 @@ const simplifyColumnEntries = (
         ...entry.spec,
         annotations: filteredAnnotations,
       },
+      derivedLabel, // Include label from annotation
     };
   });
 
@@ -277,8 +322,38 @@ function getLinkedColumnsForArgs(
 ): Record<string, LinkedColumnEntry> | undefined {
   const result: Record<string, LinkedColumnEntry> = {};
 
-  // Process linker options to find linked columns
+  // Collect all linked columns across all linkers
+  const allLinkedColumns: PColumn<PColumnDataUniversal>[] = [];
+  const columnIdToLinkerMap = new Map<string, string>();
+
   const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
+
+  // First pass: collect all columns
+  for (const { idx, linkerOption, anchorName } of linkerInfos) {
+    const linkerAnchorSpec: Record<string, PlRef> = {
+      [anchorName]: linkerOption.ref,
+    };
+
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(
+      linkerAnchorSpec,
+      [{
+        axes: [{ anchor: anchorName, idx }],
+      }],
+    );
+
+    if (linkedProps) {
+      const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
+      allLinkedColumns.push(...filteredProps);
+      for (const prop of filteredProps) {
+        columnIdToLinkerMap.set(prop.id, anchorName);
+      }
+    }
+  }
+
+  // Derive labels for all linked columns (no suffix handling)
+  const derivedLabelMap = deriveLabelsFromTrace(allLinkedColumns);
+
+  // Second pass: build result with labels
   for (const { idx, linkerOption, anchorName } of linkerInfos) {
     const linkerAnchorSpec: Record<string, PlRef> = {
       [anchorName]: linkerOption.ref,
@@ -293,44 +368,53 @@ function getLinkedColumnsForArgs(
     );
 
     if (linkedProps && linkedProps.length > 0) {
-      // Filter out label columns and serialize queries
-      const columns = linkedProps
-        .filter((p) => !isLabelColumn(p.spec))
-        .map((p) => {
-          // Create AnchoredPColumnSelector query for this column
-          // We need to match by the column's spec properties
-          const query: AnchoredPColumnSelector = {
-            axes: [{ anchor: anchorName, idx }],
-          };
+      const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
 
-          // Add domain if present
-          if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
-            // Convert domain to string values only (no anchor refs) for serialization
-            const domain: Record<string, string> = {};
-            for (const [key, value] of Object.entries(p.spec.domain)) {
-              if (typeof value === 'string') {
-                domain[key] = value;
-              }
-            }
-            if (Object.keys(domain).length > 0) {
-              query.domain = domain;
+      const columns: Record<string, string> = {};
+
+      for (const p of filteredProps) {
+        // Create AnchoredPColumnSelector query for this column
+        // We need to match by the column's spec properties
+        const query: AnchoredPColumnSelector = {
+          axes: [{ anchor: anchorName, idx }],
+        };
+
+        // Add domain if present
+        if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
+          // Convert domain to string values only (no anchor refs) for serialization
+          const domain: Record<string, string> = {};
+          for (const [key, value] of Object.entries(p.spec.domain)) {
+            if (typeof value === 'string') {
+              domain[key] = value;
             }
           }
-
-          // Add name if it's not a generic column
-          if (p.spec.name) {
-            query.name = p.spec.name;
+          if (Object.keys(domain).length > 0) {
+            query.domain = domain;
           }
+        }
 
-          // Serialize to JSON string
-          return JSON.stringify(query);
-        });
+        // Add name if it's not a generic column
+        if (p.spec.name) {
+          query.name = p.spec.name;
+        }
 
-      if (columns.length > 0) {
+        // Serialize to JSON string
+        const queryStr = JSON.stringify(query);
+
+        // Use derived label from trace, fallback to annotation label
+        const derivedLabel = derivedLabelMap.get(p.id as string)
+          || p.spec.annotations?.['pl7.app/label']
+          || '';
+
+        // Map query string to label
+        columns[queryStr] = derivedLabel;
+      }
+
+      if (Object.keys(columns).length > 0) {
         result[anchorName] = {
           anchorName,
           anchorRef: linkerOption.ref,
-          columns,
+          columns, // Map from query to derived label
         };
       }
     }
@@ -348,7 +432,10 @@ export const platforma = BlockModel.create('Heavy')
       steps: [],
     },
     runExportAll: false,
-    linkedColumns: {},
+    tableInputs: {
+      byClonotypeLabels: {},
+      linkedColumns: {},
+    },
   })
 
   .withUiState<UiState>({
@@ -515,14 +602,92 @@ export const platforma = BlockModel.create('Heavy')
     return tsvResource.getRemoteFileHandle();
   })
 
-  .output('linkedColumns', (ctx) => {
+  .output('tableInputs', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
     const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
     if (!anchorSpec) return undefined;
 
-    return getLinkedColumnsForArgs(ctx, ctx.args.inputAnchor, anchorSpec);
+    // Get linked columns
+    const linkedColumns = getLinkedColumnsForArgs(ctx, ctx.args.inputAnchor, anchorSpec);
+
+    // Build byClonotypeLabels map using getUniversalEntries with overrideLabelAnnotation
+    const byClonotypeLabels: Record<string, string> = {};
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    if (anchorCtx) {
+      const collection = new PColumnCollection();
+      collection
+        .addColumnProvider(ctx.resultPool)
+        .addAxisLabelProvider(ctx.resultPool);
+
+      // Use getUniversalEntries() with overrideLabelAnnotation: true
+      // This applies the same label derivation as UI tables without loading data
+      const entries = collection.getUniversalEntries(
+        [{
+          domainAnchor: 'main',
+          axes: [
+            { anchor: 'main', idx: 1 },
+          ],
+        }, {
+          domainAnchor: 'main',
+          axes: [
+            { split: true },
+            { anchor: 'main', idx: 1 },
+          ],
+          annotations: {
+            'pl7.app/isAbundance': 'true',
+          },
+        }],
+        {
+          anchorCtx,
+          exclude: copmmonExcludes,
+          overrideLabelAnnotation: true, // Same label behavior as getColumns()
+        },
+      );
+
+      if (entries) {
+        for (const entry of entries) {
+          // Create a query object for serialization
+          const query: Record<string, unknown> = {
+            axes: entry.spec.axesSpec,
+          };
+
+          // Add domain if present
+          if (entry.spec.domain && Object.keys(entry.spec.domain).length > 0) {
+            // Convert domain to string values only (no anchor refs) for serialization
+            const domain: Record<string, string> = {};
+            for (const [key, value] of Object.entries(entry.spec.domain)) {
+              if (typeof value === 'string') {
+                domain[key] = value;
+              }
+            }
+            if (Object.keys(domain).length > 0) {
+              query.domain = domain;
+            }
+          }
+
+          // Add name if present
+          if (entry.spec.name) {
+            query.name = entry.spec.name;
+          }
+
+          // Serialize to JSON string to use as key
+          const queryStr = JSON.stringify(query);
+
+          // Use the label from spec annotations (set by overrideLabelAnnotation: true)
+          const label = entry.spec.annotations?.['pl7.app/label'] || '';
+          if (label) {
+            byClonotypeLabels[queryStr] = label;
+          }
+        }
+      }
+    }
+
+    return {
+      byClonotypeLabels,
+      linkedColumns: linkedColumns || {},
+    };
   })
 
   .output('overlapTable', (ctx) => {

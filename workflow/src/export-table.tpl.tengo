@@ -9,7 +9,7 @@ math := import("math")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
-utils := import(":libs.utils")
+json := import("json")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
@@ -30,69 +30,16 @@ isValidColumn := func(col) {
 	return true
 }
 
-// Helper function to derive unique labels for columns
-// Returns a map from column identifier/index to derived label
-deriveLabelsForColumns := func(columnIdToColumnMap) {
-	// Group columns by base label to identify duplicates
-	columnsByLabel := {}
-	for columnId, col in columnIdToColumnMap {
-		baseLabel := col.spec.annotations["pl7.app/label"]
-		if is_undefined(columnsByLabel[baseLabel]) {
-			columnsByLabel[baseLabel] = []
-		}
-		columnsByLabel[baseLabel] = append(columnsByLabel[baseLabel], {columnId: columnId, column: col})
-	}
-	
-	// Derive unique labels for duplicate columns using trace-based algorithm
-	derivedLabels := {}
-	columnsNeedingDerivation := []
-	columnIdToDerivedIndexMap := {} // Map columnId to index in columnsNeedingDerivation array
-	derivedIndexOffset := 0 // Track the offset for indices in columnsNeedingDerivation
-	
-	for baseLabel, colEntries in columnsByLabel {
-		if len(colEntries) > 1 {
-			// Multiple columns with same label - use trace-based derivation
-			colsForDerivation := []
-			for entry in colEntries {
-				index := len(colsForDerivation)
-				colsForDerivation = append(colsForDerivation, entry.column)
-				columnIdToDerivedIndexMap[entry.columnId] = derivedIndexOffset + index
-			}
-			columnsNeedingDerivation += colsForDerivation
-			derivedIndexOffset += len(colsForDerivation)
-		} else {
-			// Single column - use base label
-			derivedLabels[colEntries[0].columnId] = baseLabel
-		}
-	}
-	
-	// Derive labels for duplicate columns
-	if len(columnsNeedingDerivation) > 0 {
-		traceDerivedLabels := utils.deriveLabelsFromTrace(columnsNeedingDerivation)
-		// Map the derived labels back to column identifiers
-		for columnId, derivedIndex in columnIdToDerivedIndexMap {
-			derivedLabel := traceDerivedLabels[derivedIndex]
-			if !is_undefined(derivedLabel) {
-				derivedLabels[columnId] = derivedLabel
-			}
-		}
-	}
-	
-	// Ensure all columns have labels (fallback to base label if missing)
-	for columnId, col in columnIdToColumnMap {
-		if is_undefined(derivedLabels[columnId]) {
-			derivedLabels[columnId] = col.spec.annotations["pl7.app/label"]
-		}
-	}
-	
-	// Final check: ensure all derived labels are globally unique
-	// This handles cases where columns with different base labels get the same trace-derived label
+// Helper function to add suffixes to duplicate labels
+// Input: map of identifier -> label (from model)
+// Output: map of identifier -> unique label (with suffixes if needed)
+addSuffixesToDuplicateLabels := func(labelMap) {
 	labelCounts := {}
 	labelOccurrences := {}
-	finalDerivedLabels := {}
+	finalLabels := {}
 	
-	// Count occurrences of each derived label
-	for columnId, label in derivedLabels {
+	// Count occurrences of each label
+	for id, label in labelMap {
 		if is_undefined(labelCounts[label]) {
 			labelCounts[label] = 0
 		}
@@ -100,27 +47,23 @@ deriveLabelsForColumns := func(columnIdToColumnMap) {
 	}
 	
 	// Add suffixes for duplicates
-	for columnId, label in derivedLabels {
+	for id, label in labelMap {
 		if labelCounts[label] > 1 {
-			// This label appears multiple times, add suffix
 			if is_undefined(labelOccurrences[label]) {
 				labelOccurrences[label] = 0
 			}
 			labelOccurrences[label] += 1
 			if labelOccurrences[label] > 1 {
-				// Add numeric suffix starting from (1)
-				finalDerivedLabels[columnId] = label + " (" + string(labelOccurrences[label] - 1) + ")"
+				finalLabels[id] = label + " (" + string(labelOccurrences[label] - 1) + ")"
 			} else {
-				// First occurrence keeps original label
-				finalDerivedLabels[columnId] = label
+				finalLabels[id] = label
 			}
 		} else {
-			// Unique label, use as-is
-			finalDerivedLabels[columnId] = label
+			finalLabels[id] = label
 		}
 	}
 	
-	return finalDerivedLabels
+	return finalLabels
 }
 
 // Helper function to ensure label uniqueness against used labels
@@ -142,27 +85,11 @@ ensureUniqueLabel := func(label, usedLabelsSet) {
 	return label
 }
 
-// Process linked columns and return frames and updated byCloneSpecs
+// Process linked columns and return frames, updated byCloneSpecs, and linker column names to exclude
 processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyAxisHeader, bigTableWf, byCloneSpecs, usedLabels) {
 	linkedFrames := []
 	updatedByCloneSpecs := byCloneSpecs
-	
-	// Collect all linked columns from all linkers
-	// Use column identifier from linkedColumns (the key in data.columns) as unique key
-	columnIdMap := {} // Map column identifier to column object
-	
-	for linker, data in linkedColumns {
-		for columnId, _ in data.columns {
-			col := columnBundle.getColumn(columnId)
-			if is_undefined(col) {
-				continue
-			}
-			if !isValidColumn(col) {
-				continue
-			}
-			columnIdMap[columnId] = col
-		}
-	}
+	linkerColumnHeaders := [] // Track linker column headers to exclude from final export
 	
 	// Track labels already used by columnsPerClonotype to avoid conflicts
 	usedLabelsSet := {}
@@ -172,73 +99,27 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 		}
 	}
 	
-	// Derive unique labels for all linked columns
-	derivedLabels := deriveLabelsForColumns(columnIdMap)
-	
-	// Ensure all derived labels are unique by adding suffixes if needed
-	// This handles cases where trace-based algorithm produces same label for columns with different base labels
-	// Also check against labels already used by columnsPerClonotype
-	labelCounts := {}
-	labelOccurrences := {}
-	finalDerivedLabels := {}
-	
-	// Count occurrences of each derived label (skip undefined labels)
-	for colName, label in derivedLabels {
-		if is_undefined(label) {
+	// Build map of all linked column labels from model
+	// Keys are the column names in the bundle (like "linkedAxis0", "linkedAxis1")
+	allLinkedLabelsMap := {}
+	for linker, data in linkedColumns {
+		if is_undefined(data.labels) {
 			continue
 		}
-		if is_undefined(labelCounts[label]) {
-			labelCounts[label] = 0
-		}
-		labelCounts[label] += 1
-	}
-	
-	// Add suffixes for duplicates, also checking against usedLabelsSet
-	for colName, label in derivedLabels {
-		if is_undefined(label) {
-			// Skip undefined labels - they will use base label as fallback
-			continue
-		}
-		needsSuffix := false
-		if labelCounts[label] > 1 {
-			needsSuffix = true
-		} else if !is_undefined(usedLabelsSet[label]) {
-			// Label conflicts with already used label from columnsPerClonotype
-			needsSuffix = true
-		}
-		
-		if needsSuffix {
-			// This label appears multiple times or conflicts, add suffix
-			if is_undefined(labelOccurrences[label]) {
-				labelOccurrences[label] = 0
-			}
-			labelOccurrences[label] += 1
-			if labelOccurrences[label] > 1 {
-				// Add numeric suffix starting from (1)
-				finalDerivedLabels[colName] = label + " (" + string(labelOccurrences[label] - 1) + ")"
-			} else {
-				// First occurrence keeps original label if it doesn't conflict
-				if is_undefined(usedLabelsSet[label]) {
-					finalDerivedLabels[colName] = label
-				} else {
-					// Conflict with used label, add suffix
-					finalDerivedLabels[colName] = label + " (" + string(labelOccurrences[label]) + ")"
-					labelOccurrences[label] += 1
-				}
-			}
-		} else {
-			// Unique label, use as-is
-			finalDerivedLabels[colName] = label
+		for colName, label in data.labels {
+			allLinkedLabelsMap[colName] = label
 		}
 	}
 	
-	derivedLabels = finalDerivedLabels
+	// Add suffixes to duplicate labels
+	derivedLabels := addSuffixesToDuplicateLabels(allLinkedLabelsMap)
 	
 	for linker, data in linkedColumns {
 		// Collect and filter linked columns for this linker
 		linkedColsForLinker := []
-		for name, _ in data.columns {
-			col := columnBundle.getColumn(name)
+		for colName, _ in data.columns {
+			// Get column from bundle by name
+			col := columnBundle.getColumn(colName)
 			if is_undefined(col) {
 				continue
 			}
@@ -274,20 +155,32 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 		if !is_undefined(data.anchorRef) {
 			linkerCol := columnBundle.getColumn(data.anchorRef)
 			if !is_undefined(linkerCol) {
+				linkerHeader := "linker." + linker
+				// Track both the header and the label from spec for exclusion
+				linkerLabel := linkerCol.spec.annotations["pl7.app/label"]
 				// Add linker column (like in antibody-tcr-lead-selection lines 213-226)
 				if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[1].name {
-					linkedTsvBuilder.add(linkerCol, {header: "linker." + linker})
+					linkedTsvBuilder.add(linkerCol, {header: linkerHeader})
 					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[0], clusterAxisName)
+					linkerColumnHeaders = append(linkerColumnHeaders, linkerHeader)
+					if !is_undefined(linkerLabel) {
+						linkerColumnHeaders = append(linkerColumnHeaders, linkerLabel)
+					}
 				} else if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[0].name {
-					linkedTsvBuilder.add(linkerCol, {header: "linker." + linker})
+					linkedTsvBuilder.add(linkerCol, {header: linkerHeader})
 					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[1], clusterAxisName)
+					linkerColumnHeaders = append(linkerColumnHeaders, linkerHeader)
+					if !is_undefined(linkerLabel) {
+						linkerColumnHeaders = append(linkerColumnHeaders, linkerLabel)
+					}
 				}
 			}
 		}
 		
 		// Add filtered and sorted linked columns with unique headers
-		for name, _ in data.columns {
-			col := columnBundle.getColumn(name)
+		for colName, _ in data.columns {
+			// Get column from bundle by name
+			col := columnBundle.getColumn(colName)
 			if is_undefined(col) {
 				continue
 			}
@@ -295,17 +188,14 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 				continue
 			}
 			
-			// Get derived label (from trace if duplicate, otherwise base label)
-			// Use column identifier (name from data.columns) as key
-			uniqueHeader := derivedLabels[name]
-			
-			// If no derived label (shouldn't happen), fallback to base label
+			// Use label from model (already processed for suffixes)
+			uniqueHeader := derivedLabels[colName]
 			if is_undefined(uniqueHeader) {
+				// Fallback to base label if model didn't provide one
 				uniqueHeader = col.spec.annotations["pl7.app/label"]
 			}
 			
-			// Final check for uniqueness against all used labels (including columnsPerClonotype)
-			// Only add suffix if there's an actual conflict
+			// Ensure uniqueness against columnsPerClonotype labels
 			uniqueHeader = ensureUniqueLabel(uniqueHeader, usedLabelsSet)
 			
 			// Set axis headers for any axes that are not the main clonotypeKey axis
@@ -329,7 +219,8 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 	
 	return {
 		frames: linkedFrames,
-		byCloneSpecs: updatedByCloneSpecs
+		byCloneSpecs: updatedByCloneSpecs,
+		linkerColumnHeaders: linkerColumnHeaders
 	}
 }
 
@@ -339,7 +230,16 @@ self.body(func(inputs) {
 	linkedColumns := inputs.linkedColumns
 
 	columnsPerSample := columnBundle.getColumns("perSample")
-	columnsPerClonotype := columnBundle.getColumns("perClonotype")
+	allColumnsPerClonotype := columnBundle.getColumns("perClonotype")
+	
+	// Filter out linker columns from perClonotype
+	columnsPerClonotype := []
+	for col in allColumnsPerClonotype {
+		if is_undefined(col.spec.annotations) || col.spec.annotations["pl7.app/isLinkerColumn"] != "true" {
+			columnsPerClonotype = append(columnsPerClonotype, col)
+		}
+	}
+	
 	sampleLabels := columnBundle.getColumn("sampleLabels")
 	sampleLabelsMap := sampleLabels.data.getDataAsJson().data
 
@@ -442,27 +342,23 @@ self.body(func(inputs) {
 	datasetSpec := columnBundle.getSpec(inputAnchor)
 	columnIndex := 0
 	
-	// Filter and collect columnsPerClonotype
-	filteredColumnsPerClonotype := []
-	columnIndexMap := {} // Map column index to column object for label derivation
-	for colIdx, column in columnsPerClonotype {
-		if !isValidColumn(column) {
-			continue
-		}
-		filteredColumnsPerClonotype = append(filteredColumnsPerClonotype, {column: column, originalIndex: colIdx})
-		columnIndexMap[colIdx] = column
+	// Get derived labels from model for columnsPerClonotype (already computed in model)
+	specToLabelMap := inputs.byClonotypeLabels
+	if is_undefined(specToLabelMap) {
+		specToLabelMap = {}
 	}
 	
-	// Derive unique labels for columnsPerClonotype
-	derivedLabels := deriveLabelsForColumns(columnIndexMap)
+	// Add suffixes to handle duplicates
+	specToLabelMap = addSuffixesToDuplicateLabels(specToLabelMap)
 	
 	// Track labels used to ensure global uniqueness
 	usedLabelsSet := {}
 	
 	// Add columns with derived labels
-	for filteredIdx, colEntry in filteredColumnsPerClonotype {
-		column := colEntry.column
-		originalIdx := colEntry.originalIndex
+	for column in columnsPerClonotype {
+		if !isValidColumn(column) {
+			continue
+		}
 		
 		if tsvBuilder == undefined {
 			tsvBuilder = pframes.tsvFileBuilder().cpu(1).mem("4GiB")
@@ -479,10 +375,38 @@ self.body(func(inputs) {
 		}
 		columnIndex += 1
 		
-		// Get derived label using original index and ensure it's unique against all previously used labels
-		header := derivedLabels[originalIdx]
+		// Build query object to match with model output (same approach as linkedColumns)
+		query := {
+			axes: column.spec.axesSpec
+		}
+		
+		// Add domain if present
+		if !is_undefined(column.spec.domain) && len(column.spec.domain) > 0 {
+			// Filter to only string values
+			domain := {}
+			for key, value in column.spec.domain {
+				// Only include string values in query
+				if !is_undefined(value) {
+					domain[key] = value
+				}
+			}
+			if len(domain) > 0 {
+				query.domain = domain
+			}
+		}
+		
+		// Add name if present
+		if !is_undefined(column.spec.name) {
+			query.name = column.spec.name
+		}
+		
+		// Serialize to JSON to use as key
+		queryStr := json.encode(query)
+		
+		// Get label from derived map using the query string
+		header := specToLabelMap[queryStr]
 		if is_undefined(header) {
-			// Fallback to base label if derived label is missing
+			// Fallback to base label if model didn't provide one
 			header = column.spec.annotations["pl7.app/label"]
 		}
 		header = ensureUniqueLabel(header, usedLabelsSet)
@@ -516,10 +440,12 @@ self.body(func(inputs) {
 	}
 	
 	// Process linked columns
+	linkerColumnHeaders := []
 	if !is_undefined(linkedColumns) {
 		linkedResult := processLinkedColumns(columnBundle, datasetSpec, linkedColumns, cloneKeyAxisHeader, bigTableWf, byCloneSpecs, usedLabelsFromPerClonotype)
 		pfs += linkedResult.frames
 		byCloneSpecs = linkedResult.byCloneSpecs
+		linkerColumnHeaders = linkedResult.linkerColumnHeaders
 	}
 
 	maps.forEach(perSampleTsvFiles, func(key, tsv) {
@@ -573,7 +499,36 @@ self.body(func(inputs) {
 		return int(a.annotations["pl7.app/table/orderPriority"]) > int(b.annotations["pl7.app/table/orderPriority"])
 	})
 
-	bigTablePf = bigTablePf.select(slices.map(byCloneSpecs + bySampleSpecs, func(spec) {
+	// Filter out linker column specs from byCloneSpecs and bySampleSpecs before select
+	filteredByCloneSpecs := byCloneSpecs
+	filteredBySampleSpecs := bySampleSpecs
+	if len(linkerColumnHeaders) > 0 {
+		// Create a set of linker labels for fast lookup
+		linkerLabelsSet := {}
+		for header in linkerColumnHeaders {
+			linkerLabelsSet[header] = true
+		}
+		
+		// Filter out specs whose labels match linker columns from byCloneSpecs
+		filteredByCloneSpecs = []
+		for spec in byCloneSpecs {
+			label := spec.annotations["pl7.app/label"]
+			if is_undefined(linkerLabelsSet[label]) {
+				filteredByCloneSpecs = append(filteredByCloneSpecs, spec)
+			}
+		}
+		
+		// Filter out specs whose labels match linker columns from bySampleSpecs
+		filteredBySampleSpecs = []
+		for spec in bySampleSpecs {
+			label := spec.annotations["pl7.app/label"]
+			if is_undefined(linkerLabelsSet[label]) {
+				filteredBySampleSpecs = append(filteredBySampleSpecs, spec)
+			}
+		}
+	}
+
+	bigTablePf = bigTablePf.select(slices.map(filteredByCloneSpecs + filteredBySampleSpecs, func(spec) {
 		return pt.col(spec.annotations["pl7.app/label"])
 	})...)
 	bigTablePf.save("big_table.tsv")

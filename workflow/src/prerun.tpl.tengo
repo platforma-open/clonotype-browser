@@ -40,20 +40,21 @@ wf.body(func(args) {
 			partialAxesMatch: true
 		}, "linkers")
 
-		// Add linked columns from args.linkedColumns (similar to how filters are added in antibody-tcr-lead-selection)
+		// Add linked columns from args.tableInputs
 		linkedColumns := {}
 		linkedAxisCount := 0
-		if !is_undefined(args.linkedColumns) {
-			for anchorName, entry in args.linkedColumns {
+		if !is_undefined(args.tableInputs) && !is_undefined(args.tableInputs.linkedColumns) {
+			for anchorName, entry in args.tableInputs.linkedColumns {
 				if !is_undefined(entry.anchorRef) && !is_undefined(entry.columns) {
 					// Add anchor for this linker
 					bundleBuilderForExport.addAnchor(entry.anchorName, entry.anchorRef)
 					linkedColumns[anchorName] = {
 						anchorRef: entry.anchorRef,
-						columns: {}
+						columns: {},
+						labels: {}
 					}
-					// Add each column query from the columns array
-					for colQueryStr in entry.columns {
+					// Add each column from the columns map (query -> label)
+					for colQueryStr, label in entry.columns {
 						// Parse the JSON-serialized AnchoredPColumnSelector query
 						colQuery := json.decode(colQueryStr)
 						// Add the query to the bundle
@@ -61,6 +62,8 @@ wf.body(func(args) {
 						bundleBuilderForExport.addSingle(colQuery, colName)
 						linkedAxisCount += 1
 						linkedColumns[anchorName].columns[colName] = colQuery
+						// Store the label from model
+						linkedColumns[anchorName].labels[colName] = label
 					}
 				}
 			}
@@ -69,7 +72,8 @@ wf.body(func(args) {
 		exportResult := render.createEphemeral(exportTableTpl, {
 			columnBundle: bundleBuilderForExport.build(),
 			inputAnchor: args.inputAnchor,
-			linkedColumns: linkedColumns
+			linkedColumns: linkedColumns,
+			byClonotypeLabels: args.tableInputs.byClonotypeLabels
 		})
 
 		outputs["tsvZip"] = exportResult.output("tsvZip")

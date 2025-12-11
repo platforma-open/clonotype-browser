@@ -23,21 +23,30 @@ function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
   if (ref) {
     app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
-    // @ts-expect-error - linkedColumns will be available after model types are regenerated
-    app.model.args.linkedColumns = (app.model.outputs as Record<string, unknown>).linkedColumns ?? {};
+    // @ts-expect-error - tableInputs will be available after model types are regenerated
+    app.model.args.tableInputs = (app.model.outputs as Record<string, unknown>).tableInputs ?? {
+      byClonotypeLabels: {},
+      linkedColumns: {},
+    };
   } else {
     app.model.args.datasetTitle = undefined;
-    app.model.args.linkedColumns = {};
+    app.model.args.tableInputs = {
+      byClonotypeLabels: {},
+      linkedColumns: {},
+    };
   }
 }
 
-// Keep linkedColumns in sync with output when it changes
+// Keep tableInputs in sync with output when it changes
 watch(
-  () => (app.model.outputs as Record<string, unknown>).linkedColumns,
-  (linkedColumns) => {
+  () => (app.model.outputs as Record<string, unknown>).tableInputs,
+  (tableInputs) => {
     if (app.model.args.inputAnchor) {
-      // @ts-expect-error - linkedColumns will be available after model types are regenerated
-      app.model.args.linkedColumns = linkedColumns ?? {};
+      // @ts-expect-error - tableInputs will be available after model types are regenerated
+      app.model.args.tableInputs = tableInputs ?? {
+        byClonotypeLabels: {},
+        linkedColumns: {},
+      };
     }
   },
   { deep: true },
