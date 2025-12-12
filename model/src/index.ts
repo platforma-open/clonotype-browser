@@ -1,5 +1,4 @@
 import type {
-  AnchoredPColumnSelector,
   AnnotationScript,
   AnnotationScriptUi,
   InferHrefType,
@@ -11,7 +10,6 @@ import type {
   PlDataTableStateV2,
   PlRef,
   PObjectId,
-  RenderCtx,
   SUniversalPColumnId,
 } from '@platforma-sdk/model';
 import {
@@ -19,22 +17,24 @@ import {
   createPlDataTableSheet,
   createPlDataTableStateV2,
   createPlDataTableV2,
-  deriveLabels,
   getUniquePartitionKeys,
-  isLabelColumn,
   PColumnCollection,
 } from '@platforma-sdk/model';
 import omit from 'lodash.omit';
 import { isAnnotationScriptValid } from './validation';
+import {
+  commonExcludes,
+  excludedAnnotationKeys,
+  getLinkedColumns,
+  getLinkedColumnsForArgs,
+  makeColumnKey,
+  type LinkedColumnEntry,
+} from './column_utils';
 
-export type LinkedColumnEntry = {
-  anchorName: string;
-  anchorRef: PlRef;
-  columns: Record<string, string>; // Map from JSON-serialized query to derived label
-};
+export type { LinkedColumnEntry } from './column_utils';
 
 export type TableInputs = {
-  byClonotypeLabels: Record<string, string>; // Map from spec key to derived label
+  byClonotypeLabels: Record<string, string>; // Map from deterministic column key (name|domain) to derived label
   linkedColumns: Record<string, LinkedColumnEntry>;
 };
 
@@ -71,46 +71,6 @@ export type SimplifiedUniversalPColumnEntry = {
   derivedLabel?: string; // Label derived from trace information
 };
 
-const excludedAnnotationKeys = [
-  'pl7.app/table/orderPriority',
-  'pl7.app/table/visibility',
-  'pl7.app/trace',
-];
-
-/**
- * Derives labels for columns using trace information.
- * Does NOT handle duplicate labels - that's left to the workflow layer.
- * Returns a map from column id to derived label.
- */
-/**
- * Helper function to derive labels using trace information.
- * This is used to generate labels that include trace context (e.g., "Cluster Size / Clustering 1")
- * when multiple similar columns need to be distinguished.
- */
-function deriveLabelsFromTrace(
-  columns: PColumn<PColumnDataUniversal>[],
-): Map<string, string> {
-  if (columns.length === 0) {
-    return new Map();
-  }
-
-  // Use existing deriveLabels utility with trace information
-  const derivedLabels = deriveLabels(
-    columns,
-    (col) => col.spec,
-    { includeNativeLabel: true },
-  );
-
-  // Create a simple map - no suffix handling
-  const labelMap = new Map<string, string>();
-  for (const { value, label } of derivedLabels) {
-    // value is the column itself, value.id is the column id
-    labelMap.set(value.id as string, label);
-  }
-
-  return labelMap;
-}
-
 const simplifyColumnEntries = (
   entries: PColumnEntryUniversal[] | undefined,
 ): SimplifiedUniversalPColumnEntry[] | undefined => {
@@ -142,286 +102,6 @@ const simplifyColumnEntries = (
 
   return ret;
 };
-
-const copmmonExcludes: AnchoredPColumnSelector[] = [
-  { name: 'pl7.app/vdj/sequence/annotation' },
-  { annotations: { 'pl7.app/isSubset': 'true' } },
-];
-
-/**
- * Updates linked column labels to use labels derived from trace information.
- * This ensures that columns from linkers show distinguishing labels when multiple
- * linkers are present (e.g., "Cluster Size / Clustering (sim:..., ident:..., cov:...)").
- */
-function updateLinkedColumnLabels(columns: PColumn<PColumnDataUniversal>[]): PColumn<PColumnDataUniversal>[] {
-  if (columns.length === 0) {
-    return columns;
-  }
-
-  // Derive labels using trace information
-  const derivedLabels = deriveLabels(
-    columns,
-    (col) => col.spec,
-    { includeNativeLabel: true },
-  );
-
-  // Create a map of column id to derived label
-  const labelMap = new Map<string, string>();
-  for (const { value, label } of derivedLabels) {
-    labelMap.set(value.id, label);
-  }
-
-  // Update columns with derived labels
-  return columns.map((col) => {
-    const derivedLabel = labelMap.get(col.id);
-    if (derivedLabel !== undefined) {
-      // Create a deep copy of annotations to avoid mutating shared objects
-      const newAnnotations = col.spec.annotations
-        ? { ...col.spec.annotations, 'pl7.app/label': derivedLabel }
-        : { 'pl7.app/label': derivedLabel };
-      return {
-        ...col,
-        spec: {
-          ...col.spec,
-          annotations: newAnnotations,
-        },
-      };
-    }
-    return col;
-  });
-}
-
-/**
- * Helper function to find linker options for both axis positions.
- * Returns an array of objects containing linker information for processing.
- */
-function findLinkerOptions(
-  ctx: RenderCtx<BlockArgs, UiState>,
-  anchor: PlRef,
-  anchorSpec: PColumnSpec,
-): Array<{
-  idx: number;
-  linkerOption: { ref: PlRef; label?: string };
-  anchorName: string;
-}> {
-  const linkerInfos: Array<{
-    idx: number;
-    linkerOption: { ref: PlRef; label?: string };
-    anchorName: string;
-  }> = [];
-
-  // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
-  let linkerIndex = 0;
-  for (const idx of [0, 1]) {
-    // Calculate axes to match based on which position the anchor axis is in
-    const axesToMatch = idx === 0
-      ? [{}, anchorSpec.axesSpec[1]] // clonotypeKey in second axis of the linker
-      : [anchorSpec.axesSpec[1], {}]; // clonotypeKey in first axis of the linker
-
-    // Get linker refs to use as anchors for finding linked columns
-    const linkerOptions = ctx.resultPool.getOptions([{
-      axes: axesToMatch,
-      annotations: { 'pl7.app/isLinkerColumn': 'true' },
-    }]);
-
-    // For each linker, create an info object
-    for (const linkerOption of linkerOptions) {
-      linkerInfos.push({
-        idx,
-        linkerOption,
-        anchorName: `linker-${linkerIndex}`,
-      });
-      linkerIndex++;
-    }
-  }
-
-  return linkerInfos;
-}
-
-/**
- * Gets columns linked through linker columns.
- * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
- * This function finds linker columns and resolves the columns on the "other side" of the link.
- *
- * @param ctx - The render context
- * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
- * @param anchorSpec - The specification of the anchor column
- * @returns Object containing linker columns and linked columns, or undefined if not available
- */
-function getLinkedColumns(
-  ctx: RenderCtx<BlockArgs, UiState>,
-  anchor: PlRef,
-  anchorSpec: PColumnSpec,
-): { linkerColumns: PColumn<PColumnDataUniversal>[]; linkedColumns: PColumn<PColumnDataUniversal>[] } | undefined {
-  const linkerColumns: PColumn<PColumnDataUniversal>[] = [];
-  const linkedColumns: PColumn<PColumnDataUniversal>[] = [];
-
-  // Get linker columns for both axis positions
-  for (const idx of [0, 1]) {
-    const axesToMatch = idx === 0
-      ? [{}, anchorSpec.axesSpec[1]]
-      : [anchorSpec.axesSpec[1], {}];
-
-    // Get linker columns that connect to our anchor's clonotypeKey axis
-    const linkers = ctx.resultPool.getAnchoredPColumns(
-      { main: anchor },
-      [{
-        axes: axesToMatch,
-        annotations: { 'pl7.app/isLinkerColumn': 'true' },
-      }],
-    );
-
-    if (linkers) {
-      linkerColumns.push(...linkers);
-    }
-  }
-
-  // Process linker options to find linked columns
-  const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
-  for (const { idx, linkerOption, anchorName } of linkerInfos) {
-    const linkerAnchorSpec: Record<string, PlRef> = {
-      [anchorName]: linkerOption.ref,
-    };
-
-    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
-        axes: [{ anchor: anchorName, idx }],
-      }],
-    );
-
-    if (linkedProps) {
-      linkedColumns.push(
-        ...linkedProps.filter((p) => !isLabelColumn(p.spec)),
-      );
-    }
-  }
-
-  // Deduplicate column names using trace-based labels only if there are two or more linker columns
-  const deduplicatedLinkedColumns = linkerColumns.length >= 2
-    ? updateLinkedColumnLabels(linkedColumns)
-    : linkedColumns;
-
-  return { linkerColumns, linkedColumns: deduplicatedLinkedColumns };
-}
-
-/**
- * Gets linked columns data structure for workflow arguments.
- * Similar to getLinkedColumns but returns the format needed for linkedColumns argument.
- *
- * @param ctx - The render context
- * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
- * @param anchorSpec - The specification of the anchor column
- * @returns Record of linked column entries keyed by anchor name, or undefined if not available
- */
-function getLinkedColumnsForArgs(
-  ctx: RenderCtx<BlockArgs, UiState>,
-  anchor: PlRef,
-  anchorSpec: PColumnSpec,
-): Record<string, LinkedColumnEntry> | undefined {
-  const result: Record<string, LinkedColumnEntry> = {};
-
-  // Collect all linked columns across all linkers
-  const allLinkedColumns: PColumn<PColumnDataUniversal>[] = [];
-  const columnIdToLinkerMap = new Map<string, string>();
-
-  const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
-
-  // First pass: collect all columns
-  for (const { idx, linkerOption, anchorName } of linkerInfos) {
-    const linkerAnchorSpec: Record<string, PlRef> = {
-      [anchorName]: linkerOption.ref,
-    };
-
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
-        axes: [{ anchor: anchorName, idx }],
-      }],
-    );
-
-    if (linkedProps) {
-      const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
-      allLinkedColumns.push(...filteredProps);
-      for (const prop of filteredProps) {
-        columnIdToLinkerMap.set(prop.id, anchorName);
-      }
-    }
-  }
-
-  // Derive labels for all linked columns (no suffix handling)
-  const derivedLabelMap = deriveLabelsFromTrace(allLinkedColumns);
-
-  // Second pass: build result with labels
-  for (const { idx, linkerOption, anchorName } of linkerInfos) {
-    const linkerAnchorSpec: Record<string, PlRef> = {
-      [anchorName]: linkerOption.ref,
-    };
-
-    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
-        axes: [{ anchor: anchorName, idx }],
-      }],
-    );
-
-    if (linkedProps && linkedProps.length > 0) {
-      const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
-
-      const columns: Record<string, string> = {};
-
-      for (const p of filteredProps) {
-        // Create AnchoredPColumnSelector query for this column
-        // We need to match by the column's spec properties
-        const query: AnchoredPColumnSelector = {
-          axes: [{ anchor: anchorName, idx }],
-        };
-
-        // Add domain if present
-        if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
-          // Convert domain to string values only (no anchor refs) for serialization
-          const domain: Record<string, string> = {};
-          for (const [key, value] of Object.entries(p.spec.domain)) {
-            if (typeof value === 'string') {
-              domain[key] = value;
-            }
-          }
-          if (Object.keys(domain).length > 0) {
-            query.domain = domain;
-          }
-        }
-
-        // Add name if it's not a generic column
-        if (p.spec.name) {
-          query.name = p.spec.name;
-        }
-
-        // Serialize to JSON string
-        const queryStr = JSON.stringify(query);
-
-        // Use derived label from trace, fallback to annotation label
-        const derivedLabel = derivedLabelMap.get(p.id as string)
-          || p.spec.annotations?.['pl7.app/label']
-          || '';
-
-        // Map query string to label
-        columns[queryStr] = derivedLabel;
-      }
-
-      if (Object.keys(columns).length > 0) {
-        result[anchorName] = {
-          anchorName,
-          anchorRef: linkerOption.ref,
-          columns, // Map from query to derived label
-        };
-      }
-    }
-  }
-
-  return Object.keys(result).length > 0 ? result : undefined;
-}
 
 export const platforma = BlockModel.create('Heavy')
 
@@ -641,44 +321,20 @@ export const platforma = BlockModel.create('Heavy')
         }],
         {
           anchorCtx,
-          exclude: copmmonExcludes,
+          exclude: commonExcludes,
           overrideLabelAnnotation: true, // Same label behavior as getColumns()
         },
       );
 
       if (entries) {
         for (const entry of entries) {
-          // Create a query object for serialization
-          const query: Record<string, unknown> = {
-            axes: entry.spec.axesSpec,
-          };
-
-          // Add domain if present
-          if (entry.spec.domain && Object.keys(entry.spec.domain).length > 0) {
-            // Convert domain to string values only (no anchor refs) for serialization
-            const domain: Record<string, string> = {};
-            for (const [key, value] of Object.entries(entry.spec.domain)) {
-              if (typeof value === 'string') {
-                domain[key] = value;
-              }
-            }
-            if (Object.keys(domain).length > 0) {
-              query.domain = domain;
-            }
-          }
-
-          // Add name if present
-          if (entry.spec.name) {
-            query.name = entry.spec.name;
-          }
-
-          // Serialize to JSON string to use as key
-          const queryStr = JSON.stringify(query);
+          // Create a deterministic key using the same function as Tengo
+          const key = makeColumnKey(entry.spec);
 
           // Use the label from spec annotations (set by overrideLabelAnnotation: true)
           const label = entry.spec.annotations?.['pl7.app/label'] || '';
           if (label) {
-            byClonotypeLabels[queryStr] = label;
+            byClonotypeLabels[key] = label;
           }
         }
       }
@@ -729,7 +385,7 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 1 },
         ],
       }],
-      { anchorCtx, exclude: copmmonExcludes },
+      { anchorCtx, exclude: commonExcludes },
     );
 
     if (!columns) return undefined;
@@ -823,7 +479,7 @@ export const platforma = BlockModel.create('Heavy')
       }],
       {
         anchorCtx,
-        exclude: copmmonExcludes,
+        exclude: commonExcludes,
         overrideLabelAnnotation: false,
       },
     );

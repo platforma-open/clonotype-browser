@@ -10,6 +10,7 @@ pt := import("@platforma-sdk/workflow-tengo:pt")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 json := import("json")
+text := import("text")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
 self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
@@ -18,6 +19,30 @@ self.awaitState("inputAnchor", "ResourceReady")
 sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-binary-collection.software-7zip:main")
 
 cloneKeyAxisHeader := "clonotypeKey"
+
+/**
+ * Creates a deterministic key for a column spec that matches the key generation in TypeScript.
+ * This ensures consistent matching between TypeScript and Tengo workflow code.
+ * 
+ * Key format: name|domainKey1:value1|domainKey2:value2|...
+ * Domain keys are sorted alphabetically for consistency.
+ */
+makeColumnKey := func(spec) {
+	parts := [spec.name]
+	if !is_undefined(spec.domain) && len(spec.domain) > 0 {
+		// Sort domain keys for consistency between TypeScript and Tengo
+		domainKeys := maps.getKeys(spec.domain)
+		domainKeys = slices.quickSort(domainKeys)
+		for key in domainKeys {
+			value := spec.domain[key]
+			if is_string(value) {
+				parts = append(parts, key + ":" + value)
+			}
+		}
+	}
+	return text.join(parts, "|")
+}
+
 
 // Helper function to check if a column should be included in export
 isValidColumn := func(col) {
@@ -374,37 +399,12 @@ self.body(func(inputs) {
 			}
 		}
 		columnIndex += 1
+
+		// Create deterministic key using the same function as TypeScript
+		columnKey := makeColumnKey(column.spec)
 		
-		// Build query object to match with model output (same approach as linkedColumns)
-		query := {
-			axes: column.spec.axesSpec
-		}
-		
-		// Add domain if present
-		if !is_undefined(column.spec.domain) && len(column.spec.domain) > 0 {
-			// Filter to only string values
-			domain := {}
-			for key, value in column.spec.domain {
-				// Only include string values in query
-				if !is_undefined(value) {
-					domain[key] = value
-				}
-			}
-			if len(domain) > 0 {
-				query.domain = domain
-			}
-		}
-		
-		// Add name if present
-		if !is_undefined(column.spec.name) {
-			query.name = column.spec.name
-		}
-		
-		// Serialize to JSON to use as key
-		queryStr := json.encode(query)
-		
-		// Get label from derived map using the query string
-		header := specToLabelMap[queryStr]
+		// Get label from derived map using the deterministic key
+		header := specToLabelMap[columnKey]
 		if is_undefined(header) {
 			// Fallback to base label if model didn't provide one
 			header = column.spec.annotations["pl7.app/label"]
