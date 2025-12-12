@@ -140,33 +140,18 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 	derivedLabels := addSuffixesToDuplicateLabels(allLinkedLabelsMap)
 	
 	for linker, data in linkedColumns {
-		// Collect and filter linked columns for this linker
-		linkedColsForLinker := []
+		// Check if there are any valid linked columns for this linker
+		hasValidColumns := false
 		for colName, _ in data.columns {
-			// Get column from bundle by name
 			col := columnBundle.getColumn(colName)
-			if is_undefined(col) {
-				continue
+			if !is_undefined(col) && isValidColumn(col) {
+				hasValidColumns = true
+				break
 			}
-			if !isValidColumn(col) {
-				continue
-			}
-			linkedColsForLinker = append(linkedColsForLinker, col)
 		}
 		
-		// Sort linked columns by orderPriority (similar to columnsPerSample)
-		slices.quickSortInPlaceFn(linkedColsForLinker, func(a, b) {
-			if is_undefined(a.spec.annotations["pl7.app/table/orderPriority"]) {
-				return false
-			}
-			if is_undefined(b.spec.annotations["pl7.app/table/orderPriority"]) {
-				return true
-			}
-			return int(a.spec.annotations["pl7.app/table/orderPriority"]) > int(b.spec.annotations["pl7.app/table/orderPriority"])
-		})
-		
-		// Skip if no valid linked columns after filtering
-		if len(linkedColsForLinker) == 0 {
+		// Skip if no valid linked columns
+		if !hasValidColumns {
 			continue
 		}
 		
@@ -203,6 +188,8 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, cloneKeyA
 		}
 		
 		// Add filtered and sorted linked columns with unique headers
+		// Note: Column order in the map is non-deterministic, but the final export order
+		// is determined by sorting byCloneSpecs by orderPriority before bigTablePf.select()
 		for colName, _ in data.columns {
 			// Get column from bundle by name
 			col := columnBundle.getColumn(colName)
@@ -489,6 +476,7 @@ self.body(func(inputs) {
 
 	// bigTablePf := perClonotypePf.join(pfs[0], { on: cloneKeyAxisHeader, how: "full", coalesce: true })
 
+	// Sort all column specs by orderPriority - this determines the final column order in the exported file
 	slices.quickSortInPlaceFn(byCloneSpecs, func(a, b) {
 		if is_undefined(a.annotations["pl7.app/table/orderPriority"]) {
 			return false
