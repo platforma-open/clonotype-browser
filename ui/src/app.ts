@@ -1,6 +1,6 @@
 import type { Platforma, SimplifiedUniversalPColumnEntry } from '@platforma-open/milaboratories.clonotype-browser-2.model';
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-2.model';
-import type { PFrameHandle, PlSelectionModel } from '@platforma-sdk/model';
+import type { PFrameHandle, PlSelectionModel, ListOptionBase, SUniversalPColumnId, CanonicalizedJson, AxisId } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
@@ -9,6 +9,8 @@ import PerSamplePage from './components/PerSamplePage.vue';
 import { migrateUiState } from './migration';
 import { processAnnotatiuoUiStateToArgs } from './model';
 import { getValuesForSelectedColumns } from './utils';
+
+type PlAdvancedFilterColumnId = SUniversalPColumnId | CanonicalizedJson<AxisId>;
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   migrateUiState(app.model.ui);
@@ -34,6 +36,16 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
       : (byClonotypeColumns?.columns ?? []);
   });
 
+  const getSuggestOptions = async (params: {
+    columnId: PlAdvancedFilterColumnId;
+    searchStr: string;
+    axisIdx?: number;
+    searchType: 'value' | 'label';
+  }): Promise<ListOptionBase<string | number>[]> => {
+    // Return empty array for now - can be enhanced later to fetch actual suggestions from pFrame
+    return [];
+  };
+
   return {
     getValuesForSelectedColumns: () => {
       const { bySampleAndClonotypeColumns, byClonotypeColumns } = app.model.outputs;
@@ -51,6 +63,7 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
     hasSelectedColumns,
     isAnnotationModalOpen,
     filterColumns,
+    getSuggestOptions,
     routes: {
       '/': () => PerSamplePage,
       '/overlap': () => OverlapPage,
