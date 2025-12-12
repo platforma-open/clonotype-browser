@@ -25,7 +25,7 @@ import { isAnnotationScriptValid } from './validation';
 import {
   commonExcludes,
   excludedAnnotationKeys,
-  getLinkedColumns,
+  addLinkedColumnsToArray,
   getLinkedColumnsForArgs,
   makeColumnKey,
   type LinkedColumnEntry,
@@ -83,8 +83,7 @@ const simplifyColumnEntries = (
       ? omit(entry.spec.annotations, excludedAnnotationKeys)
       : undefined;
 
-    // Use label annotation instead of deriving from trace
-    // const derivedLabel = entry.spec.annotations?.['pl7.app/label'];
+    // Use the label derived by PColumnCollection (from trace information)
     const derivedLabel = entry.label;
 
     return {
@@ -94,7 +93,7 @@ const simplifyColumnEntries = (
         ...entry.spec,
         annotations: filteredAnnotations,
       },
-      derivedLabel, // Include label from annotation
+      derivedLabel,
     };
   });
 
@@ -391,32 +390,7 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
-    // Get them BEFORE we modify any columns to avoid affecting the collection
-    const linked = getLinkedColumns(ctx, ctx.args.inputAnchor, anchorSpec);
-
-    // Filter out linked columns that are already in the main columns array to avoid duplicates
-    const existingColumnIds = new Set(columns.map((c) => c.id));
-    const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-    const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-
-    // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
-    if (newLinkerColumns.length > 0) {
-      const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
-        ...linkerColumn,
-        spec: {
-          ...linkerColumn.spec,
-          annotations: {
-            ...linkerColumn.spec.annotations,
-            'pl7.app/table/visibility': 'hidden',
-          },
-        },
-      }));
-      columns.push(...hiddenLinkerColumns);
-    }
-
-    if (newLinkedColumns.length > 0) {
-      columns.push(...newLinkedColumns);
-    }
+    addLinkedColumnsToArray(ctx, ctx.args.inputAnchor, anchorSpec, columns);
 
     columns.forEach((column) => {
       if (column.spec.annotations?.['pl7.app/isAbundance'] === 'true' && column.spec.name !== 'pl7.app/vdj/sampleCount')
@@ -487,32 +461,7 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
-    // Get them BEFORE we modify any columns to avoid affecting the collection
-    const linked = getLinkedColumns(ctx, ctx.args.inputAnchor, anchorSpec);
-
-    // Filter out linked columns that are already in the main columns array to avoid duplicates
-    const existingColumnIds = new Set(columns.map((c) => c.id));
-    const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-    const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-
-    // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
-    if (newLinkerColumns.length > 0) {
-      const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
-        ...linkerColumn,
-        spec: {
-          ...linkerColumn.spec,
-          annotations: {
-            ...linkerColumn.spec.annotations,
-            'pl7.app/table/visibility': 'hidden',
-          },
-        },
-      }));
-      columns.push(...hiddenLinkerColumns);
-    }
-
-    if (newLinkedColumns.length > 0) {
-      columns.push(...newLinkedColumns);
-    }
+    addLinkedColumnsToArray(ctx, ctx.args.inputAnchor, anchorSpec, columns);
 
     return createPlDataTableV2(
       ctx,

@@ -290,7 +290,6 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
 
   // Collect all linked columns across all linkers
   const allLinkedColumns: PColumn<PColumnDataUniversal>[] = [];
-  const columnIdToLinkerMap = new Map<string, string>();
 
   const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
 
@@ -310,9 +309,6 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
     if (linkedProps) {
       const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
       allLinkedColumns.push(...filteredProps);
-      for (const prop of filteredProps) {
-        columnIdToLinkerMap.set(prop.id, anchorName);
-      }
     }
   }
 
@@ -387,5 +383,50 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/**
+ * Adds linked columns to an existing columns array.
+ * This helper handles fetching linked columns through linkers, deduplicating them,
+ * and marking linker columns as hidden in the UI.
+ *
+ * @param ctx - The render context
+ * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
+ * @param anchorSpec - The specification of the anchor column
+ * @param columns - The existing columns array to append linked columns to
+ */
+export function addLinkedColumnsToArray<TArgs, TUiState>(
+  ctx: RenderCtx<TArgs, TUiState>,
+  anchor: PlRef,
+  anchorSpec: PColumnSpec,
+  columns: PColumn<PColumnDataUniversal>[],
+): void {
+  // Get linked columns through linkers (e.g., cluster columns)
+  // Get them BEFORE we modify any columns to avoid affecting the collection
+  const linked = getLinkedColumns(ctx, anchor, anchorSpec);
+
+  // Filter out linked columns that are already in the main columns array to avoid duplicates
+  const existingColumnIds = new Set(columns.map((c) => c.id));
+  const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+  const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
+
+  // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
+  if (newLinkerColumns.length > 0) {
+    const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
+      ...linkerColumn,
+      spec: {
+        ...linkerColumn.spec,
+        annotations: {
+          ...linkerColumn.spec.annotations,
+          'pl7.app/table/visibility': 'hidden',
+        },
+      },
+    }));
+    columns.push(...hiddenLinkerColumns);
+  }
+
+  if (newLinkedColumns.length > 0) {
+    columns.push(...newLinkedColumns);
+  }
 }
 
