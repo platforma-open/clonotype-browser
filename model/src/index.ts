@@ -15,6 +15,7 @@ import type {
 import {
   Annotation,
   BlockModel,
+  canonicalizeJson,
   createPlDataTableSheet,
   createPlDataTableStateV2,
   createPlDataTableV2,
@@ -28,7 +29,6 @@ import {
   excludedAnnotationKeys,
   addLinkedColumnsToArray,
   getLinkedColumnsForArgs,
-  makeColumnKey,
   type LinkedColumnEntry,
 } from './column_utils';
 
@@ -328,8 +328,24 @@ export const platforma = BlockModel.create('Heavy')
 
       if (entries) {
         for (const entry of entries) {
-          // Create a deterministic key using the same function as Tengo
-          const key = makeColumnKey(entry.spec);
+          // Create a deterministic key using canonical JSON serialization
+          // This matches the approach used for linkedColumns
+          const keyObj: { name: string; domain?: Record<string, string> } = {
+            name: entry.spec.name,
+          };
+          if (entry.spec.domain && Object.keys(entry.spec.domain).length > 0) {
+            // Filter domain to only include string values (matching linkedColumns approach)
+            const domain: Record<string, string> = {};
+            for (const [key, value] of Object.entries(entry.spec.domain)) {
+              if (typeof value === 'string') {
+                domain[key] = value;
+              }
+            }
+            if (Object.keys(domain).length > 0) {
+              keyObj.domain = domain;
+            }
+          }
+          const key = canonicalizeJson(keyObj);
 
           // Use the label from spec annotations (set by overrideLabelAnnotation: true)
           const label = entry.spec.annotations?.[Annotation.Label] || '';

@@ -26,31 +26,6 @@ export const commonExcludes: AnchoredPColumnSelector[] = [
 ];
 
 /**
- * Creates a deterministic key for a column spec that matches the key generation in Tengo.
- * This ensures consistent matching between TypeScript and Tengo workflow code.
- * 
- * Key format: name|domainKey1:value1|domainKey2:value2|...
- * Domain keys are sorted alphabetically for consistency.
- * 
- * @param spec - The column specification
- * @returns A deterministic string key
- */
-export function makeColumnKey(spec: PColumnSpec): string {
-  const parts = [spec.name];
-  if (spec.domain && Object.keys(spec.domain).length > 0) {
-    // Sort domain keys for consistency between TypeScript and Tengo
-    const sortedKeys = Object.keys(spec.domain).sort();
-    for (const key of sortedKeys) {
-      const value = spec.domain[key];
-      if (typeof value === 'string') {
-        parts.push(`${key}:${value}`);
-      }
-    }
-  }
-  return parts.join('|');
-}
-
-/**
  * Adds suffixes to duplicate labels in a label map.
  * For each label that appears multiple times:
  * - The first occurrence keeps the original label

@@ -9,6 +9,7 @@ math := import("math")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
 json := import("json")
 text := import("text")
 
@@ -21,26 +22,24 @@ sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-bin
 cloneKeyAxisHeader := "clonotypeKey"
 
 /**
- * Creates a deterministic key for a column spec that matches the key generation in TypeScript.
- * This ensures consistent matching between TypeScript and Tengo workflow code.
- * 
- * Key format: name|domainKey1:value1|domainKey2:value2|...
- * Domain keys are sorted alphabetically for consistency.
+ * Creates a deterministic key for a column spec using canonical JSON serialization.
+ * This matches the approach used in TypeScript with canonicalizeJson.
  */
 makeColumnKey := func(spec) {
-	parts := [spec.name]
+	keyObj := { name: spec.name }
 	if !is_undefined(spec.domain) && len(spec.domain) > 0 {
-		// Sort domain keys for consistency between TypeScript and Tengo
-		domainKeys := maps.getKeys(spec.domain)
-		domainKeys = slices.quickSort(domainKeys)
-		for key in domainKeys {
-			value := spec.domain[key]
+		// Filter domain to only include string values (matching TypeScript approach)
+		domain := {}
+		for key, value in spec.domain {
 			if is_string(value) {
-				parts = append(parts, key + ":" + value)
+				domain[key] = value
 			}
 		}
+		if len(domain) > 0 {
+			keyObj.domain = domain
+		}
 	}
-	return text.join(parts, "|")
+	return canonical.encode(keyObj)
 }
 
 
