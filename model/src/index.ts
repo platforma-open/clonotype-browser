@@ -13,6 +13,7 @@ import type {
   SUniversalPColumnId,
 } from '@platforma-sdk/model';
 import {
+  Annotation,
   BlockModel,
   createPlDataTableSheet,
   createPlDataTableStateV2,
@@ -331,7 +332,7 @@ export const platforma = BlockModel.create('Heavy')
           const key = makeColumnKey(entry.spec);
 
           // Use the label from spec annotations (set by overrideLabelAnnotation: true)
-          const label = entry.spec.annotations?.['pl7.app/label'] || '';
+          const label = entry.spec.annotations?.[Annotation.Label] || '';
           if (label) {
             byClonotypeLabels[key] = label;
           }

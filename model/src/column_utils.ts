@@ -6,7 +6,7 @@ import type {
   PlRef,
   RenderCtx,
 } from '@platforma-sdk/model';
-import { deriveLabels, isLabelColumn } from '@platforma-sdk/model';
+import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from '@platforma-sdk/model';
 
 /**
  * Annotation keys to exclude when simplifying column entries.
@@ -48,6 +48,72 @@ export function makeColumnKey(spec: PColumnSpec): string {
     }
   }
   return parts.join('|');
+}
+
+/**
+ * Adds suffixes to duplicate labels in a label map.
+ * For each label that appears multiple times:
+ * - The first occurrence keeps the original label
+ * - Subsequent occurrences get suffixes: " (1)", " (2)", etc.
+ * 
+ * @param labelMap - Map of identifier -> label
+ * @returns Map of identifier -> unique label (with suffixes if needed)
+ */
+export function addSuffixesToDuplicateLabels<K extends string>(
+  labelMap: Record<K, string>,
+): Record<K, string> {
+  const labelCounts = new Map<string, number>();
+  const labelOccurrences = new Map<string, number>();
+  const finalLabels: Record<string, string> = {};
+  
+  // Count occurrences of each label
+  for (const [id, label] of Object.entries(labelMap) as [string, string][]) {
+    labelCounts.set(label, (labelCounts.get(label) || 0) + 1);
+  }
+  
+  // Add suffixes for duplicates
+  for (const [id, label] of Object.entries(labelMap) as [string, string][]) {
+    const count = labelCounts.get(label) || 0;
+    if (count > 1) {
+      const occurrence = (labelOccurrences.get(label) || 0) + 1;
+      labelOccurrences.set(label, occurrence);
+      
+      if (occurrence > 1) {
+        finalLabels[id] = `${label} (${occurrence - 1})`;
+      } else {
+        finalLabels[id] = label;
+      }
+    } else {
+      finalLabels[id] = label;
+    }
+  }
+  
+  return finalLabels as Record<K, string>;
+}
+
+/**
+ * Ensures label uniqueness against a set of already used labels.
+ * If the label is already used, adds numeric suffixes until a unique label is found.
+ * Updates the usedLabelsSet with the final unique label.
+ * 
+ * @param label - The label to make unique
+ * @param usedLabelsSet - Set of already used labels (will be modified)
+ * @returns The unique label (with suffix if needed)
+ */
+export function ensureUniqueLabel(
+  label: string,
+  usedLabelsSet: Set<string>,
+): string {
+  let uniqueLabel = label;
+  let suffixCount = 0;
+  
+  while (usedLabelsSet.has(uniqueLabel)) {
+    suffixCount += 1;
+    uniqueLabel = `${label} (${suffixCount})`;
+  }
+  
+  usedLabelsSet.add(uniqueLabel);
+  return uniqueLabel;
 }
 
 /**
@@ -115,8 +181,8 @@ export function updateLinkedColumnLabels(
     if (derivedLabel !== undefined) {
       // Create a deep copy of annotations to avoid mutating shared objects
       const newAnnotations = col.spec.annotations
-        ? { ...col.spec.annotations, 'pl7.app/label': derivedLabel }
-        : { 'pl7.app/label': derivedLabel };
+        ? { ...col.spec.annotations, [Annotation.Label]: derivedLabel }
+        : { [Annotation.Label]: derivedLabel };
       return {
         ...col,
         spec: {
@@ -269,7 +335,7 @@ export function getLinkedColumns<TArgs, TUiState>(
 export interface LinkedColumnEntry {
   anchorName: string;
   anchorRef: PlRef;
-  columns: Record<string, string>; // Map from JSON-serialized AnchoredPColumnSelector query to derived label
+  columns: Record<string, string>; // Map from column ID (as string) to derived label
 }
 
 /**
@@ -360,12 +426,12 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
           query.name = p.spec.name;
         }
 
-        // Serialize to JSON string
-        const queryStr = JSON.stringify(query);
+        // Serialize to canonical JSON string for deterministic key generation
+        const queryStr = canonicalizeJson(query);
 
         // Use derived label from trace, fallback to annotation label
         const derivedLabel = derivedLabelMap.get(p.id as string)
-          || p.spec.annotations?.['pl7.app/label']
+          || p.spec.annotations?.[Annotation.Label]
           || '';
 
         // Map query string to label
