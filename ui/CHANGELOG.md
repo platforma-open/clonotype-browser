@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-2.ui
 
+## 1.9.5
+
+### Patch Changes
+
+- a41e27d: Add cluster columns to the browser
+- Updated dependencies [a41e27d]
+  - @platforma-open/milaboratories.clonotype-browser-2.model@1.12.5
+
 ## 1.9.4
 
 ### Patch Changes

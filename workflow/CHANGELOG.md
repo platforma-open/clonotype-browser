@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-2.workflow
 
+## 1.10.5
+
+### Patch Changes
+
+- a41e27d: Add cluster columns to the browser
+
 ## 1.10.4
 
 ### Patch Changes
