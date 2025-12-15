@@ -11,7 +11,7 @@ import {
   PlSlideModal,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useApp } from '../app';
 import ExportBtn from './ExportBtn.vue';
 
@@ -23,10 +23,34 @@ function setAnchorColumn(ref: PlRef | undefined) {
   app.model.args.inputAnchor = ref;
   if (ref) {
     app.model.args.datasetTitle = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, ref))?.label;
+    // @ts-expect-error - tableInputs will be available after model types are regenerated
+    app.model.args.tableInputs = (app.model.outputs as Record<string, unknown>).tableInputs ?? {
+      byClonotypeLabels: {},
+      linkedColumns: {},
+    };
   } else {
     app.model.args.datasetTitle = undefined;
+    app.model.args.tableInputs = {
+      byClonotypeLabels: {},
+      linkedColumns: {},
+    };
   }
 }
+
+// Keep tableInputs in sync with output when it changes
+watch(
+  () => (app.model.outputs as Record<string, unknown>).tableInputs,
+  (tableInputs) => {
+    if (app.model.args.inputAnchor) {
+      // @ts-expect-error - tableInputs will be available after model types are regenerated
+      app.model.args.tableInputs = tableInputs ?? {
+        byClonotypeLabels: {},
+        linkedColumns: {},
+      };
+    }
+  },
+  { deep: true },
+);
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.args.inputAnchor,
@@ -75,5 +99,7 @@ const tableSettings = usePlDataTableSettingsV2({
     :columns="app.filterColumns"
     :hasSelectedColumns="app.hasSelectedColumns"
     :getValuesForSelectedColumns="app.getValuesForSelectedColumns"
+    :getSuggestOptions="app.getSuggestOptions"
   />
 </template>
+

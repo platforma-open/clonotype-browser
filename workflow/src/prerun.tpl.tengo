@@ -1,10 +1,10 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 smart := import("@platforma-sdk/workflow-tengo:smart")
-file := import("@platforma-sdk/workflow-tengo:file")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 render := import("@platforma-sdk/workflow-tengo:render")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+json := import("json")
 
 util := import(":util")
 
@@ -32,9 +32,48 @@ wf.body(func(args) {
 		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 0 }, { anchor: "main", idx: 1 }] }, "perSample")
 		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 1 }] }, "perClonotype")
 		bundleBuilderForExport.addSingle({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 0 }] }, "sampleLabels")
+		
+		// Add linker columns
+		bundleBuilderForExport.addMulti({
+			axes: [{ anchor: "main", idx: 1 }],
+			annotations: { "pl7.app/isLinkerColumn": "true" },
+			partialAxesMatch: true
+		}, "linkers")
+
+		// Add linked columns from args.tableInputs
+		linkedColumns := {}
+		linkedAxisCount := 0
+		if !is_undefined(args.tableInputs) && !is_undefined(args.tableInputs.linkedColumns) {
+			for anchorName, entry in args.tableInputs.linkedColumns {
+				if !is_undefined(entry.anchorRef) && !is_undefined(entry.columns) {
+					// Add anchor for this linker
+					bundleBuilderForExport.addAnchor(entry.anchorName, entry.anchorRef)
+					linkedColumns[anchorName] = {
+						anchorRef: entry.anchorRef,
+						columns: {},
+						labels: {}
+					}
+					// Add each column from the columns map (query -> label)
+					for colQueryStr, label in entry.columns {
+						// Parse the JSON-serialized AnchoredPColumnSelector query
+						colQuery := json.decode(colQueryStr)
+						// Add the query to the bundle
+						colName	:= "linkedAxis" + string(linkedAxisCount)
+						bundleBuilderForExport.addSingle(colQuery, colName)
+						linkedAxisCount += 1
+						linkedColumns[anchorName].columns[colName] = colQuery
+						// Store the label from model
+						linkedColumns[anchorName].labels[colName] = label
+					}
+				}
+			}
+		}
 
 		exportResult := render.createEphemeral(exportTableTpl, {
-			columnBundle: bundleBuilderForExport.build()
+			columnBundle: bundleBuilderForExport.build(),
+			inputAnchor: args.inputAnchor,
+			linkedColumns: linkedColumns,
+			byClonotypeLabels: args.tableInputs.byClonotypeLabels
 		})
 
 		outputs["tsvZip"] = exportResult.output("tsvZip")
