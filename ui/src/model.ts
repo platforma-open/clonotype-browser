@@ -13,6 +13,7 @@ export function processAnnotationUiStateToArgsState(
 
       argsState.title = uiState.title;
       argsState.steps = convertFilterSpecsToExpressionSpecs(uiState.steps);
+      argsState.defaultValue = uiState.defaultValue;
     } catch (err) {
       console.error('Error while compiling annotation UI state to Args:', err);
     }

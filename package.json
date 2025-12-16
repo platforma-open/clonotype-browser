@@ -1,6 +1,5 @@
 {
   "scripts": {
-    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
     "build:dev": "PL_PKG_DEV=local turbo run build",
     "test": "PL_PKG_DEV=local turbo run test --concurrency 1",
@@ -9,15 +8,21 @@
     "watch": "turbo watch build",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "update-sdk": "pl-blocks-deps-updater"
+    "update-sdk": "block-tools update-deps"
   },
   "devDependencies": {
     "turbo": "catalog:",
     "typescript": "catalog:",
     "@changesets/cli": "catalog:",
-    "@platforma-sdk/blocks-deps-updater": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
+  "pnpm": {
+    "overrides": {
+      "@platforma-sdk/workflow-tengo": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/workflow-tengo/package.tgz",
+      "@platforma-sdk/ui-vue": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/ui-vue/package.tgz"
+    }
+  },
   "//pnpm": {
     "overrides": {
       "@milaboratories/pl-model-common": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/model/common/",

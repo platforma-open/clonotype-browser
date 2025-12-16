@@ -16,6 +16,7 @@ computeClonotypeAnnotations := func(inputs) {
 	title := inputs.title
 	steps := inputs.steps
 	inputAnchor := inputs.inputAnchor
+	defaultValue := inputs.defaultValue
 	annotationAxesSpec := inputs.annotationAxesSpec
 	shouldComputeFilters := inputs.shouldComputeFilters
 
@@ -26,8 +27,10 @@ computeClonotypeAnnotations := func(inputs) {
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,
-		inputAnchor: inputAnchor,
+		anchorRef: inputAnchor,
+		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
+		addtionalColumns: [{ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] }],
 		shouldComputeFilters: shouldComputeFilters
 	})
 

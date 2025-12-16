@@ -19,7 +19,9 @@ wf.prepare(func(args) {
 })
 
 wf.body(func(args) {
-	outputs := {}
+	outputs := {
+		tsvZip: smart.createNullResource()
+	}
 	exports := {}
 
 	// Export TSVs
@@ -47,6 +49,7 @@ wf.body(func(args) {
 			title: annotationSpec.title,
 			steps: annotationSpec.steps,
 			inputAnchor: args.inputAnchor,
+			defaultValue: annotationSpec.defaultValue,
 			annotationAxesSpec: annotationAxesSpec,
 			shouldComputeFilters: false
 		})
