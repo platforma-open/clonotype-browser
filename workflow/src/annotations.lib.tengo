@@ -24,13 +24,14 @@ computeClonotypeAnnotations := func(inputs) {
 		ll.panic("No annotation steps provided")
 	}
 
+	referenceColumn := { name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] };
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,
 		anchorRef: inputAnchor,
 		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
-		addtionalColumns: [{ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] }],
+		additionalColumns: [referenceColumn],
 		shouldComputeFilters: shouldComputeFilters
 	})
 
