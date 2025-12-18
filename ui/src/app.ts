@@ -5,10 +5,18 @@ import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
 import OverlapPage from './components/OverlapPage.vue';
-import { processAnnotationUiStateToArgsState } from './model';
+import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
+  syncDatasetTitle(
+    () => app.model.args,
+    () => app.model.outputs.inputOptions,
+  );
+  syncTableInputs(
+    () => app.model.args,
+    () => app.model.outputs.tableInputs,
+  );
   processAnnotationUiStateToArgsState(
     () => app.model.ui.annotationSpec,
     () => app.model.args.annotationSpec,

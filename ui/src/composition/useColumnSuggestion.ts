@@ -1,6 +1,6 @@
 import type {
-    ListOptionBase,
-    SUniversalPColumnId,
+  ListOptionBase,
+  SUniversalPColumnId,
 } from '@milaboratories/pl-model-common';
 import { getUniqueSourceValuesWithLabels } from '@platforma-sdk/model';
 

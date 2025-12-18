@@ -6,28 +6,27 @@ packages:
   - test
 
 catalog:
-  '@milaboratories/ts-builder': ^1.0.5
-  '@milaboratories/ts-configs': ^1.0.6
-  '@milaboratories/build-configs': ^1.0.5
-  '@milaboratories/pl-model-common': ^1.21.9
-  '@platforma-sdk/workflow-tengo': ^5.6.3
-  '@platforma-sdk/model': ^1.46.0
-  '@platforma-sdk/ui-vue': ^1.46.1
-  '@platforma-sdk/tengo-builder': ^2.3.14
+  '@milaboratories/ts-builder': ^1.2.1
+  '@milaboratories/ts-configs': ^1.2.0
+  '@milaboratories/build-configs': ^1.2.1
+  '@milaboratories/pl-model-common': ^1.21.10
+  '@platforma-sdk/workflow-tengo': ^5.7.3
+  '@platforma-sdk/model': ^1.48.4
+  '@platforma-sdk/ui-vue': ^1.48.8
+  '@platforma-sdk/tengo-builder': ^2.4.2
   '@platforma-sdk/package-builder': ^3.10.7
-  '@platforma-sdk/block-tools': ^2.6.25
-  '@platforma-sdk/eslint-config': ^1.1.0
-  '@platforma-sdk/blocks-deps-updater': ^2.0.0
+  '@platforma-sdk/block-tools': ^2.6.27
+  '@platforma-sdk/eslint-config': ^1.2.0
 
-  '@platforma-sdk/test': ^1.46.2
-  '@milaboratories/helpers': ^1.12.0
+  '@platforma-sdk/test': ^1.48.9
+  '@milaboratories/helpers': ^1.12.1
 
   '@platforma-open/milaboratories.runenv-python-3': ^1.1.16
   '@platforma-open/milaboratories.software-ptransform': ^1.4.3
 
   '@platforma-open/milaboratories.software-binary-collection.software-7zip': ^1.1.2
 
-  'vue': 3.5.13
+  'vue': ^3
 
   'canonicalize': ~2.1.0
   'lodash': ^4.17.17
