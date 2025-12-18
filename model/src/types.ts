@@ -6,7 +6,7 @@ export type { FilterSpecType } from '@platforma-sdk/model';
 export type FilterSpec = _FilterSpec<FilterSpecLeaf, { id: number; name?: string; isExpanded?: boolean }>;
 
 export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: 'and' | 'or' }>> & {
-    id: number;
+  id: number;
 };
 
 export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };

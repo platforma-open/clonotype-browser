@@ -1,6 +1,7 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
 annotations := import("@platforma-sdk/workflow-tengo:annotations")
 
 util := import(":util")
@@ -24,7 +25,7 @@ computeClonotypeAnnotations := func(inputs) {
 		ll.panic("No annotation steps provided")
 	}
 
-	referenceColumn := { name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] };
+	referenceColumn := canonical.encode({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] });
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,

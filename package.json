@@ -17,18 +17,12 @@
     "@platforma-sdk/block-tools": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
-  "pnpm": {
-    "overrides": {
-      "@platforma-sdk/workflow-tengo": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/workflow-tengo/package.tgz",
-      "@platforma-sdk/ui-vue": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/ui-vue/package.tgz"
-    }
-  },
   "//pnpm": {
     "overrides": {
       "@milaboratories/pl-model-common": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/model/common/",
       "@platforma-sdk/model": "link:/Users/aleksandr/GIT/MILAB/platforma/sdk/model/",
-      "@platforma-sdk/ui-vue": "link:/Users/aleksandr/GIT/MILAB/platforma/sdk/ui-vue/",
       "@milaboratories/uikit": "link:/Users/aleksandr/GIT/MILAB/platforma/lib/ui/uikit/",
+      "@platforma-sdk/ui-vue": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/ui-vue/package.tgz",
       "@platforma-sdk/workflow-tengo": "file:/Users/aleksandr/GIT/MILAB/platforma/sdk/workflow-tengo/package.tgz"
     }
   }
