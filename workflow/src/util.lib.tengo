@@ -47,6 +47,10 @@ createColumnBundle := func(args) {
 }
 
 getAnnotationAxesSpec := func(args) {
+	if is_undefined(args.columnBundle) || is_undefined(args.inputAnchor) {
+		return undefined
+	}
+
 	inputAnchor := args.columnBundle.getColumn(args.inputAnchor)
 
 	if is_undefined(inputAnchor) || is_undefined(inputAnchor.spec) {

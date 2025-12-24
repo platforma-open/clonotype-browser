@@ -9,9 +9,6 @@ annotations := import(":annotations")
 
 wf.setPreRun(assets.importTemplate(":prerun"))
 
-wf.prepare(func(args) {
-	return { columnBundle: util.createColumnBundle(args) }
-})
 wf.body(func(args) {
 	outputs := {}
 	exports := {}
@@ -19,7 +16,7 @@ wf.body(func(args) {
 	annotationSpec := args.annotationSpec
 	annotationAxesSpec := util.getAnnotationAxesSpec(args)
 
-	if !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
+	if !is_undefined(args.inputAnchor) && !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
 		computedAnnotations := annotations.computeClonotypeAnnotations({
 			title: annotationSpec.title,
 			steps: annotationSpec.steps,

@@ -15,7 +15,7 @@ exportTableTpl := assets.importTemplate(":export-table")
 
 wf.prepare(func(args) {
 	return {
-		columnBundle: util.createColumnBundle(args)
+		columnBundle: is_undefined(args.inputAnchor) ? smart.createNullResource() : util.createColumnBundle(args)
 	}
 })
 
@@ -87,7 +87,7 @@ wf.body(func(args) {
 	annotationSpec := args.annotationSpec
 	annotationAxesSpec := util.getAnnotationAxesSpec(args)
 
-	if !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
+	if !is_undefined(args.inputAnchor) && !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
 		computedAnnotations := annotations.computeClonotypeAnnotations({
 			title: annotationSpec.title,
 			steps: annotationSpec.steps,
@@ -99,14 +99,16 @@ wf.body(func(args) {
 
 		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
 
-		computedStats := annotationsStats.computeClonotypeAnnotationsStats({
-			inputAnchor: args.inputAnchor,
-			annotations: computedAnnotations.annotationsColumn,
-			columnBundle: args.columnBundle
-		})
+		if (!is_undefined(args.columnBundle)) {
+			computedStats := annotationsStats.computeClonotypeAnnotationsStats({
+				inputAnchor: args.inputAnchor,
+				annotations: computedAnnotations.annotationsColumn,
+				columnBundle: args.columnBundle
+			})
 
-		outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
-		outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
+			outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
+			outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
+		}
 	}
 
 	return {
