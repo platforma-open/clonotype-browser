@@ -24,20 +24,24 @@
       "ui": "@platforma-open/milaboratories.clonotype-browser-3.ui/dist"
     },
     "meta": {
-      "title": "[WIP] Clonotype Browser",
+      "title": "Clonotype Browser",
       "logo": "file:../logos/block-logo.png",
       "url": "https://github.com/platforma-open/clonotype-browser-3",
       "support": "mailto:support@milaboratories.com",
-      "description": "Allows to browse clonotypes and annotate them for tracking and filtering",
+      "description": "Interactive browser for exploring and annotating T/B cell clonotypes with custom tags for tracking, filtering, and downstream analysis.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:./CHANGELOG.md",
-      "tags": ["annotation"],
+      "tags": [
+        "airr",
+        "vdj",
+        "annotation"
+      ],
       "organization": {
         "name": "MiLaboratories Inc",
         "url": "https://milaboratories.com/",
         "logo": "file:../logos/organization-logo.png"
       },
-      "marketplaceRanking": 16500
+      "marketplaceRanking": 16700
     }
   },
   "devDependencies": {

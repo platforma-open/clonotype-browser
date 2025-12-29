@@ -15,7 +15,7 @@ import {
 } from '@platforma-open/milaboratories.mixcr-clonotyping-2.model';
 import { blockSpec as samplesAndDataBlockSpec } from '@platforma-open/milaboratories.samples-and-data';
 import type { BlockArgs as SamplesAndDataBlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { AnnotationSpec, FilterSpecUi, InferBlockState, SimplifiedUniversalPColumnEntry, SUniversalPColumnId } from '@platforma-sdk/model';
+import type { AnnotationSpec, FilterSpecUi, InferBlockState, PColumnSpec, SUniversalPColumnId } from '@platforma-sdk/model';
 import { convertFilterSpecsToExpressionSpecs, wrapOutputs } from '@platforma-sdk/model';
 import type { ML, RawHelpers } from '@platforma-sdk/test';
 import { awaitStableState, blockTest } from '@platforma-sdk/test';
@@ -24,8 +24,7 @@ import type { expect as vitestExpect } from 'vitest';
 
 // Helper function for common setup
 async function setupProject(
-  { rawPrj: project, ml, helpers, expect }:
-    { rawPrj: ML.Project; ml: ML.MiddleLayer; helpers: RawHelpers; expect: typeof vitestExpect },
+  { rawPrj: project, ml, helpers, expect }: { rawPrj: ML.Project; ml: ML.MiddleLayer; helpers: RawHelpers; expect: typeof vitestExpect },
 ) {
   const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
   const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
@@ -194,7 +193,11 @@ async function setupProject(
 }
 
 // Find column helper
-function findColumnId(columns: SimplifiedUniversalPColumnEntry[] | undefined, labelOrPredicate: string | ((label: string) => boolean)): SUniversalPColumnId | undefined {
+function findColumnId(columns: {
+  id: SUniversalPColumnId;
+  label: string;
+  spec: PColumnSpec;
+}[] | undefined, labelOrPredicate: string | ((label: string) => boolean)): SUniversalPColumnId | undefined {
   if (!columns) return undefined;
   const predicate = typeof labelOrPredicate === 'string' ? (label: string) => label === labelOrPredicate : labelOrPredicate;
   return columns.find((col) => predicate(col.label))?.id as SUniversalPColumnId;
@@ -216,6 +219,7 @@ blockTest(
         title: 'My Annotation',
         steps: [],
       } satisfies AnnotationSpec,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -266,6 +270,7 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
       annotationSpec,
+      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState3 = (await awaitStableState(
@@ -297,5 +302,3 @@ blockTest(
     expect(statsData[0].data.length, 'Stats Data Length').toBeGreaterThan(0);
   },
 );
-
-// removed obsolete bySampleAndClonotype test: mode is no longer part of annotation API
