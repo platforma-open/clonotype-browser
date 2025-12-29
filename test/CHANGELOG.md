@@ -1,0 +1,12 @@
+# @platforma-open/milaboratories.clonotype-browser-3.test
+
+## 1.0.1
+
+### Patch Changes
+
+- 8ba9261: release
+- cfc1d27: Init commit
+- Updated dependencies [950a4cd]
+- Updated dependencies [8ba9261]
+- Updated dependencies [cfc1d27]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@1.0.1
