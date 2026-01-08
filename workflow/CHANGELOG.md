@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 1.0.2
+
+### Patch Changes
+
+- 7f7ae7a: Fix export error
+
 ## 1.0.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [7f7ae7a]
+  - @platforma-open/milaboratories.clonotype-browser-3.workflow@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
