@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 1.0.2
+
+### Patch Changes
+
+- 6b9dab5: update sdk for fixing incorrect table headers
+
 ## 1.0.1
 
 ### Patch Changes
