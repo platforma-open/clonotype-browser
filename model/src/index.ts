@@ -13,7 +13,7 @@ import {
   createPlDataTableStateV2,
   createPlDataTableV2,
   PColumnCollection,
-  PColumnName
+  PColumnName,
 } from '@platforma-sdk/model';
 import type { AnnotationSpec, AnnotationSpecUi } from './types';
 import {
