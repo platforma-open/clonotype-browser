@@ -42,12 +42,12 @@ export function addSuffixesToDuplicateLabels<K extends string>(
   const finalLabels: Record<string, string> = {};
 
     // Count occurrences of each label
-  for (const [id, label] of Object.entries(labelMap)) {
+  for (const [, label] of Object.entries(labelMap) as [K, string][]) {
     labelCounts.set(label, (labelCounts.get(label) || 0) + 1);
   }
 
     // Add suffixes for duplicates
-  for (const [id, label] of Object.entries(labelMap)) {
+  for (const [id, label] of Object.entries(labelMap) as [K, string][]) {
     const count = labelCounts.get(label) || 0;
     if (count > 1) {
       const occurrence = (labelOccurrences.get(label) || 0) + 1;
