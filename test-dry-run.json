@@ -51,7 +51,7 @@
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "rm -rf ./block-pack && block-tools pack",
+      "command": "shx rm -rf ./block-pack && block-tools pack",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -689,7 +689,7 @@
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "rm -rf dist && pl-tengo check && pl-tengo build",
+      "command": "shx rm -rf dist && pl-tengo check && pl-tengo build",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
