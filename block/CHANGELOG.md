@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 1.1.0
+
+### Minor Changes
+
+- b811dd0: Update link to github project
+
 ## 1.0.3
 
 ### Patch Changes
