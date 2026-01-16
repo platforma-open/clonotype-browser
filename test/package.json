@@ -1,7 +1,7 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-3.test",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Block tests",
   "scripts": {
     "//test": "NODE_ENV=production vitest"

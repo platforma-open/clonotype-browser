@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 1.1.0
+
+### Minor Changes
+
+- 0e6b850: add per sample page
+
 ## 1.0.2
 
 ### Patch Changes
