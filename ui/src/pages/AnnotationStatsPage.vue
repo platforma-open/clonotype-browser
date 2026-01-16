@@ -2,11 +2,11 @@
 import {
   PlAgDataTableV2,
   PlBlockPage,
-  PlBtnGhost,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
 import { useApp } from '../app';
-import AnnotationModal from './AnnotationModal.vue';
+import AnnotationModal from '../components/AnnotationModal.vue';
+import BlockActions from '../components/BlockActions.vue';
 
 const app = useApp();
 
@@ -22,9 +22,7 @@ const tableSettings = usePlDataTableSettingsV2({
       Annotation Stats - {{ app.model.args.annotationSpec.title }}
     </template>
     <template #append>
-      <PlBtnGhost icon="annotate" @click.stop="app.isAnnotationModalOpen = true">
-        Annotations
-      </PlBtnGhost>
+      <BlockActions />
     </template>
     <PlAgDataTableV2
       ref="tableInstance"

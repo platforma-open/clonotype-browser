@@ -3,12 +3,16 @@ import { platforma } from '@platforma-open/milaboratories.clonotype-browser-3.mo
 import type { PlSelectionModel } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
-import AnnotationStatsPage from './components/AnnotationStatsPage.vue';
-import OverlapPage from './components/OverlapPage.vue';
 import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
+import AnnotationStatsPage from './pages/AnnotationStatsPage.vue';
+import OverlapPage from './pages/OverlapPage.vue';
+import SamplePage from './pages/SamplePage.vue';
+import { stateMigration } from './migration';
+
 export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
+  stateMigration(app.model.ui);
   syncDatasetTitle(
     () => app.model.args,
     () => app.model.outputs.inputOptions,
@@ -39,6 +43,7 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
     isAnnotationModalOpen,
     routes: {
       '/': () => OverlapPage,
+      '/sample': () => SamplePage,
       '/stats': () => AnnotationStatsPage,
     },
     getValuesForSelectedColumns: () => {

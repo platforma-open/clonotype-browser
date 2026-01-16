@@ -10,8 +10,10 @@ import {
   Annotation,
   BlockModel,
   canonicalizeJson,
+  createPlDataTableSheet,
   createPlDataTableStateV2,
   createPlDataTableV2,
+  getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
 } from '@platforma-sdk/model';
@@ -43,6 +45,9 @@ type BlockArgs = {
 export type UiState = {
   settingsOpen: boolean;
   overlapTable: {
+    tableState: PlDataTableStateV2;
+  };
+  sampleTable: {
     tableState: PlDataTableStateV2;
   };
   statsTable: {
@@ -111,6 +116,9 @@ export const platforma = BlockModel.create('Heavy')
   .withUiState<UiState>({
     settingsOpen: true,
     overlapTable: {
+      tableState: createPlDataTableStateV2(),
+    },
+    sampleTable: {
       tableState: createPlDataTableStateV2(),
     },
     statsTable: {
@@ -322,6 +330,70 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
+  .output('sampleTable', (ctx) => {
+    if (ctx.args.inputAnchor === undefined)
+      return undefined;
+
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    if (!anchorCtx) return undefined;
+
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    if (!anchorSpec) return undefined;
+
+    const collection = new PColumnCollection();
+
+    const annotation = ctx.prerun?.resolve({ field: 'annotationsPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    if (annotation) collection.addColumns(annotation);
+
+    // result pool is added after the pre-run outputs so that pre-run results take precedence
+    collection
+      .addColumnProvider(ctx.resultPool)
+      .addAxisLabelProvider(ctx.resultPool);
+
+    const columns = collection.getColumns(
+      [{
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 0 },
+          { anchor: 'main', idx: 1 },
+        ],
+      }, {
+        domainAnchor: 'main',
+        axes: [
+          { anchor: 'main', idx: 1 },
+        ],
+      }],
+      {
+        anchorCtx,
+        exclude: commonExcludes,
+        overrideLabelAnnotation: false,
+      },
+    );
+
+    if (!columns) return undefined;
+
+    // Get linked columns through linkers (e.g., cluster columns)
+    addLinkedColumnsToArray(ctx, ctx.args.inputAnchor, anchorSpec, columns);
+
+    return createPlDataTableV2(
+      ctx,
+      columns,
+      ctx.uiState.sampleTable.tableState,
+    );
+  })
+
+  .output('sampleTableSheets', (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return undefined;
+
+    const anchor = ctx.resultPool.getPColumnByRef(ctx.args.inputAnchor);
+    if (!anchor) return undefined;
+
+    const samples = getUniquePartitionKeys(anchor.data)?.[0];
+    if (!samples) return undefined;
+
+    return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
+  })
+
   .output('statsTable', (ctx) => {
     const allColumns = [];
     const annotationStatsPf = ctx.prerun?.resolve({ field: 'annotationStatsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
@@ -376,7 +448,8 @@ export const platforma = BlockModel.create('Heavy')
 
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Annotation' } as const,
+      { type: 'link', href: '/', label: 'Overlap' } as const,
+      { type: 'link', href: '/sample', label: 'By Sample' } as const,
       ...(ctx.args.annotationSpec.steps.length > 0
         ? [{ type: 'link', href: '/stats', label: 'Stats' } as const]
         : []),
