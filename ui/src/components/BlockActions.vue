@@ -32,7 +32,7 @@ function openSettings() {
   <PlBtnGhost v-if="showAnnotations" icon="annotate" @click.stop="openAnnotations">
     Annotations
   </PlBtnGhost>
-  <PlBtnGhost v-if="showSettings" icon="settings" @click.exact.stop="openSettings">
+  <PlBtnGhost v-if="showSettings" icon="settings" @click.stop="openSettings">
     Settings
   </PlBtnGhost>
 </template>
