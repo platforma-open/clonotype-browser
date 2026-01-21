@@ -6,20 +6,20 @@ packages:
   - test
 
 catalog:
-  '@milaboratories/ts-builder': ^1.2.1
+  '@milaboratories/ts-builder': ^1.2.2
   '@milaboratories/ts-configs': ^1.2.0
-  '@milaboratories/build-configs': ^1.2.1
-  '@milaboratories/pl-model-common': ^1.22.0
-  '@platforma-sdk/workflow-tengo': ^5.7.3
-  '@platforma-sdk/model': ^1.51.2
-  '@platforma-sdk/ui-vue': ^1.49.0
-  '@platforma-sdk/tengo-builder': ^2.4.7
-  '@platforma-sdk/package-builder': ^3.10.7
+  '@milaboratories/build-configs': ^1.2.2
+  '@milaboratories/pl-model-common': ^1.23.0
+  '@platforma-sdk/workflow-tengo': ^5.8.0
+  '@platforma-sdk/model': ^1.51.9
+  '@platforma-sdk/ui-vue': ^1.51.9
+  '@platforma-sdk/tengo-builder': ^2.4.8
+  '@platforma-sdk/package-builder': ^3.11.0
   '@platforma-sdk/block-tools': ^2.6.29
   '@platforma-sdk/eslint-config': ^1.2.0
 
-  '@platforma-sdk/test': ^1.49.1
-  '@milaboratories/helpers': ^1.12.1
+  '@platforma-sdk/test': ^1.51.9
+  '@milaboratories/helpers': ^1.13.0
 
   '@platforma-open/milaboratories.runenv-python-3': ^1.7.7
   '@platforma-open/milaboratories.software-ptransform': ^1.6.6

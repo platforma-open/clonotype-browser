@@ -33,6 +33,8 @@ export type TableInputs = {
 };
 
 type BlockArgs = {
+  defaultBlockLabel: string;
+  customBlockLabel: string;
   inputAnchor?: PlRef;
   datasetTitle?: string;
   annotationSpec: AnnotationSpec;
@@ -102,6 +104,8 @@ function prepareToAdvancedFilters(
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
+    defaultBlockLabel: 'Select dataset',
+    customBlockLabel: '',
     annotationSpec: {
       title: '',
       steps: [],
@@ -237,7 +241,7 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .output('overlapColumns', (ctx) => {
+  .outputWithStatus('overlapColumns', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
@@ -274,7 +278,7 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .output('overlapTable', (ctx) => {
+  .outputWithStatus('overlapTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -330,7 +334,7 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('sampleTable', (ctx) => {
+  .outputWithStatus('sampleTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -394,7 +398,7 @@ export const platforma = BlockModel.create('Heavy')
     return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
   })
 
-  .output('statsTable', (ctx) => {
+  .outputWithStatus('statsTable', (ctx) => {
     const allColumns = [];
     const annotationStatsPf = ctx.prerun?.resolve({ field: 'annotationStatsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
     if (annotationStatsPf && annotationStatsPf.getIsReadyOrError()) {
@@ -463,11 +467,11 @@ export const platforma = BlockModel.create('Heavy')
 
   .title((ctx) => {
     return ctx.args.annotationSpec.steps.length > 0
-      ? `Clonotype Annotation - ${ctx.args.annotationSpec.title}`
-      : ctx.args.datasetTitle
-        ? `Clonotype Browser - ${ctx.args.datasetTitle}`
-        : 'Clonotype Browser';
+      ? 'Clonotype Annotation'
+      : 'Clonotype Browser';
   })
+
+  .subtitle((ctx) => ctx.args.customBlockLabel || ctx.args.defaultBlockLabel)
 
   .done(2);
 

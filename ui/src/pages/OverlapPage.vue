@@ -4,12 +4,23 @@ import {
   PlBlockPage,
   usePlDataTableSettingsV2,
 } from '@platforma-sdk/ui-vue';
+import { plRefsEqual } from '@platforma-sdk/model';
+import { watchEffect } from 'vue';
 import { useApp } from '../app';
 import AnnotationModal from '../components/AnnotationModal.vue';
 import BlockActions from '../components/BlockActions.vue';
 import SettingsModal from '../components/SettingsModal.vue';
 
 const app = useApp();
+
+watchEffect(() => {
+  const inputRef = app.model.args.inputAnchor;
+  if (inputRef) {
+    app.model.args.defaultBlockLabel = app.model.outputs.inputOptions?.find((o) => plRefsEqual(o.ref, inputRef))?.label ?? '';
+  } else {
+    app.model.args.defaultBlockLabel = 'Select dataset';
+  }
+});
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.args.inputAnchor,
@@ -18,10 +29,9 @@ const tableSettings = usePlDataTableSettingsV2({
 </script>
 
 <template>
-  <PlBlockPage>
-    <template #title>
-      Overlap Clonotypes Browser
-    </template>
+  <PlBlockPage
+    title="Overlap Clonotypes Browser"
+  >
     <template #append>
       <BlockActions show-export />
     </template>
