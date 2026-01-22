@@ -241,7 +241,7 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .outputWithStatus('overlapColumns', (ctx) => {
+  .output('overlapColumns', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
