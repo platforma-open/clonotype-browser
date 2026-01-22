@@ -33,8 +33,6 @@ export type TableInputs = {
 };
 
 type BlockArgs = {
-  defaultBlockLabel: string;
-  customBlockLabel: string;
   inputAnchor?: PlRef;
   datasetTitle?: string;
   annotationSpec: AnnotationSpec;
@@ -104,8 +102,6 @@ function prepareToAdvancedFilters(
 export const platforma = BlockModel.create('Heavy')
 
   .withArgs<BlockArgs>({
-    defaultBlockLabel: 'Select dataset',
-    customBlockLabel: '',
     annotationSpec: {
       title: '',
       steps: [],
@@ -471,7 +467,7 @@ export const platforma = BlockModel.create('Heavy')
       : 'Clonotype Browser';
   })
 
-  .subtitle((ctx) => ctx.args.customBlockLabel || ctx.args.defaultBlockLabel)
+  .subtitle((ctx) => ctx.args.datasetTitle ?? 'Select Dataset')
 
   .done(2);
 

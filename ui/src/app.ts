@@ -2,7 +2,7 @@ import type { Platforma } from '@platforma-open/milaboratories.clonotype-browser
 import { platforma } from '@platforma-open/milaboratories.clonotype-browser-3.model';
 import type { PlSelectionModel } from '@platforma-sdk/model';
 import { defineApp } from '@platforma-sdk/ui-vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from './model';
 import { getValuesForSelectedColumns } from './utils';
 
@@ -54,12 +54,3 @@ export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
 }, { debug: false });
 
 export const useApp = sdkPlugin.useApp;
-
-// Make sure labels are initialized
-const unwatch = watch(sdkPlugin, ({ loaded }) => {
-  if (!loaded) return;
-  const app = useApp();
-  app.model.args.customBlockLabel ??= '';
-  app.model.args.defaultBlockLabel ??= 'Select dataset';
-  unwatch();
-});

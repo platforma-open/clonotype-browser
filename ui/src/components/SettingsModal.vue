@@ -12,7 +12,7 @@ const app = useApp();
     <PlDropdownRef
       v-model="app.model.args.inputAnchor"
       :options="app.model.outputs.inputOptions"
-      label="Select dataset"
+      label="Select Dataset"
       clearable
     />
   </PlSlideModal>
