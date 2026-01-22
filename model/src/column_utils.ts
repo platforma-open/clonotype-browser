@@ -4,7 +4,7 @@ import type {
   PColumnDataUniversal,
   PColumnSpec,
   PlRef,
-  RenderCtx,
+  RenderCtxBase,
 } from '@platforma-sdk/model';
 import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from '@platforma-sdk/model';
 
@@ -192,7 +192,7 @@ export interface LinkerInfo<_TArgs, _TUiState> {
    * @returns Array of linker information objects
    */
 export function findLinkerOptions<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: RenderCtxBase<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
 ): LinkerInfo<TArgs, TUiState>[] {
@@ -247,7 +247,7 @@ export interface LinkedColumnsResult {
    * @returns Object containing linker columns and linked columns, or undefined if not available
    */
 export function getLinkedColumns<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: RenderCtxBase<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
 ): LinkedColumnsResult | undefined {
@@ -323,7 +323,7 @@ export interface LinkedColumnEntry {
    * @returns Record of linked column entries keyed by anchor name, or undefined if not available
    */
 export function getLinkedColumnsForArgs<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: RenderCtxBase<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
 ): Record<string, LinkedColumnEntry> | undefined {
@@ -437,7 +437,7 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
    * @param columns - The existing columns array to append linked columns to
    */
 export function addLinkedColumnsToArray<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: RenderCtxBase<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
   columns: PColumn<PColumnDataUniversal>[],
