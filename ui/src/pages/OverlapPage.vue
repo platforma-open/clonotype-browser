@@ -18,10 +18,9 @@ const tableSettings = usePlDataTableSettingsV2({
 </script>
 
 <template>
-  <PlBlockPage>
-    <template #title>
-      Overlap Clonotypes Browser
-    </template>
+  <PlBlockPage
+    title="Overlap Clonotypes Browser"
+  >
     <template #append>
       <BlockActions show-export />
     </template>
