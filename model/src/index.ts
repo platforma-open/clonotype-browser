@@ -2,7 +2,8 @@ import type {
   AxesSpec,
   InferHrefType,
   InferOutputsType,
-  PColumnEntryUniversal,
+  PColumn,
+  PColumnDataUniversal,
   PlDataTableStateV2,
   PlRef,
 } from '@platforma-sdk/model';
@@ -56,8 +57,8 @@ export type UiState = {
   annotationSpec: AnnotationSpecUi;
 };
 
-function getLabelColumns(entries: PColumnEntryUniversal[]) {
-  const labelColumns: PColumnEntryUniversal[] = [];
+function getLabelColumns(entries: PColumn<PColumnDataUniversal>[]) {
+  const labelColumns: PColumn<PColumnDataUniversal>[] = [];
 
   for (const entry of entries) {
     if (entry.spec.name === PColumnName.Label) {
@@ -69,7 +70,7 @@ function getLabelColumns(entries: PColumnEntryUniversal[]) {
 }
 
 function prepareToAdvancedFilters(
-  entries: PColumnEntryUniversal[],
+  entries: PColumn<PColumnDataUniversal>[],
   anchorAxesSpec: AxesSpec,
 ) {
   const labelColumns = getLabelColumns(entries);
@@ -78,7 +79,7 @@ function prepareToAdvancedFilters(
     return {
       id: entry.id,
       spec: entry.spec,
-      label: entry.label,
+      label: entry.spec.annotations?.[Annotation.Label] ?? '',
       axesToBeFixed: axesSpec.length > anchorAxesSpec.length
         ? axesSpec.slice(anchorAxesSpec.length).map((axis, i) => {
           const labelColumn = labelColumns.find((c) => {
@@ -87,7 +88,7 @@ function prepareToAdvancedFilters(
 
           return {
             idx: anchorAxesSpec.length + i,
-            label: labelColumn?.label ?? axis.annotations?.[Annotation.Label] ?? axis.name,
+            label: labelColumn?.spec.annotations?.[Annotation.Label] ?? axis.annotations?.[Annotation.Label] ?? axis.name,
           };
         })
         : undefined,
@@ -247,7 +248,7 @@ export const platforma = BlockModel.create('Heavy')
     const entries = new PColumnCollection()
       .addColumnProvider(ctx.resultPool)
       .addAxisLabelProvider(ctx.resultPool)
-      .getUniversalEntries(
+      .getColumns(
         [{
           domainAnchor: 'main',
           axes: [
@@ -263,7 +264,7 @@ export const platforma = BlockModel.create('Heavy')
             'pl7.app/isAbundance': 'true',
           },
         }],
-        { anchorCtx },
+        { anchorCtx, dontWaitAllData: true },
       );
 
     if (!entries) return undefined;
@@ -310,7 +311,7 @@ export const platforma = BlockModel.create('Heavy')
           { anchor: 'main', idx: 1 },
         ],
       }],
-      { anchorCtx, exclude: commonExcludes },
+      { anchorCtx, exclude: commonExcludes, dontWaitAllData: true },
     );
 
     if (!columns) return undefined;
@@ -366,6 +367,7 @@ export const platforma = BlockModel.create('Heavy')
       {
         anchorCtx,
         exclude: commonExcludes,
+        dontWaitAllData: true,
         overrideLabelAnnotation: false,
       },
     );
