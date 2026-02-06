@@ -275,7 +275,7 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .output('overlapTable', (ctx) => {
+  .outputWithStatus('overlapTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
@@ -331,7 +331,7 @@ export const platforma = BlockModel.create('Heavy')
     );
   })
 
-  .output('sampleTable', (ctx) => {
+  .outputWithStatus('sampleTable', (ctx) => {
     if (ctx.args.inputAnchor === undefined)
       return undefined;
 
