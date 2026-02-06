@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 1.1.1
+
+### Patch Changes
+
+- 219d5e8: fix extra running state
+
 ## 1.1.0
 
 ### Minor Changes
