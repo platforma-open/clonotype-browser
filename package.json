@@ -11,6 +11,8 @@
     "version-packages": "changeset version"
   },
   "devDependencies": {
+    "oxfmt": "^0.31.0",
+    "oxlint": "^1.46.0",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "@changesets/cli": "catalog:",
