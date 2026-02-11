@@ -4,6 +4,7 @@
     "check": "turbo run check",
     "build": "turbo run build",
     "test": "PL_PKG_DEV=local turbo run test --concurrency 1",
+    "test:dry-run": "PL_PKG_DEV=local turbo run test --concurrency 1 --dry-run=json",
     "mark-stable": "turbo run mark-stable",
     "update-sdk": "block-tools update-deps",
     "changeset": "changeset",
