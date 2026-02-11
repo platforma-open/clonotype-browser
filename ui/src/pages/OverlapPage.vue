@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import {
-  PlAgDataTableV2,
-  PlBlockPage,
-  usePlDataTableSettingsV2,
-} from '@platforma-sdk/ui-vue';
-import { useApp } from '../app';
-import AnnotationModal from '../components/AnnotationModal.vue';
-import BlockActions from '../components/BlockActions.vue';
-import SettingsModal from '../components/SettingsModal.vue';
+import { PlAgDataTableV2, PlBlockPage, usePlDataTableSettingsV2 } from "@platforma-sdk/ui-vue";
+import { useApp } from "../app";
+import AnnotationModal from "../components/AnnotationModal.vue";
+import BlockActions from "../components/BlockActions.vue";
+import SettingsModal from "../components/SettingsModal.vue";
 
 const app = useApp();
 
@@ -19,9 +15,7 @@ const tableSettings = usePlDataTableSettingsV2({
 
 <template>
   <PlBlockPage>
-    <template #title>
-      Overlap Clonotypes Browser
-    </template>
+    <template #title> Overlap Clonotypes Browser </template>
     <template #append>
       <BlockActions show-export />
     </template>

@@ -6,7 +6,8 @@ import type {
   PColumnDataUniversal,
   PlDataTableStateV2,
   PlRef,
-} from '@platforma-sdk/model';
+  SUniversalPColumnId,
+} from "@platforma-sdk/model";
 import {
   Annotation,
   BlockModel,
@@ -17,16 +18,16 @@ import {
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
-} from '@platforma-sdk/model';
-import type { AnnotationSpec, AnnotationSpecUi } from './types';
+} from "@platforma-sdk/model";
+import type { AnnotationSpec, AnnotationSpecUi } from "./types";
 import {
   addLinkedColumnsToArray,
   commonExcludes,
   getLinkedColumnsForArgs,
   type LinkedColumnEntry,
-} from './column_utils';
+} from "./column_utils";
 
-export type { LinkedColumnEntry } from './column_utils';
+export type { LinkedColumnEntry } from "./column_utils";
 
 export type TableInputs = {
   byClonotypeLabels: Record<string, string>; // Map from deterministic column key (name|domain) to derived label
@@ -77,34 +78,38 @@ function prepareToAdvancedFilters(
   const ret = entries.map((entry) => {
     const axesSpec = entry.spec.axesSpec;
     return {
-      id: entry.id,
+      id: entry.id as SUniversalPColumnId,
       spec: entry.spec,
-      label: entry.spec.annotations?.[Annotation.Label] ?? '',
-      axesToBeFixed: axesSpec.length > anchorAxesSpec.length
-        ? axesSpec.slice(anchorAxesSpec.length).map((axis, i) => {
-          const labelColumn = labelColumns.find((c) => {
-            return c.spec.axesSpec[0].name === axis.name;
-          });
+      label: entry.spec.annotations?.[Annotation.Label] ?? "",
+      axesToBeFixed:
+        axesSpec.length > anchorAxesSpec.length
+          ? axesSpec.slice(anchorAxesSpec.length).map((axis, i) => {
+              const labelColumn = labelColumns.find((c) => {
+                return c.spec.axesSpec[0].name === axis.name;
+              });
 
-          return {
-            idx: anchorAxesSpec.length + i,
-            label: labelColumn?.spec.annotations?.[Annotation.Label] ?? axis.annotations?.[Annotation.Label] ?? axis.name,
-          };
-        })
-        : undefined,
+              return {
+                idx: anchorAxesSpec.length + i,
+                label:
+                  labelColumn?.spec.annotations?.[Annotation.Label] ??
+                  axis.annotations?.[Annotation.Label] ??
+                  axis.name,
+              };
+            })
+          : undefined,
     };
   });
 
   ret.sort((a, b) => a.label.localeCompare(b.label));
 
   return ret;
-};
+}
 
-export const platforma = BlockModel.create('Heavy')
+export const platforma = BlockModel.create("Heavy")
 
   .withArgs<BlockArgs>({
     annotationSpec: {
-      title: '',
+      title: "",
       steps: [],
     },
     runExportAll: false,
@@ -126,75 +131,75 @@ export const platforma = BlockModel.create('Heavy')
       tableState: createPlDataTableStateV2(),
     },
     annotationSpec: {
-      title: '',
+      title: "",
       steps: [],
     } satisfies AnnotationSpecUi,
   })
 
-  .output('inputOptions', (ctx) =>
-    ctx.resultPool.getOptions([{
-      axes: [
-        { name: 'pl7.app/sampleId' },
-        { name: 'pl7.app/vdj/clonotypeKey' },
+  .output("inputOptions", (ctx) =>
+    ctx.resultPool.getOptions(
+      [
+        {
+          axes: [{ name: "pl7.app/sampleId" }, { name: "pl7.app/vdj/clonotypeKey" }],
+          annotations: { "pl7.app/isAnchor": "true" },
+        },
+        {
+          axes: [{ name: "pl7.app/sampleId" }, { name: "pl7.app/vdj/scClonotypeKey" }],
+          annotations: { "pl7.app/isAnchor": "true" },
+        },
       ],
-      annotations: { 'pl7.app/isAnchor': 'true' },
-    }, {
-      axes: [
-        { name: 'pl7.app/sampleId' },
-        { name: 'pl7.app/vdj/scClonotypeKey' },
-      ],
-      annotations: { 'pl7.app/isAnchor': 'true' },
-    }], {
-      refsWithEnrichments: true,
-    }),
+      {
+        refsWithEnrichments: true,
+      },
+    ),
   )
 
-  .output('annotationsIsComputing', (ctx) => {
+  .output("annotationsIsComputing", (ctx) => {
     if (ctx.args.inputAnchor === undefined) return false;
     if (ctx.args.annotationSpec.steps.length === 0) return false;
 
-    const annotationsPf = ctx.prerun?.resolve('annotationsPf');
+    const annotationsPf = ctx.prerun?.resolve("annotationsPf");
 
     return annotationsPf === undefined;
   })
 
-  .output('tableInputs', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
+  .output("tableInputs", (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return undefined;
 
     const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
     if (!anchorSpec) return undefined;
 
     // Get linked columns
-    const linkedColumns = getLinkedColumnsForArgs(ctx, ctx.args.inputAnchor, anchorSpec);
+    const linkedColumns = getLinkedColumnsForArgs(
+      // @ts-expect-error
+      ctx,
+      ctx.args.inputAnchor,
+      anchorSpec,
+    );
 
     // Build byClonotypeLabels map using getUniversalEntries with overrideLabelAnnotation
     const byClonotypeLabels: Record<string, string> = {};
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (anchorCtx) {
       const collection = new PColumnCollection();
-      collection
-        .addColumnProvider(ctx.resultPool)
-        .addAxisLabelProvider(ctx.resultPool);
+      collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
       // Use getUniversalEntries() with overrideLabelAnnotation: true
       // This applies the same label derivation as UI tables without loading data
       const entries = collection.getUniversalEntries(
-        [{
-          domainAnchor: 'main',
-          axes: [
-            { anchor: 'main', idx: 1 },
-          ],
-        }, {
-          domainAnchor: 'main',
-          axes: [
-            { split: true },
-            { anchor: 'main', idx: 1 },
-          ],
-          annotations: {
-            'pl7.app/isAbundance': 'true',
+        [
+          {
+            domainAnchor: "main",
+            axes: [{ anchor: "main", idx: 1 }],
           },
-        }],
+          {
+            domainAnchor: "main",
+            axes: [{ split: true }, { anchor: "main", idx: 1 }],
+            annotations: {
+              "pl7.app/isAbundance": "true",
+            },
+          },
+        ],
         {
           anchorCtx,
           exclude: commonExcludes,
@@ -213,7 +218,7 @@ export const platforma = BlockModel.create('Heavy')
             // Filter domain to only include string values (matching linkedColumns approach)
             const domain: Record<string, string> = {};
             for (const [key, value] of Object.entries(entry.spec.domain)) {
-              if (typeof value === 'string') {
+              if (typeof value === "string") {
                 domain[key] = value;
               }
             }
@@ -224,7 +229,7 @@ export const platforma = BlockModel.create('Heavy')
           const key = canonicalizeJson(keyObj);
 
           // Use the label from spec annotations (set by overrideLabelAnnotation: true)
-          const label = entry.spec.annotations?.[Annotation.Label] || '';
+          const label = entry.spec.annotations?.[Annotation.Label] || "";
           if (label) {
             byClonotypeLabels[key] = label;
           }
@@ -238,9 +243,8 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .output('overlapColumns', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
+  .output("overlapColumns", (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return undefined;
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
     if (anchorCtx == null || anchorSpec == null) return undefined;
@@ -249,21 +253,19 @@ export const platforma = BlockModel.create('Heavy')
       .addColumnProvider(ctx.resultPool)
       .addAxisLabelProvider(ctx.resultPool)
       .getColumns(
-        [{
-          domainAnchor: 'main',
-          axes: [
-            { anchor: 'main', idx: 1 },
-          ],
-        }, {
-          domainAnchor: 'main',
-          axes: [
-            { split: true },
-            { anchor: 'main', idx: 1 },
-          ],
-          annotations: {
-            'pl7.app/isAbundance': 'true',
+        [
+          {
+            domainAnchor: "main",
+            axes: [{ anchor: "main", idx: 1 }],
           },
-        }],
+          {
+            domainAnchor: "main",
+            axes: [{ split: true }, { anchor: "main", idx: 1 }],
+            annotations: {
+              "pl7.app/isAbundance": "true",
+            },
+          },
+        ],
         { anchorCtx, dontWaitAllData: true },
       );
 
@@ -275,9 +277,8 @@ export const platforma = BlockModel.create('Heavy')
     };
   })
 
-  .outputWithStatus('overlapTable', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
+  .outputWithStatus("overlapTable", (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return undefined;
 
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (!anchorCtx) return undefined;
@@ -287,53 +288,55 @@ export const platforma = BlockModel.create('Heavy')
 
     const collection = new PColumnCollection();
 
-    const annotation = ctx.prerun?.resolve({ field: 'annotationsPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    const annotation = ctx.prerun
+      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
+      ?.getPColumns();
     if (annotation) collection.addColumns(annotation);
 
     // result pool is added after the pre-run outputs so that pre-run results take precedence
-    collection
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool);
+    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
-      [{
-        domainAnchor: 'main',
-        axes: [
-          { split: true },
-          { anchor: 'main', idx: 1 },
-        ],
-        annotations: {
-          'pl7.app/isAbundance': 'true',
+      [
+        {
+          domainAnchor: "main",
+          axes: [{ split: true }, { anchor: "main", idx: 1 }],
+          annotations: {
+            "pl7.app/isAbundance": "true",
+          },
         },
-      }, {
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 1 },
-        ],
-      }],
+        {
+          domainAnchor: "main",
+          axes: [{ anchor: "main", idx: 1 }],
+        },
+      ],
       { anchorCtx, exclude: commonExcludes, dontWaitAllData: true },
     );
 
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
-    addLinkedColumnsToArray(ctx, ctx.args.inputAnchor, anchorSpec, columns);
+    addLinkedColumnsToArray(
+      // @ts-expect-error
+      ctx,
+      ctx.args.inputAnchor,
+      anchorSpec,
+      columns,
+    );
 
     columns.forEach((column) => {
-      if (column.spec.annotations?.['pl7.app/isAbundance'] === 'true' && column.spec.name !== 'pl7.app/vdj/sampleCount')
-        column.spec.annotations['pl7.app/table/visibility'] = 'optional';
+      if (
+        column.spec.annotations?.["pl7.app/isAbundance"] === "true" &&
+        column.spec.name !== "pl7.app/vdj/sampleCount"
+      )
+        column.spec.annotations["pl7.app/table/visibility"] = "optional";
     });
 
-    return createPlDataTableV2(
-      ctx,
-      columns,
-      ctx.uiState.overlapTable.tableState,
-    );
+    return createPlDataTableV2(ctx, columns, ctx.uiState.overlapTable.tableState);
   })
 
-  .outputWithStatus('sampleTable', (ctx) => {
-    if (ctx.args.inputAnchor === undefined)
-      return undefined;
+  .outputWithStatus("sampleTable", (ctx) => {
+    if (ctx.args.inputAnchor === undefined) return undefined;
 
     const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
     if (!anchorCtx) return undefined;
@@ -343,27 +346,28 @@ export const platforma = BlockModel.create('Heavy')
 
     const collection = new PColumnCollection();
 
-    const annotation = ctx.prerun?.resolve({ field: 'annotationsPf', assertFieldType: 'Input', allowPermanentAbsence: true })?.getPColumns();
+    const annotation = ctx.prerun
+      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
+      ?.getPColumns();
     if (annotation) collection.addColumns(annotation);
 
     // result pool is added after the pre-run outputs so that pre-run results take precedence
-    collection
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool);
+    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
-      [{
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 0 },
-          { anchor: 'main', idx: 1 },
-        ],
-      }, {
-        domainAnchor: 'main',
-        axes: [
-          { anchor: 'main', idx: 1 },
-        ],
-      }],
+      [
+        {
+          domainAnchor: "main",
+          axes: [
+            { anchor: "main", idx: 0 },
+            { anchor: "main", idx: 1 },
+          ],
+        },
+        {
+          domainAnchor: "main",
+          axes: [{ anchor: "main", idx: 1 }],
+        },
+      ],
       {
         anchorCtx,
         exclude: commonExcludes,
@@ -375,16 +379,18 @@ export const platforma = BlockModel.create('Heavy')
     if (!columns) return undefined;
 
     // Get linked columns through linkers (e.g., cluster columns)
-    addLinkedColumnsToArray(ctx, ctx.args.inputAnchor, anchorSpec, columns);
-
-    return createPlDataTableV2(
+    addLinkedColumnsToArray(
+      // @ts-expect-error
       ctx,
+      ctx.args.inputAnchor,
+      anchorSpec,
       columns,
-      ctx.uiState.sampleTable.tableState,
     );
+
+    return createPlDataTableV2(ctx, columns, ctx.uiState.sampleTable.tableState);
   })
 
-  .output('sampleTableSheets', (ctx) => {
+  .output("sampleTableSheets", (ctx) => {
     if (ctx.args.inputAnchor === undefined) return undefined;
 
     const anchor = ctx.resultPool.getPColumnByRef(ctx.args.inputAnchor);
@@ -396,16 +402,24 @@ export const platforma = BlockModel.create('Heavy')
     return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
   })
 
-  .output('statsTable', (ctx) => {
+  .outputWithStatus("statsTable", (ctx) => {
     const allColumns = [];
-    const annotationStatsPf = ctx.prerun?.resolve({ field: 'annotationStatsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
+    const annotationStatsPf = ctx.prerun?.resolve({
+      field: "annotationStatsPf",
+      assertFieldType: "Input",
+      allowPermanentAbsence: true,
+    });
     if (annotationStatsPf && annotationStatsPf.getIsReadyOrError()) {
       const columns = annotationStatsPf.getPColumns();
       if (columns) {
         allColumns.push(columns);
       }
     }
-    const sampleStatsPf = ctx.prerun?.resolve({ field: 'sampleStatsPf', assertFieldType: 'Input', allowPermanentAbsence: true });
+    const sampleStatsPf = ctx.prerun?.resolve({
+      field: "sampleStatsPf",
+      assertFieldType: "Input",
+      allowPermanentAbsence: true,
+    });
     if (sampleStatsPf && sampleStatsPf.getIsReadyOrError()) {
       const columns = sampleStatsPf.getPColumns();
       if (columns) {
@@ -415,60 +429,64 @@ export const platforma = BlockModel.create('Heavy')
 
     if (allColumns.length !== 2) return undefined;
 
-    const collection = new PColumnCollection()
-      .addAxisLabelProvider(ctx.resultPool);
+    const collection = new PColumnCollection().addAxisLabelProvider(ctx.resultPool);
 
     for (const cols of allColumns) {
       collection.addColumns(cols);
     }
 
-    const columnsAfterSplitting = collection
-      .getColumns([
-        // annotationStatsPf without split
-        { axes: [{}] },
-        // sampleStatsPf with split sampleId
-        { axes: [{ split: true }, {}] },
-      ]);
+    const columnsAfterSplitting = collection.getColumns([
+      // annotationStatsPf without split
+      { axes: [{}] },
+      // sampleStatsPf with split sampleId
+      { axes: [{ split: true }, {}] },
+    ]);
 
     if (columnsAfterSplitting === undefined) return undefined;
 
-    return createPlDataTableV2(
-      ctx,
-      columnsAfterSplitting,
-      ctx.uiState.statsTable.tableState,
-    );
+    return createPlDataTableV2(ctx, columnsAfterSplitting, ctx.uiState.statsTable.tableState);
   })
 
-  .output('exportedTsvZip', (ctx) => {
+  .output("exportedTsvZip", (ctx) => {
     if (ctx.args.inputAnchor === undefined) return undefined;
-    const tsvResource = ctx.prerun?.resolve({ field: 'tsvZip', assertFieldType: 'Input', allowPermanentAbsence: true });
+    const tsvResource = ctx.prerun?.resolve({
+      field: "tsvZip",
+      assertFieldType: "Input",
+      allowPermanentAbsence: true,
+    });
     if (!tsvResource) return undefined;
     if (!tsvResource.getIsReadyOrError()) return undefined;
-    if (tsvResource.resourceType.name === 'Null') return null;
+    if (tsvResource.resourceType.name === "Null") return null;
     return tsvResource.getRemoteFileHandle();
   })
 
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Overlap' } as const,
-      { type: 'link', href: '/sample', label: 'By Sample' } as const,
+      { type: "link", href: "/", label: "Overlap" } as const,
+      { type: "link", href: "/sample", label: "By Sample" } as const,
       ...(ctx.args.annotationSpec.steps.length > 0
-        ? [{ type: 'link', href: '/stats', label: 'Stats' } as const]
+        ? [{ type: "link", href: "/stats", label: "Stats" } as const]
         : []),
     ];
   })
 
-  .argsValid((ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpec.steps.length > 0)
+  .argsValid(
+    (ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpec.steps.length > 0,
+  )
 
   // We enrich the input, only if we produce annotations
-  .enriches((args) => args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0 ? [args.inputAnchor] : [])
+  .enriches((args) =>
+    args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0
+      ? [args.inputAnchor]
+      : [],
+  )
 
   .title((ctx) => {
     return ctx.args.annotationSpec.steps.length > 0
       ? `Clonotype Annotation - ${ctx.args.annotationSpec.title}`
       : ctx.args.datasetTitle
         ? `Clonotype Browser - ${ctx.args.datasetTitle}`
-        : 'Clonotype Browser';
+        : "Clonotype Browser";
   })
 
   .done(2);
@@ -477,5 +495,5 @@ export type Platforma = typeof platforma;
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
-export * from './types';
+export * from "./types";
 export type { BlockArgs };

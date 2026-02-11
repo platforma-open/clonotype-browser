@@ -13,7 +13,8 @@
   "devDependencies": {
     "@platforma-sdk/tengo-builder": "catalog:",
     "@platforma-sdk/test": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:",
-    "typescript": "catalog:"
+    "shx": "catalog:"
   }
 }

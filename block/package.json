@@ -45,6 +45,7 @@
     }
   },
   "devDependencies": {
-    "@platforma-sdk/block-tools": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:",
+    "shx": "catalog:"
   }
 }
