@@ -9,8 +9,7 @@
     "fmt": "ts-builder format",
     "check": "ts-builder check --target block-model",
     "watch": "ts-builder build --target block-model --watch",
-    "build": "ts-builder build --target block-model && block-tools build-model",
-    "type-check": "ts-builder types --target block-model"
+    "build": "ts-builder build --target block-model && block-tools build-model"
   },
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
