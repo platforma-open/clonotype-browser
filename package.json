@@ -1,21 +1,19 @@
 {
   "scripts": {
+    "fmt": "turbo run fmt",
+    "check": "turbo run check",
     "build": "turbo run build",
-    "build:dev": "PL_PKG_DEV=local turbo run build",
     "test": "PL_PKG_DEV=local turbo run test --concurrency 1",
-    "test:dry-run": "PL_PKG_DEV=local turbo run test --dry-run=json",
     "mark-stable": "turbo run mark-stable",
-    "watch": "turbo watch build",
+    "update-sdk": "block-tools update-deps",
     "changeset": "changeset",
-    "version-packages": "changeset version",
-    "update-sdk": "block-tools update-deps"
+    "version-packages": "changeset version"
   },
   "devDependencies": {
     "turbo": "catalog:",
     "typescript": "catalog:",
     "@changesets/cli": "catalog:",
-    "@platforma-sdk/block-tools": "catalog:",
-    "shx": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
   "//pnpm": {

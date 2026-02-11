@@ -1,11 +1,16 @@
-import { deepClone, isNil } from '@milaboratories/helpers';
-import type { AnnotationSpecUi } from '@platforma-open/milaboratories.clonotype-browser-3.model';
-import type { PObjectId } from '@platforma-sdk/model';
-import { getAxisId, getRawPlatformaInstance, type PFrameHandle, type PlSelectionModel } from '@platforma-sdk/model';
+import { deepClone, isNil } from "@milaboratories/helpers";
+import type { AnnotationSpecUi } from "@platforma-open/milaboratories.clonotype-browser-3.model";
+import type { PObjectId } from "@platforma-sdk/model";
+import {
+  getAxisId,
+  getRawPlatformaInstance,
+  type PFrameHandle,
+  type PlSelectionModel,
+} from "@platforma-sdk/model";
 
 export function getDefaultAnnotationScript(): AnnotationSpecUi {
   return {
-    title: '',
+    title: "",
     steps: [],
   };
 }
@@ -18,8 +23,8 @@ export async function getValuesForSelectedColumns(
 
   const pfDriver = getRawPlatformaInstance().pFrameDriver;
   if (!pfDriver) {
-    throw new Error('Platforma PFrame driver is not available');
-  };
+    throw new Error("Platforma PFrame driver is not available");
+  }
 
   const axisId = deepClone(getAxisId(selectedColumns.axesSpec[0]));
 
@@ -28,7 +33,7 @@ export async function getValuesForSelectedColumns(
 
   for (const pFrame of pFrames) {
     const columns = await pfDriver.findColumns(pFrame, {
-      columnFilter: { name: ['pl7.app/label'] },
+      columnFilter: { name: ["pl7.app/label"] },
       compatibleWith: [axisId],
       strictlyCompatible: true,
     });
@@ -41,33 +46,39 @@ export async function getValuesForSelectedColumns(
   }
   if (isNil(selectedColumnId) || isNil(selectedPFrame)) return undefined;
 
-  return Promise.all(selectedColumns.selectedKeys.map((key) => {
-    return pfDriver.calculateTableData(selectedPFrame, {
-      src: {
-        type: 'column',
-        column: selectedColumnId,
-      },
-      filters: [{
-        type: 'bySingleColumnV2',
-        column: {
-          type: 'axis',
-          id: axisId,
+  return Promise.all(
+    selectedColumns.selectedKeys.map((key) => {
+      return pfDriver.calculateTableData(selectedPFrame, {
+        src: {
+          type: "column",
+          column: selectedColumnId,
         },
-        predicate: {
-          operator: 'Equal',
-          reference: key[0] as (string | number),
-        },
-      }],
-      sorting: [],
+        filters: [
+          {
+            type: "bySingleColumnV2",
+            column: {
+              type: "axis",
+              id: axisId,
+            },
+            predicate: {
+              operator: "Equal",
+              reference: key[0] as string | number,
+            },
+          },
+        ],
+        sorting: [],
+      });
+    }),
+  )
+    .then((results) => {
+      return results.map((result) => {
+        return result[1].data.data[0] as string;
+      });
+    })
+    .then((values) => {
+      return {
+        columnId: selectedColumnId,
+        values,
+      };
     });
-  })).then((results) => {
-    return results.map((result) => {
-      return result[1].data.data[0] as string;
-    });
-  }).then((values) => {
-    return {
-      columnId: selectedColumnId,
-      values,
-    };
-  });
 }

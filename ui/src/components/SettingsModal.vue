@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { PlDropdownRef, PlSlideModal } from '@platforma-sdk/ui-vue';
-import { useApp } from '../app';
+import { PlDropdownRef, PlSlideModal } from "@platforma-sdk/ui-vue";
+import { useApp } from "../app";
 
 const app = useApp();
-
 </script>
 
 <template>

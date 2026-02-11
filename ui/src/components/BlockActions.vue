@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { PlBtnGhost } from '@platforma-sdk/ui-vue';
-import { useApp } from '../app';
-import ExportBtn from './ExportBtn.vue';
+import { PlBtnGhost } from "@platforma-sdk/ui-vue";
+import { useApp } from "../app";
+import ExportBtn from "./ExportBtn.vue";
 
 withDefaults(
   defineProps<{
@@ -32,7 +32,5 @@ function openSettings() {
   <PlBtnGhost v-if="showAnnotations" icon="annotate" @click.stop="openAnnotations">
     Annotations
   </PlBtnGhost>
-  <PlBtnGhost v-if="showSettings" icon="settings" @click.stop="openSettings">
-    Settings
-  </PlBtnGhost>
+  <PlBtnGhost v-if="showSettings" icon="settings" @click.stop="openSettings"> Settings </PlBtnGhost>
 </template>

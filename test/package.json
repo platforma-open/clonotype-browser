@@ -19,8 +19,6 @@
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:",
-    "eslint": "catalog:",
     "vitest": "catalog:",
     "typescript": "catalog:"
   }

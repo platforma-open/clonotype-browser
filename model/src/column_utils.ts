@@ -5,35 +5,35 @@ import type {
   PColumnSpec,
   PlRef,
   RenderCtx,
-} from '@platforma-sdk/model';
-import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from '@platforma-sdk/model';
+} from "@platforma-sdk/model";
+import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from "@platforma-sdk/model";
 
-  /**
-   * Annotation keys to exclude when simplifying column entries.
-   */
+/**
+ * Annotation keys to exclude when simplifying column entries.
+ */
 export const excludedAnnotationKeys = [
-  'pl7.app/table/orderPriority',
-  'pl7.app/table/visibility',
-  'pl7.app/trace',
+  "pl7.app/table/orderPriority",
+  "pl7.app/table/visibility",
+  "pl7.app/trace",
 ];
 
-  /**
-   * Common column selectors to exclude from queries.
-   */
+/**
+ * Common column selectors to exclude from queries.
+ */
 export const commonExcludes: AnchoredPColumnSelector[] = [
-  { name: 'pl7.app/vdj/sequence/annotation' },
-  { annotations: { 'pl7.app/isSubset': 'true' } },
+  { name: "pl7.app/vdj/sequence/annotation" },
+  { annotations: { "pl7.app/isSubset": "true" } },
 ];
 
-  /**
-   * Adds suffixes to duplicate labels in a label map.
-   * For each label that appears multiple times:
-   * - The first occurrence keeps the original label
-   * - Subsequent occurrences get suffixes: " (1)", " (2)", etc.
-   *
-   * @param labelMap - Map of identifier -> label
-   * @returns Map of identifier -> unique label (with suffixes if needed)
-   */
+/**
+ * Adds suffixes to duplicate labels in a label map.
+ * For each label that appears multiple times:
+ * - The first occurrence keeps the original label
+ * - Subsequent occurrences get suffixes: " (1)", " (2)", etc.
+ *
+ * @param labelMap - Map of identifier -> label
+ * @returns Map of identifier -> unique label (with suffixes if needed)
+ */
 export function addSuffixesToDuplicateLabels<K extends string>(
   labelMap: Record<K, string>,
 ): Record<K, string> {
@@ -41,12 +41,12 @@ export function addSuffixesToDuplicateLabels<K extends string>(
   const labelOccurrences = new Map<string, number>();
   const finalLabels: Record<string, string> = {};
 
-    // Count occurrences of each label
+  // Count occurrences of each label
   for (const [, label] of Object.entries(labelMap) as [K, string][]) {
     labelCounts.set(label, (labelCounts.get(label) || 0) + 1);
   }
 
-    // Add suffixes for duplicates
+  // Add suffixes for duplicates
   for (const [id, label] of Object.entries(labelMap) as [K, string][]) {
     const count = labelCounts.get(label) || 0;
     if (count > 1) {
@@ -66,19 +66,16 @@ export function addSuffixesToDuplicateLabels<K extends string>(
   return finalLabels as Record<K, string>;
 }
 
-  /**
-   * Ensures label uniqueness against a set of already used labels.
-   * If the label is already used, adds numeric suffixes until a unique label is found.
-   * Updates the usedLabelsSet with the final unique label.
-   *
-   * @param label - The label to make unique
-   * @param usedLabelsSet - Set of already used labels (will be modified)
-   * @returns The unique label (with suffix if needed)
-   */
-export function ensureUniqueLabel(
-  label: string,
-  usedLabelsSet: Set<string>,
-): string {
+/**
+ * Ensures label uniqueness against a set of already used labels.
+ * If the label is already used, adds numeric suffixes until a unique label is found.
+ * Updates the usedLabelsSet with the final unique label.
+ *
+ * @param label - The label to make unique
+ * @param usedLabelsSet - Set of already used labels (will be modified)
+ * @returns The unique label (with suffix if needed)
+ */
+export function ensureUniqueLabel(label: string, usedLabelsSet: Set<string>): string {
   let uniqueLabel = label;
   let suffixCount = 0;
 
@@ -91,13 +88,13 @@ export function ensureUniqueLabel(
   return uniqueLabel;
 }
 
-  /**
-   * Derives labels for columns using trace information.
-   * Does NOT handle duplicate labels - that's left to the workflow layer.
-   *
-   * @param columns - Array of PColumn objects
-   * @returns Map from column id to derived label
-   */
+/**
+ * Derives labels for columns using trace information.
+ * Does NOT handle duplicate labels - that's left to the workflow layer.
+ *
+ * @param columns - Array of PColumn objects
+ * @returns Map from column id to derived label
+ */
 export function deriveLabelsFromTrace(
   columns: PColumn<PColumnDataUniversal>[],
 ): Map<string, string> {
@@ -105,31 +102,27 @@ export function deriveLabelsFromTrace(
     return new Map();
   }
 
-    // Use existing deriveLabels utility with trace information
-  const derivedLabels = deriveLabels(
-    columns,
-    (col) => col.spec,
-    { includeNativeLabel: true },
-  );
+  // Use existing deriveLabels utility with trace information
+  const derivedLabels = deriveLabels(columns, (col) => col.spec, { includeNativeLabel: true });
 
-    // Create a simple map - no suffix handling
+  // Create a simple map - no suffix handling
   const labelMap = new Map<string, string>();
   for (const { value, label } of derivedLabels) {
-      // value is the column itself, value.id is the column id
+    // value is the column itself, value.id is the column id
     labelMap.set(value.id as string, label);
   }
 
   return labelMap;
 }
 
-  /**
-   * Updates linked column labels to use labels derived from trace information.
-   * This ensures that columns from linkers show distinguishing labels when multiple
-   * linkers are present (e.g., "Cluster Size / Clustering (sim:..., ident:..., cov:...)").
-   *
-   * @param columns - Array of PColumn objects to update
-   * @returns Array of PColumn objects with updated labels
-   */
+/**
+ * Updates linked column labels to use labels derived from trace information.
+ * This ensures that columns from linkers show distinguishing labels when multiple
+ * linkers are present (e.g., "Cluster Size / Clustering (sim:..., ident:..., cov:...)").
+ *
+ * @param columns - Array of PColumn objects to update
+ * @returns Array of PColumn objects with updated labels
+ */
 export function updateLinkedColumnLabels(
   columns: PColumn<PColumnDataUniversal>[],
 ): PColumn<PColumnDataUniversal>[] {
@@ -137,24 +130,20 @@ export function updateLinkedColumnLabels(
     return columns;
   }
 
-    // Derive labels using trace information
-  const derivedLabels = deriveLabels(
-    columns,
-    (col) => col.spec,
-    { includeNativeLabel: true },
-  );
+  // Derive labels using trace information
+  const derivedLabels = deriveLabels(columns, (col) => col.spec, { includeNativeLabel: true });
 
-    // Create a map of column id to derived label
+  // Create a map of column id to derived label
   const labelMap = new Map<string, string>();
   for (const { value, label } of derivedLabels) {
     labelMap.set(value.id, label);
   }
 
-    // Update columns with derived labels
+  // Update columns with derived labels
   return columns.map((col) => {
     const derivedLabel = labelMap.get(col.id);
     if (derivedLabel !== undefined) {
-        // Create a deep copy of annotations to avoid mutating shared objects
+      // Create a deep copy of annotations to avoid mutating shared objects
       const newAnnotations = col.spec.annotations
         ? { ...col.spec.annotations, [Annotation.Label]: derivedLabel }
         : { [Annotation.Label]: derivedLabel };
@@ -170,27 +159,27 @@ export function updateLinkedColumnLabels(
   });
 }
 
-  /**
-   * Information about a linker column for processing.
-   */
+/**
+ * Information about a linker column for processing.
+ */
 export interface LinkerInfo<_TArgs, _TUiState> {
-    /** Index of the axis where clonotypeKey appears in the linker (0 or 1) */
+  /** Index of the axis where clonotypeKey appears in the linker (0 or 1) */
   idx: number;
-    /** The linker option containing ref and optional label */
+  /** The linker option containing ref and optional label */
   linkerOption: { ref: PlRef; label?: string };
-    /** Name to use as anchor for this linker */
+  /** Name to use as anchor for this linker */
   anchorName: string;
 }
 
-  /**
-   * Helper function to find linker options for both axis positions.
-   * Returns an array of objects containing linker information for processing.
-   *
-   * @param ctx - The render context
-   * @param anchor - The anchor PlRef
-   * @param anchorSpec - The specification of the anchor column
-   * @returns Array of linker information objects
-   */
+/**
+ * Helper function to find linker options for both axis positions.
+ * Returns an array of objects containing linker information for processing.
+ *
+ * @param ctx - The render context
+ * @param anchor - The anchor PlRef
+ * @param anchorSpec - The specification of the anchor column
+ * @returns Array of linker information objects
+ */
 export function findLinkerOptions<TArgs, TUiState>(
   ctx: RenderCtx<TArgs, TUiState>,
   anchor: PlRef,
@@ -198,21 +187,24 @@ export function findLinkerOptions<TArgs, TUiState>(
 ): LinkerInfo<TArgs, TUiState>[] {
   const linkerInfos: LinkerInfo<TArgs, TUiState>[] = [];
 
-    // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
+  // Try both axis positions (clonotypeKey might be at idx 0 or idx 1 in the linker)
   let linkerIndex = 0;
   for (const idx of [0, 1]) {
-      // Calculate axes to match based on which position the anchor axis is in
-    const axesToMatch = idx === 0
-      ? [{}, anchorSpec.axesSpec[1]] // clonotypeKey in second axis of the linker
-      : [anchorSpec.axesSpec[1], {}]; // clonotypeKey in first axis of the linker
+    // Calculate axes to match based on which position the anchor axis is in
+    const axesToMatch =
+      idx === 0
+        ? [{}, anchorSpec.axesSpec[1]] // clonotypeKey in second axis of the linker
+        : [anchorSpec.axesSpec[1], {}]; // clonotypeKey in first axis of the linker
 
-      // Get linker refs to use as anchors for finding linked columns
-    const linkerOptions = ctx.resultPool.getOptions([{
-      axes: axesToMatch,
-      annotations: { 'pl7.app/isLinkerColumn': 'true' },
-    }]);
+    // Get linker refs to use as anchors for finding linked columns
+    const linkerOptions = ctx.resultPool.getOptions([
+      {
+        axes: axesToMatch,
+        annotations: { "pl7.app/isLinkerColumn": "true" },
+      },
+    ]);
 
-      // For each linker, create an info object
+    // For each linker, create an info object
     for (const linkerOption of linkerOptions) {
       linkerInfos.push({
         idx,
@@ -226,26 +218,26 @@ export function findLinkerOptions<TArgs, TUiState>(
   return linkerInfos;
 }
 
-  /**
-   * Result of getting linked columns.
-   */
+/**
+ * Result of getting linked columns.
+ */
 export interface LinkedColumnsResult {
-    /** Linker columns that connect two different key axes */
+  /** Linker columns that connect two different key axes */
   linkerColumns: PColumn<PColumnDataUniversal>[];
-    /** Columns on the "other side" of the linker connection */
+  /** Columns on the "other side" of the linker connection */
   linkedColumns: PColumn<PColumnDataUniversal>[];
 }
 
-  /**
-   * Gets columns linked through linker columns.
-   * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
-   * This function finds linker columns and resolves the columns on the "other side" of the link.
-   *
-   * @param ctx - The render context
-   * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
-   * @param anchorSpec - The specification of the anchor column
-   * @returns Object containing linker columns and linked columns, or undefined if not available
-   */
+/**
+ * Gets columns linked through linker columns.
+ * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
+ * This function finds linker columns and resolves the columns on the "other side" of the link.
+ *
+ * @param ctx - The render context
+ * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
+ * @param anchorSpec - The specification of the anchor column
+ * @returns Object containing linker columns and linked columns, or undefined if not available
+ */
 export function getLinkedColumns<TArgs, TUiState>(
   ctx: RenderCtx<TArgs, TUiState>,
   anchor: PlRef,
@@ -254,74 +246,67 @@ export function getLinkedColumns<TArgs, TUiState>(
   const linkerColumns: PColumn<PColumnDataUniversal>[] = [];
   const linkedColumns: PColumn<PColumnDataUniversal>[] = [];
 
-    // Get linker columns for both axis positions
+  // Get linker columns for both axis positions
   for (const idx of [0, 1]) {
-    const axesToMatch = idx === 0
-      ? [{}, anchorSpec.axesSpec[1]]
-      : [anchorSpec.axesSpec[1], {}];
+    const axesToMatch = idx === 0 ? [{}, anchorSpec.axesSpec[1]] : [anchorSpec.axesSpec[1], {}];
 
-      // Get linker columns that connect to our anchor's clonotypeKey axis
-    const linkers = ctx.resultPool.getAnchoredPColumns(
-      { main: anchor },
-      [{
+    // Get linker columns that connect to our anchor's clonotypeKey axis
+    const linkers = ctx.resultPool.getAnchoredPColumns({ main: anchor }, [
+      {
         axes: axesToMatch,
-        annotations: { 'pl7.app/isLinkerColumn': 'true' },
-      }],
-    );
+        annotations: { "pl7.app/isLinkerColumn": "true" },
+      },
+    ]);
 
     if (linkers) {
       linkerColumns.push(...linkers);
     }
   }
 
-    // Process linker options to find linked columns
+  // Process linker options to find linked columns
   const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
   for (const { idx, linkerOption, anchorName } of linkerInfos) {
     const linkerAnchorSpec: Record<string, PlRef> = {
       [anchorName]: linkerOption.ref,
     };
 
-      // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
+    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(linkerAnchorSpec, [
+      {
         axes: [{ anchor: anchorName, idx }],
-      }],
-    );
+      },
+    ]);
 
     if (linkedProps) {
-      linkedColumns.push(
-        ...linkedProps.filter((p) => !isLabelColumn(p.spec)),
-      );
+      linkedColumns.push(...linkedProps.filter((p) => !isLabelColumn(p.spec)));
     }
   }
 
-    // Deduplicate column names using trace-based labels only if there are two or more linker columns
-  const deduplicatedLinkedColumns = linkerColumns.length >= 2
-    ? updateLinkedColumnLabels(linkedColumns)
-    : linkedColumns;
+  // Deduplicate column names using trace-based labels only if there are two or more linker columns
+  const deduplicatedLinkedColumns =
+    linkerColumns.length >= 2 ? updateLinkedColumnLabels(linkedColumns) : linkedColumns;
 
   return { linkerColumns, linkedColumns: deduplicatedLinkedColumns };
 }
 
-  /**
-   * Entry for a linked column group (associated with one linker).
-   */
+/**
+ * Entry for a linked column group (associated with one linker).
+ */
 export interface LinkedColumnEntry {
   anchorName: string;
   anchorRef: PlRef;
   columns: Record<string, string>; // Map from column ID (as string) to derived label
 }
 
-  /**
-   * Gets linked columns data structure for workflow arguments.
-   * Similar to getLinkedColumns but returns the format needed for linkedColumns argument.
-   *
-   * @param ctx - The render context
-   * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
-   * @param anchorSpec - The specification of the anchor column
-   * @returns Record of linked column entries keyed by anchor name, or undefined if not available
-   */
+/**
+ * Gets linked columns data structure for workflow arguments.
+ * Similar to getLinkedColumns but returns the format needed for linkedColumns argument.
+ *
+ * @param ctx - The render context
+ * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
+ * @param anchorSpec - The specification of the anchor column
+ * @returns Record of linked column entries keyed by anchor name, or undefined if not available
+ */
 export function getLinkedColumnsForArgs<TArgs, TUiState>(
   ctx: RenderCtx<TArgs, TUiState>,
   anchor: PlRef,
@@ -329,23 +314,22 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
 ): Record<string, LinkedColumnEntry> | undefined {
   const result: Record<string, LinkedColumnEntry> = {};
 
-    // Collect all linked columns across all linkers
+  // Collect all linked columns across all linkers
   const allLinkedColumns: PColumn<PColumnDataUniversal>[] = [];
 
   const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
 
-    // First pass: collect all columns
+  // First pass: collect all columns
   for (const { idx, linkerOption, anchorName } of linkerInfos) {
     const linkerAnchorSpec: Record<string, PlRef> = {
       [anchorName]: linkerOption.ref,
     };
 
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(linkerAnchorSpec, [
+      {
         axes: [{ anchor: anchorName, idx }],
-      }],
-    );
+      },
+    ]);
 
     if (linkedProps) {
       const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
@@ -353,22 +337,21 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
     }
   }
 
-    // Derive labels for all linked columns (no suffix handling)
+  // Derive labels for all linked columns (no suffix handling)
   const derivedLabelMap = deriveLabelsFromTrace(allLinkedColumns);
 
-    // Second pass: build result with labels
+  // Second pass: build result with labels
   for (const { idx, linkerOption, anchorName } of linkerInfos) {
     const linkerAnchorSpec: Record<string, PlRef> = {
       [anchorName]: linkerOption.ref,
     };
 
-      // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(
-      linkerAnchorSpec,
-      [{
+    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
+    const linkedProps = ctx.resultPool.getAnchoredPColumns(linkerAnchorSpec, [
+      {
         axes: [{ anchor: anchorName, idx }],
-      }],
-    );
+      },
+    ]);
 
     if (linkedProps && linkedProps.length > 0) {
       const filteredProps = linkedProps.filter((p) => !isLabelColumn(p.spec));
@@ -376,18 +359,18 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
       const columns: Record<string, string> = {};
 
       for (const p of filteredProps) {
-          // Create AnchoredPColumnSelector query for this column
-          // We need to match by the column's spec properties
+        // Create AnchoredPColumnSelector query for this column
+        // We need to match by the column's spec properties
         const query: AnchoredPColumnSelector = {
           axes: [{ anchor: anchorName, idx }],
         };
 
-          // Add domain if present
+        // Add domain if present
         if (p.spec.domain && Object.keys(p.spec.domain).length > 0) {
-            // Convert domain to string values only (no anchor refs) for serialization
+          // Convert domain to string values only (no anchor refs) for serialization
           const domain: Record<string, string> = {};
           for (const [key, value] of Object.entries(p.spec.domain)) {
-            if (typeof value === 'string') {
+            if (typeof value === "string") {
               domain[key] = value;
             }
           }
@@ -396,20 +379,19 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
           }
         }
 
-          // Add name if it's not a generic column
+        // Add name if it's not a generic column
         if (p.spec.name) {
           query.name = p.spec.name;
         }
 
-          // Serialize to canonical JSON string for deterministic key generation
+        // Serialize to canonical JSON string for deterministic key generation
         const queryStr = canonicalizeJson(query);
 
-          // Use derived label from trace, fallback to annotation label
-        const derivedLabel = derivedLabelMap.get(p.id as string)
-          || p.spec.annotations?.[Annotation.Label]
-          || '';
+        // Use derived label from trace, fallback to annotation label
+        const derivedLabel =
+          derivedLabelMap.get(p.id as string) || p.spec.annotations?.[Annotation.Label] || "";
 
-          // Map query string to label
+        // Map query string to label
         columns[queryStr] = derivedLabel;
       }
 
@@ -426,32 +408,32 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-  /**
-   * Adds linked columns to an existing columns array.
-   * This helper handles fetching linked columns through linkers, deduplicating them,
-   * and marking linker columns as hidden in the UI.
-   *
-   * @param ctx - The render context
-   * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
-   * @param anchorSpec - The specification of the anchor column
-   * @param columns - The existing columns array to append linked columns to
-   */
+/**
+ * Adds linked columns to an existing columns array.
+ * This helper handles fetching linked columns through linkers, deduplicating them,
+ * and marking linker columns as hidden in the UI.
+ *
+ * @param ctx - The render context
+ * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
+ * @param anchorSpec - The specification of the anchor column
+ * @param columns - The existing columns array to append linked columns to
+ */
 export function addLinkedColumnsToArray<TArgs, TUiState>(
   ctx: RenderCtx<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
   columns: PColumn<PColumnDataUniversal>[],
 ): void {
-    // Get linked columns through linkers (e.g., cluster columns)
-    // Get them BEFORE we modify any columns to avoid affecting the collection
+  // Get linked columns through linkers (e.g., cluster columns)
+  // Get them BEFORE we modify any columns to avoid affecting the collection
   const linked = getLinkedColumns(ctx, anchor, anchorSpec);
 
-    // Filter out linked columns that are already in the main columns array to avoid duplicates
+  // Filter out linked columns that are already in the main columns array to avoid duplicates
   const existingColumnIds = new Set(columns.map((c) => c.id));
   const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
   const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
 
-    // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
+  // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
   if (newLinkerColumns.length > 0) {
     const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
       ...linkerColumn,
@@ -459,7 +441,7 @@ export function addLinkedColumnsToArray<TArgs, TUiState>(
         ...linkerColumn.spec,
         annotations: {
           ...linkerColumn.spec.annotations,
-          'pl7.app/table/visibility': 'hidden',
+          "pl7.app/table/visibility": "hidden",
         },
       },
     }));

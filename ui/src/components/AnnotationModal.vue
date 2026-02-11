@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { PlAnnotationsModal } from '@platforma-sdk/ui-vue';
-import { useApp } from '../app';
-import { getDefaultAnnotationScript } from '../utils';
-import { useColumnSuggestion } from '../composition/useColumnSuggestion';
+import { PlAnnotationsModal } from "@platforma-sdk/ui-vue";
+import { useApp } from "../app";
+import { getDefaultAnnotationScript } from "../utils";
+import { useColumnSuggestion } from "../composition/useColumnSuggestion";
 
 const app = useApp();
 const suggest = useColumnSuggestion();
@@ -11,7 +11,6 @@ const suggest = useColumnSuggestion();
 async function handleDeleteSchema() {
   Object.assign(app.model.ui.annotationSpec, getDefaultAnnotationScript());
 }
-
 </script>
 
 <template>
