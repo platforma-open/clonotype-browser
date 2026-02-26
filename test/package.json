@@ -1,25 +1,25 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-3.test",
-  "private": true,
   "version": "1.0.4",
+  "private": true,
   "description": "Block tests",
+  "keywords": [],
+  "files": [],
   "scripts": {
     "//test": "NODE_ENV=production vitest"
   },
-  "files": [],
-  "keywords": [],
   "dependencies": {
-    "this-block": "workspace:@platforma-open/milaboratories.clonotype-browser-3@*",
     "@platforma-open/milaboratories.clonotype-browser-3.model": "workspace:*",
-    "@platforma-open/milaboratories.samples-and-data.model": "catalog:",
-    "@platforma-open/milaboratories.samples-and-data": "catalog:",
-    "@platforma-open/milaboratories.mixcr-clonotyping-2.model": "catalog:",
-    "@platforma-open/milaboratories.mixcr-clonotyping-2": "catalog:",
-    "@platforma-sdk/model": "catalog:"
+    "@platforma-open/milaboratories.mixcr-clonotyping-2": "^2.12.27",
+    "@platforma-open/milaboratories.mixcr-clonotyping-2.model": "^1.20.0",
+    "@platforma-open/milaboratories.samples-and-data": "^1.12.3",
+    "@platforma-open/milaboratories.samples-and-data.model": "^2.4.1",
+    "@platforma-sdk/model": "catalog:",
+    "this-block": "workspace:@platforma-open/milaboratories.clonotype-browser-3@*"
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",
-    "vitest": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

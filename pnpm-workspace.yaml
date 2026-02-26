@@ -6,46 +6,39 @@ packages:
   - test
 
 catalog:
-  '@milaboratories/ts-builder': ^1.2.9
-  '@milaboratories/ts-configs': ^1.2.1
-  '@milaboratories/build-configs': ^1.4.3
-  '@milaboratories/pl-model-common': ^1.24.6
-  '@platforma-sdk/workflow-tengo': ^5.8.2
-  '@platforma-sdk/model': ^1.53.15
-  '@platforma-sdk/ui-vue': ^1.54.1
-  '@platforma-sdk/tengo-builder': ^2.4.17
-  '@platforma-sdk/package-builder': ^3.11.4
-  '@platforma-sdk/block-tools': ^2.6.47
+  "@milaboratories/ts-builder": ^1.2.11
+  "@milaboratories/ts-configs": ^1.2.1
+  "@milaboratories/build-configs": ^1.5.0
+  "@milaboratories/pl-model-common": ^1.25.1
+  "@platforma-sdk/workflow-tengo": ^5.9.0
+  "@platforma-sdk/model": ^1.58.5
+  "@platforma-sdk/ui-vue": ^1.58.5
+  "@platforma-sdk/tengo-builder": ^2.4.25
+  "@platforma-sdk/package-builder": ^3.11.4
+  "@platforma-sdk/block-tools": ^2.6.63
 
-  '@platforma-sdk/test': ^1.54.2
-  '@milaboratories/helpers': ^1.13.3
+  "@platforma-sdk/test": ^1.58.6
+  "@milaboratories/helpers": ^1.13.5
 
-  '@platforma-open/milaboratories.runenv-python-3': ^1.7.7
-  '@platforma-open/milaboratories.software-ptransform': ^1.6.6
+  "@platforma-open/milaboratories.runenv-python-3": ^1.7.7
+  "@platforma-open/milaboratories.software-ptransform": ^1.6.6
 
-  '@platforma-open/milaboratories.software-binary-collection.software-7zip': ^1.2.3
+  "@platforma-open/milaboratories.software-binary-collection.software-7zip": ^1.2.3
 
-  'vue': ^3
+  "vue": ^3
 
-  'canonicalize': ~2.1.0
-  'lodash': ^4.17.17
-  '@types/lodash': ^4.17.20
+  "canonicalize": ~2.1.0
+  "lodash": ^4.17.17
+  "@types/lodash": ^4.17.20
 
-  'typescript': ~5.6.3
-  'turbo': ^2.5.4
-  'vitest': ^2.1.9
-  'shx': ^0.4.0
+  "typescript": ~5.6.3
+  "turbo": ^2.5.4
+  "vitest": ^2.1.9
+  "shx": ^0.4.0
 
-  '@vueuse/core': ^13.5.0
+  "@vueuse/core": ^13.5.0
 
-  'ag-grid-enterprise': &ag-grid ~33.3.2
-  'ag-grid-vue3': *ag-grid
+  "ag-grid-enterprise": &ag-grid ~33.3.2
+  "ag-grid-vue3": *ag-grid
 
-  '@changesets/cli': ^2.29.5
-
-  # other blocks used in tests
-
-  '@platforma-open/milaboratories.samples-and-data': ^1.12.3
-  '@platforma-open/milaboratories.samples-and-data.model': ^2.4.1
-  '@platforma-open/milaboratories.mixcr-clonotyping-2': ^2.12.27
-  '@platforma-open/milaboratories.mixcr-clonotyping-2.model': ^1.20.0
+  "@changesets/cli": ^2.29.5
