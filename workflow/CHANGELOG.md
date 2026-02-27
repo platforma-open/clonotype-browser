@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 1.0.3
+
+### Patch Changes
+
+- d25c939: Update sdk
+
 ## 1.0.2
 
 ### Patch Changes
