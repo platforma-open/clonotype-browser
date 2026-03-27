@@ -49,6 +49,9 @@ isValidColumn := func(col) {
 	if is_undefined(col.spec.annotations["pl7.app/label"]) {
 		return false
 	}
+	if col.spec.annotations["pl7.app/table/visibility"] == "hidden" {
+		return false
+	}
 	return true
 }
 
@@ -311,9 +314,15 @@ self.body(func(inputs) {
 	byCloneSpecs := []
 	bySampleSpecs := []
 
-	// Sort and partition per-sample columns
-	sortColumnsByOrderPriority(columnsPerSample)
-	partitionedColumnsPerSample := slices.map(columnsPerSample, func(column) {
+	// Filter and sort per-sample columns
+	validColumnsPerSample := []
+	for column in columnsPerSample {
+		if isValidColumn(column) {
+			validColumnsPerSample = append(validColumnsPerSample, column)
+		}
+	}
+	sortColumnsByOrderPriority(validColumnsPerSample)
+	partitionedColumnsPerSample := slices.map(validColumnsPerSample, func(column) {
 		parsed := pFrames.parseData(column)
 		return parsed.partition(0)
 	})
