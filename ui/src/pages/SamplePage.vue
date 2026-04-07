@@ -8,7 +8,7 @@ import SettingsModal from "../components/SettingsModal.vue";
 const app = useApp();
 
 const tableSettings = usePlDataTableSettingsV2({
-  sourceId: () => app.model.args.inputAnchor,
+  sourceId: () => app.model.data.inputAnchor,
   sheets: () => app.model.outputs.sampleTableSheets,
   model: () => app.model.outputs.sampleTable,
 });
@@ -23,7 +23,7 @@ const tableSettings = usePlDataTableSettingsV2({
     <PlAgDataTableV2
       key="sample-table"
       ref="tableInstance"
-      v-model="app.model.ui.sampleTable.tableState"
+      v-model="app.model.data.sampleTableState"
       :settings="tableSettings"
     />
   </PlBlockPage>

@@ -8,8 +8,8 @@ const app = useApp();
 const exporting = ref(false);
 
 async function exportTsv() {
-  if (!app.model.args.runExportAll) {
-    app.model.args.runExportAll = true;
+  if (!app.model.data.runExportAll) {
+    app.model.data.runExportAll = true;
     return;
   }
   exporting.value = true;
@@ -34,12 +34,12 @@ async function exportTsv() {
 }
 
 const disabled = computed(() => {
-  return app.model.args.runExportAll ? app.model.outputs.exportedTsvZip === null : false;
+  return app.model.data.runExportAll ? app.model.outputs.exportedTsvZip === null : false;
 });
 
 const loading = computed(() => {
   if (exporting.value) return true;
-  return app.model.args.runExportAll
+  return app.model.data.runExportAll
     ? app.model.outputs.exportedTsvZip?.handle === undefined &&
         app.model.outputs.exportedTsvZip !== null
     : false;
@@ -49,7 +49,7 @@ const loading = computed(() => {
 <template>
   <PlBtnGhost
     :icon="
-      app.model.args.runExportAll
+      app.model.data.runExportAll
         ? app.model.outputs.exportedTsvZip === null
           ? 'close'
           : 'download'

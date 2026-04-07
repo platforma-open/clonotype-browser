@@ -8,8 +8,8 @@ const app = useApp();
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () =>
-    app.model.args.annotationSpec.steps.length > 0
-      ? app.model.args.annotationSpec.steps
+    app.model.data.annotationSpec.steps.length > 0
+      ? app.model.data.annotationSpec.steps
       : undefined,
   model: () => app.model.outputs.statsTable,
 });
@@ -17,13 +17,13 @@ const tableSettings = usePlDataTableSettingsV2({
 
 <template>
   <PlBlockPage>
-    <template #title> Annotation Stats - {{ app.model.args.annotationSpec.title }} </template>
+    <template #title> Annotation Stats - {{ app.model.data.annotationSpec.title }} </template>
     <template #append>
       <BlockActions />
     </template>
     <PlAgDataTableV2
       ref="tableInstance"
-      v-model="app.model.ui.statsTable.tableState"
+      v-model="app.model.data.statsTableState"
       :settings="tableSettings"
       show-export-button
     />

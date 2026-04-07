@@ -23,7 +23,7 @@ function openAnnotations() {
 }
 
 function openSettings() {
-  app.model.ui.settingsOpen = true;
+  app.model.data.settingsOpen = true;
 }
 </script>
 

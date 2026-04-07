@@ -1,7 +1,7 @@
 import type {
   AnnotationSpec,
   AnnotationSpecUi,
-  BlockArgs,
+  BlockData,
   TableInputs,
 } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import {
@@ -13,13 +13,13 @@ import { watchDebounced } from "@vueuse/core";
 import { watch } from "vue";
 
 export function syncDatasetTitle(
-  getArgs: () => BlockArgs,
+  getData: () => BlockData,
   getInputOptions: () => undefined | Option[],
 ) {
   watch(
-    () => [getArgs().inputAnchor, getInputOptions()] as const,
+    () => [getData().inputAnchor, getInputOptions()] as const,
     ([inputAnchor, inputOptions]) => {
-      getArgs().datasetTitle = inputAnchor
+      getData().datasetTitle = inputAnchor
         ? inputOptions?.find(({ ref }) => plRefsEqual(ref, inputAnchor))?.label
         : undefined;
     },
@@ -27,13 +27,13 @@ export function syncDatasetTitle(
 }
 
 export function syncTableInputs(
-  getArgs: () => BlockArgs,
+  getData: () => BlockData,
   getTableInputs: () => undefined | TableInputs,
 ) {
   watch(
-    () => [getTableInputs(), getArgs().inputAnchor] as const,
+    () => [getTableInputs(), getData().inputAnchor] as const,
     ([tableInputs, inputAnchor]) => {
-      getArgs().tableInputs = inputAnchor
+      getData().tableInputs = inputAnchor
         ? (tableInputs ?? { byClonotypeLabels: {}, linkedColumns: {} })
         : undefined;
     },

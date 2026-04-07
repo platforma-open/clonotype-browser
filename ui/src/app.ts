@@ -1,7 +1,7 @@
 import type { Platforma } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import { platforma } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import type { PlSelectionModel } from "@platforma-sdk/model";
-import { defineApp } from "@platforma-sdk/ui-vue";
+import { defineAppV3 } from "@platforma-sdk/ui-vue";
 import { computed, ref } from "vue";
 import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from "./model";
 import { getValuesForSelectedColumns } from "./utils";
@@ -11,21 +11,21 @@ import OverlapPage from "./pages/OverlapPage.vue";
 import SamplePage from "./pages/SamplePage.vue";
 import { stateMigration } from "./migration";
 
-export const sdkPlugin = defineApp(
+export const sdkPlugin = defineAppV3(
   platforma as Platforma,
   (app) => {
-    stateMigration(app.model.ui);
+    stateMigration(app.model.data);
     syncDatasetTitle(
-      () => app.model.args,
+      () => app.model.data,
       () => app.model.outputs.inputOptions,
     );
     syncTableInputs(
-      () => app.model.args,
+      () => app.model.data,
       () => app.model.outputs.tableInputs,
     );
     processAnnotationUiStateToArgsState(
-      () => app.model.ui.annotationSpec,
-      () => app.model.args.annotationSpec,
+      () => app.model.data.annotationSpecUi,
+      () => app.model.data.annotationSpec,
     );
 
     const selectedColumns = ref({

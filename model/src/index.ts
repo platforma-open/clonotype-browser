@@ -4,58 +4,37 @@ import type {
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
-  PlDataTableStateV2,
   PlRef,
   SUniversalPColumnId,
 } from "@platforma-sdk/model";
 import {
   Annotation,
-  BlockModel,
+  BlockModelV3,
   canonicalizeJson,
   createPlDataTableSheet,
-  createPlDataTableStateV2,
   createPlDataTableV2,
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
 } from "@platforma-sdk/model";
-import type { AnnotationSpec, AnnotationSpecUi } from "./types";
+import type { AnnotationSpec, TableInputs } from "./types";
 import {
   addLinkedColumnsToArray,
   commonExcludes,
   getLinkedColumnsForArgs,
   type LinkedColumnEntry,
 } from "./column_utils";
+import { blockDataModel } from "./dataModel";
 
 export type { LinkedColumnEntry } from "./column_utils";
-
-export type TableInputs = {
-  byClonotypeLabels: Record<string, string>; // Map from deterministic column key (name|domain) to derived label
-  linkedColumns: Record<string, LinkedColumnEntry>;
-};
+export { blockDataModel } from "./dataModel";
 
 type BlockArgs = {
   inputAnchor?: PlRef;
   datasetTitle?: string;
   annotationSpec: AnnotationSpec;
-  /** Enables export all */
   runExportAll: boolean;
-  /** Table export inputs: labels and linked columns */
   tableInputs?: TableInputs;
-};
-
-export type UiState = {
-  settingsOpen: boolean;
-  overlapTable: {
-    tableState: PlDataTableStateV2;
-  };
-  sampleTable: {
-    tableState: PlDataTableStateV2;
-  };
-  statsTable: {
-    tableState: PlDataTableStateV2;
-  };
-  annotationSpec: AnnotationSpecUi;
 };
 
 function getLabelColumns(entries: PColumn<PColumnDataUniversal>[]) {
@@ -105,35 +84,19 @@ function prepareToAdvancedFilters(
   return ret;
 }
 
-export const platforma = BlockModel.create("Heavy")
+export const platforma = BlockModelV3.create(blockDataModel)
 
-  .withArgs<BlockArgs>({
-    annotationSpec: {
-      title: "",
-      steps: [],
-    },
-    runExportAll: false,
-    tableInputs: {
-      byClonotypeLabels: {},
-      linkedColumns: {},
-    },
-  })
+  .args<BlockArgs>((data) => {
+    if (data.inputAnchor === undefined) throw new Error("No input anchor");
+    if (data.annotationSpec.steps.length === 0) throw new Error("No annotation steps");
 
-  .withUiState<UiState>({
-    settingsOpen: true,
-    overlapTable: {
-      tableState: createPlDataTableStateV2(),
-    },
-    sampleTable: {
-      tableState: createPlDataTableStateV2(),
-    },
-    statsTable: {
-      tableState: createPlDataTableStateV2(),
-    },
-    annotationSpec: {
-      title: "",
-      steps: [],
-    } satisfies AnnotationSpecUi,
+    return {
+      inputAnchor: data.inputAnchor,
+      datasetTitle: data.datasetTitle,
+      annotationSpec: data.annotationSpec,
+      runExportAll: data.runExportAll,
+      tableInputs: data.tableInputs,
+    };
   })
 
   .output("inputOptions", (ctx) =>
@@ -155,8 +118,8 @@ export const platforma = BlockModel.create("Heavy")
   )
 
   .output("annotationsIsComputing", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return false;
-    if (ctx.args.annotationSpec.steps.length === 0) return false;
+    if (ctx.data.inputAnchor === undefined) return false;
+    if (ctx.data.annotationSpec.steps.length === 0) return false;
 
     const annotationsPf = ctx.prerun?.resolve("annotationsPf");
 
@@ -164,28 +127,21 @@ export const platforma = BlockModel.create("Heavy")
   })
 
   .output("tableInputs", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
     if (!anchorSpec) return undefined;
 
     // Get linked columns
-    const linkedColumns = getLinkedColumnsForArgs(
-      // @ts-expect-error
-      ctx,
-      ctx.args.inputAnchor,
-      anchorSpec,
-    );
+    const linkedColumns = getLinkedColumnsForArgs(ctx, ctx.data.inputAnchor, anchorSpec);
 
     // Build byClonotypeLabels map using getUniversalEntries with overrideLabelAnnotation
     const byClonotypeLabels: Record<string, string> = {};
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
     if (anchorCtx) {
       const collection = new PColumnCollection();
       collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
-      // Use getUniversalEntries() with overrideLabelAnnotation: true
-      // This applies the same label derivation as UI tables without loading data
       const entries = collection.getUniversalEntries(
         [
           {
@@ -203,19 +159,16 @@ export const platforma = BlockModel.create("Heavy")
         {
           anchorCtx,
           exclude: commonExcludes,
-          overrideLabelAnnotation: true, // Same label behavior as getColumns()
+          overrideLabelAnnotation: true,
         },
       );
 
       if (entries) {
         for (const entry of entries) {
-          // Create a deterministic key using canonical JSON serialization
-          // This matches the approach used for linkedColumns
           const keyObj: { name: string; domain?: Record<string, string> } = {
             name: entry.spec.name,
           };
           if (entry.spec.domain && Object.keys(entry.spec.domain).length > 0) {
-            // Filter domain to only include string values (matching linkedColumns approach)
             const domain: Record<string, string> = {};
             for (const [key, value] of Object.entries(entry.spec.domain)) {
               if (typeof value === "string") {
@@ -228,7 +181,6 @@ export const platforma = BlockModel.create("Heavy")
           }
           const key = canonicalizeJson(keyObj);
 
-          // Use the label from spec annotations (set by overrideLabelAnnotation: true)
           const label = entry.spec.annotations?.[Annotation.Label] || "";
           if (label) {
             byClonotypeLabels[key] = label;
@@ -244,9 +196,9 @@ export const platforma = BlockModel.create("Heavy")
   })
 
   .output("overlapColumns", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    if (ctx.data.inputAnchor === undefined) return undefined;
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
     if (anchorCtx == null || anchorSpec == null) return undefined;
 
     const entries = new PColumnCollection()
@@ -278,12 +230,12 @@ export const platforma = BlockModel.create("Heavy")
   })
 
   .outputWithStatus("overlapTable", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
     if (!anchorCtx) return undefined;
 
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
     if (!anchorSpec) return undefined;
 
     const collection = new PColumnCollection();
@@ -293,7 +245,6 @@ export const platforma = BlockModel.create("Heavy")
       ?.getPColumns();
     if (annotation) collection.addColumns(annotation);
 
-    // result pool is added after the pre-run outputs so that pre-run results take precedence
     collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
@@ -315,14 +266,7 @@ export const platforma = BlockModel.create("Heavy")
 
     if (!columns) return undefined;
 
-    // Get linked columns through linkers (e.g., cluster columns)
-    addLinkedColumnsToArray(
-      // @ts-expect-error
-      ctx,
-      ctx.args.inputAnchor,
-      anchorSpec,
-      columns,
-    );
+    addLinkedColumnsToArray(ctx, ctx.data.inputAnchor, anchorSpec, columns);
 
     columns.forEach((column) => {
       if (
@@ -332,16 +276,16 @@ export const platforma = BlockModel.create("Heavy")
         column.spec.annotations["pl7.app/table/visibility"] = "optional";
     });
 
-    return createPlDataTableV2(ctx, columns, ctx.uiState.overlapTable.tableState);
+    return createPlDataTableV2(ctx, columns, ctx.data.overlapTableState);
   })
 
   .outputWithStatus("sampleTable", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.args.inputAnchor });
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
     if (!anchorCtx) return undefined;
 
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.args.inputAnchor);
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
     if (!anchorSpec) return undefined;
 
     const collection = new PColumnCollection();
@@ -351,7 +295,6 @@ export const platforma = BlockModel.create("Heavy")
       ?.getPColumns();
     if (annotation) collection.addColumns(annotation);
 
-    // result pool is added after the pre-run outputs so that pre-run results take precedence
     collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
 
     const columns = collection.getColumns(
@@ -378,22 +321,15 @@ export const platforma = BlockModel.create("Heavy")
 
     if (!columns) return undefined;
 
-    // Get linked columns through linkers (e.g., cluster columns)
-    addLinkedColumnsToArray(
-      // @ts-expect-error
-      ctx,
-      ctx.args.inputAnchor,
-      anchorSpec,
-      columns,
-    );
+    addLinkedColumnsToArray(ctx, ctx.data.inputAnchor, anchorSpec, columns);
 
-    return createPlDataTableV2(ctx, columns, ctx.uiState.sampleTable.tableState);
+    return createPlDataTableV2(ctx, columns, ctx.data.sampleTableState);
   })
 
   .output("sampleTableSheets", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchor = ctx.resultPool.getPColumnByRef(ctx.args.inputAnchor);
+    const anchor = ctx.resultPool.getPColumnByRef(ctx.data.inputAnchor);
     if (!anchor) return undefined;
 
     const samples = getUniquePartitionKeys(anchor.data)?.[0];
@@ -436,19 +372,17 @@ export const platforma = BlockModel.create("Heavy")
     }
 
     const columnsAfterSplitting = collection.getColumns([
-      // annotationStatsPf without split
       { axes: [{}] },
-      // sampleStatsPf with split sampleId
       { axes: [{ split: true }, {}] },
     ]);
 
     if (columnsAfterSplitting === undefined) return undefined;
 
-    return createPlDataTableV2(ctx, columnsAfterSplitting, ctx.uiState.statsTable.tableState);
+    return createPlDataTableV2(ctx, columnsAfterSplitting, ctx.data.statsTableState);
   })
 
   .output("exportedTsvZip", (ctx) => {
-    if (ctx.args.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return undefined;
     const tsvResource = ctx.prerun?.resolve({
       field: "tsvZip",
       assertFieldType: "Input",
@@ -464,17 +398,12 @@ export const platforma = BlockModel.create("Heavy")
     return [
       { type: "link", href: "/", label: "Overlap" } as const,
       { type: "link", href: "/sample", label: "By Sample" } as const,
-      ...(ctx.args.annotationSpec.steps.length > 0
+      ...(ctx.data.annotationSpec.steps.length > 0
         ? [{ type: "link", href: "/stats", label: "Stats" } as const]
         : []),
     ];
   })
 
-  .argsValid(
-    (ctx) => ctx.args.inputAnchor !== undefined && ctx.args.annotationSpec.steps.length > 0,
-  )
-
-  // We enrich the input, only if we produce annotations
   .enriches((args) =>
     args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0
       ? [args.inputAnchor]
@@ -482,14 +411,14 @@ export const platforma = BlockModel.create("Heavy")
   )
 
   .title((ctx) => {
-    return ctx.args.annotationSpec.steps.length > 0
-      ? `Clonotype Annotation - ${ctx.args.annotationSpec.title}`
-      : ctx.args.datasetTitle
-        ? `Clonotype Browser - ${ctx.args.datasetTitle}`
+    return ctx.data.annotationSpec.steps.length > 0
+      ? `Clonotype Annotation - ${ctx.data.annotationSpec.title}`
+      : ctx.data.datasetTitle
+        ? `Clonotype Browser - ${ctx.data.datasetTitle}`
         : "Clonotype Browser";
   })
 
-  .done(2);
+  .done();
 
 export type Platforma = typeof platforma;
 
