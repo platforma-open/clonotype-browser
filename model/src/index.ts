@@ -9,10 +9,12 @@ import type {
 } from "@platforma-sdk/model";
 import {
   Annotation,
+  ArrayColumnProvider,
   BlockModelV3,
   canonicalizeJson,
   createPlDataTableSheet,
   createPlDataTableV2,
+  createPlDataTableV3,
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
@@ -276,7 +278,19 @@ export const platforma = BlockModelV3.create(blockDataModel)
         column.spec.annotations["pl7.app/table/visibility"] = "optional";
     });
 
-    return createPlDataTableV2(ctx, columns, ctx.data.overlapTableState);
+    // V3 drops 'hidden' columns entirely — remap to 'optional' so linker columns
+    // stay in the join but remain hidden in the visible table
+    for (const col of columns) {
+      if (col.spec.annotations?.["pl7.app/table/visibility"] === "hidden") {
+        col.spec.annotations["pl7.app/table/visibility"] = "optional";
+      }
+    }
+
+    return createPlDataTableV3(ctx, {
+      source: new ArrayColumnProvider(columns),
+      columns: {},
+      state: ctx.data.overlapTableState,
+    });
   })
 
   .outputWithStatus("sampleTable", (ctx) => {
