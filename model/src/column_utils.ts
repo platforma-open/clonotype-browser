@@ -9,15 +9,6 @@ import type {
 import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from "@platforma-sdk/model";
 
 /**
- * Annotation keys to exclude when simplifying column entries.
- */
-export const excludedAnnotationKeys = [
-  "pl7.app/table/orderPriority",
-  "pl7.app/table/visibility",
-  "pl7.app/trace",
-];
-
-/**
  * Common column selectors to exclude from queries.
  */
 export const commonExcludes: AnchoredPColumnSelector[] = [
@@ -116,50 +107,6 @@ export function deriveLabelsFromTrace(
 }
 
 /**
- * Updates linked column labels to use labels derived from trace information.
- * This ensures that columns from linkers show distinguishing labels when multiple
- * linkers are present (e.g., "Cluster Size / Clustering (sim:..., ident:..., cov:...)").
- *
- * @param columns - Array of PColumn objects to update
- * @returns Array of PColumn objects with updated labels
- */
-export function updateLinkedColumnLabels(
-  columns: PColumn<PColumnDataUniversal>[],
-): PColumn<PColumnDataUniversal>[] {
-  if (columns.length === 0) {
-    return columns;
-  }
-
-  // Derive labels using trace information
-  const derivedLabels = deriveLabels(columns, (col) => col.spec, { includeNativeLabel: true });
-
-  // Create a map of column id to derived label
-  const labelMap = new Map<string, string>();
-  for (const { value, label } of derivedLabels) {
-    labelMap.set(value.id, label);
-  }
-
-  // Update columns with derived labels
-  return columns.map((col) => {
-    const derivedLabel = labelMap.get(col.id);
-    if (derivedLabel !== undefined) {
-      // Create a deep copy of annotations to avoid mutating shared objects
-      const newAnnotations = col.spec.annotations
-        ? { ...col.spec.annotations, [Annotation.Label]: derivedLabel }
-        : { [Annotation.Label]: derivedLabel };
-      return {
-        ...col,
-        spec: {
-          ...col.spec,
-          annotations: newAnnotations,
-        },
-      };
-    }
-    return col;
-  });
-}
-
-/**
  * Information about a linker column for processing.
  */
 export interface LinkerInfo<_TArgs, _TUiState> {
@@ -216,77 +163,6 @@ export function findLinkerOptions<TArgs, TUiState>(
   }
 
   return linkerInfos;
-}
-
-/**
- * Result of getting linked columns.
- */
-export interface LinkedColumnsResult {
-  /** Linker columns that connect two different key axes */
-  linkerColumns: PColumn<PColumnDataUniversal>[];
-  /** Columns on the "other side" of the linker connection */
-  linkedColumns: PColumn<PColumnDataUniversal>[];
-}
-
-/**
- * Gets columns linked through linker columns.
- * Linker columns connect two different key axes (e.g., clonotypeKey to clusterKey).
- * This function finds linker columns and resolves the columns on the "other side" of the link.
- *
- * @param ctx - The render context
- * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
- * @param anchorSpec - The specification of the anchor column
- * @returns Object containing linker columns and linked columns, or undefined if not available
- */
-export function getLinkedColumns<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
-  anchor: PlRef,
-  anchorSpec: PColumnSpec,
-): LinkedColumnsResult | undefined {
-  const linkerColumns: PColumn<PColumnDataUniversal>[] = [];
-  const linkedColumns: PColumn<PColumnDataUniversal>[] = [];
-
-  // Get linker columns for both axis positions
-  for (const idx of [0, 1]) {
-    const axesToMatch = idx === 0 ? [{}, anchorSpec.axesSpec[1]] : [anchorSpec.axesSpec[1], {}];
-
-    // Get linker columns that connect to our anchor's clonotypeKey axis
-    const linkers = ctx.resultPool.getAnchoredPColumns({ main: anchor }, [
-      {
-        axes: axesToMatch,
-        annotations: { "pl7.app/isLinkerColumn": "true" },
-      },
-    ]);
-
-    if (linkers) {
-      linkerColumns.push(...linkers);
-    }
-  }
-
-  // Process linker options to find linked columns
-  const linkerInfos = findLinkerOptions(ctx, anchor, anchorSpec);
-  for (const { idx, linkerOption, anchorName } of linkerInfos) {
-    const linkerAnchorSpec: Record<string, PlRef> = {
-      [anchorName]: linkerOption.ref,
-    };
-
-    // Get columns that have the linker's "other" axis (the one that's not clonotypeKey)
-    const linkedProps = ctx.resultPool.getAnchoredPColumns(linkerAnchorSpec, [
-      {
-        axes: [{ anchor: anchorName, idx }],
-      },
-    ]);
-
-    if (linkedProps) {
-      linkedColumns.push(...linkedProps.filter((p) => !isLabelColumn(p.spec)));
-    }
-  }
-
-  // Deduplicate column names using trace-based labels only if there are two or more linker columns
-  const deduplicatedLinkedColumns =
-    linkerColumns.length >= 2 ? updateLinkedColumnLabels(linkedColumns) : linkedColumns;
-
-  return { linkerColumns, linkedColumns: deduplicatedLinkedColumns };
 }
 
 /**
@@ -406,49 +282,4 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
-}
-
-/**
- * Adds linked columns to an existing columns array.
- * This helper handles fetching linked columns through linkers, deduplicating them,
- * and marking linker columns as hidden in the UI.
- *
- * @param ctx - The render context
- * @param anchor - The anchor PlRef (e.g., input anchor with clonotypeKey axis)
- * @param anchorSpec - The specification of the anchor column
- * @param columns - The existing columns array to append linked columns to
- */
-export function addLinkedColumnsToArray<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
-  anchor: PlRef,
-  anchorSpec: PColumnSpec,
-  columns: PColumn<PColumnDataUniversal>[],
-): void {
-  // Get linked columns through linkers (e.g., cluster columns)
-  // Get them BEFORE we modify any columns to avoid affecting the collection
-  const linked = getLinkedColumns(ctx, anchor, anchorSpec);
-
-  // Filter out linked columns that are already in the main columns array to avoid duplicates
-  const existingColumnIds = new Set(columns.map((c) => c.id));
-  const newLinkedColumns = linked?.linkedColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-  const newLinkerColumns = linked?.linkerColumns.filter((c) => !existingColumnIds.has(c.id)) ?? [];
-
-  // Add linker columns but mark them as hidden - they're needed for PFrame structure but shouldn't be shown in UI
-  if (newLinkerColumns.length > 0) {
-    const hiddenLinkerColumns = newLinkerColumns.map((linkerColumn) => ({
-      ...linkerColumn,
-      spec: {
-        ...linkerColumn.spec,
-        annotations: {
-          ...linkerColumn.spec.annotations,
-          "pl7.app/table/visibility": "hidden",
-        },
-      },
-    }));
-    columns.push(...hiddenLinkerColumns);
-  }
-
-  if (newLinkedColumns.length > 0) {
-    columns.push(...newLinkedColumns);
-  }
 }

@@ -19,7 +19,7 @@ import {
   PColumnName,
 } from "@platforma-sdk/model";
 import type { AnnotationSpec, TableInputs } from "./types";
-import { addLinkedColumnsToArray, commonExcludes, getLinkedColumnsForArgs } from "./column_utils";
+import { commonExcludes, getLinkedColumnsForArgs } from "./column_utils";
 import { blockDataModel } from "./dataModel";
 
 export type { LinkedColumnEntry } from "./column_utils";
@@ -228,113 +228,25 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
-    if (!anchorCtx) return undefined;
-
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
-    if (!anchorSpec) return undefined;
-
-    const collection = new PColumnCollection();
-
-    const annotation = ctx.prerun
-      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
-      ?.getPColumns();
-    if (annotation) collection.addColumns(annotation);
-
-    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
-
-    const columns = collection.getColumns(
-      [
-        {
-          domainAnchor: "main",
-          axes: [{ split: true }, { anchor: "main", idx: 1 }],
-          annotations: {
-            "pl7.app/isAbundance": "true",
-          },
-        },
-        {
-          domainAnchor: "main",
-          axes: [{ anchor: "main", idx: 1 }],
-        },
-      ],
-      { anchorCtx, exclude: commonExcludes, dontWaitAllData: true },
-    );
-
-    if (!columns) return undefined;
-
-    addLinkedColumnsToArray(ctx, ctx.data.inputAnchor, anchorSpec, columns);
-
-    columns.forEach((column) => {
-      if (
-        column.spec.annotations?.["pl7.app/isAbundance"] === "true" &&
-        column.spec.name !== "pl7.app/vdj/sampleCount"
-      )
-        column.spec.annotations["pl7.app/table/visibility"] = "optional";
-    });
-
-    // V3 drops 'hidden' columns entirely — remap to 'optional' so linker columns
-    // stay in the join but remain hidden in the visible table
-    for (const col of columns) {
-      if (col.spec.annotations?.["pl7.app/table/visibility"] === "hidden") {
-        col.spec.annotations["pl7.app/table/visibility"] = "optional";
-      }
-    }
-
     return createPlDataTableV3(ctx, {
-      tableState: ctx.data.overlapTableState,
-      sources: [columns],
       anchors: { main: ctx.data.inputAnchor },
       columnsSelector: {
         mode: "enrichment",
       },
+      tableState: ctx.data.overlapTableState,
     });
   })
 
   .outputWithStatus("sampleTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
-    if (!anchorCtx) return undefined;
-
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
-    if (!anchorSpec) return undefined;
-
-    const collection = new PColumnCollection();
-
-    const annotation = ctx.prerun
-      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
-      ?.getPColumns();
-    if (annotation) collection.addColumns(annotation);
-
-    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
-
-    const columns = collection.getColumns(
-      [
-        {
-          domainAnchor: "main",
-          axes: [
-            { anchor: "main", idx: 0 },
-            { anchor: "main", idx: 1 },
-          ],
-        },
-        {
-          domainAnchor: "main",
-          axes: [{ anchor: "main", idx: 1 }],
-        },
-      ],
-      {
-        anchorCtx,
-        exclude: commonExcludes,
-        dontWaitAllData: true,
-        overrideLabelAnnotation: false,
+    return createPlDataTableV3(ctx, {
+      anchors: { main: ctx.data.inputAnchor },
+      columnsSelector: {
+        mode: "enrichment",
       },
-    );
-
-    if (!columns) return undefined;
-
-    addLinkedColumnsToArray(ctx, ctx.data.inputAnchor, anchorSpec, columns);
-
-    return createPlDataTableV2(ctx, columns, ctx.data.sampleTableState);
+      tableState: ctx.data.sampleTableState,
+    });
   })
 
   .output("sampleTableSheets", (ctx) => {
