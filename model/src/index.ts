@@ -13,7 +13,6 @@ import {
   BlockModelV3,
   canonicalizeJson,
   createPlDataTableSheet,
-  createPlDataTableV2,
   createPlDataTableV3,
   getUniquePartitionKeys,
   PColumnCollection,
@@ -287,9 +286,10 @@ export const platforma = BlockModelV3.create(blockDataModel)
     }
 
     return createPlDataTableV3(ctx, {
-      source: new ArrayColumnProvider(columns),
-      columns: {},
-      state: ctx.data.overlapTableState,
+      sources: new ArrayColumnProvider(columns),
+      anchors: { main: ctx.data.inputAnchor },
+      columnsSelector: {},
+      tableState: ctx.data.overlapTableState,
     });
   })
 
