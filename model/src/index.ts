@@ -9,22 +9,17 @@ import type {
 } from "@platforma-sdk/model";
 import {
   Annotation,
-  ArrayColumnProvider,
   BlockModelV3,
   canonicalizeJson,
   createPlDataTableSheet,
+  createPlDataTableV2,
   createPlDataTableV3,
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
 } from "@platforma-sdk/model";
 import type { AnnotationSpec, TableInputs } from "./types";
-import {
-  addLinkedColumnsToArray,
-  commonExcludes,
-  getLinkedColumnsForArgs,
-  type LinkedColumnEntry,
-} from "./column_utils";
+import { addLinkedColumnsToArray, commonExcludes, getLinkedColumnsForArgs } from "./column_utils";
 import { blockDataModel } from "./dataModel";
 
 export type { LinkedColumnEntry } from "./column_utils";
@@ -286,10 +281,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
     }
 
     return createPlDataTableV3(ctx, {
-      sources: new ArrayColumnProvider(columns),
-      anchors: { main: ctx.data.inputAnchor },
-      columnsSelector: {},
       tableState: ctx.data.overlapTableState,
+      sources: [columns],
+      anchors: { main: ctx.data.inputAnchor },
+      columnsSelector: {
+        mode: "enrichment",
+      },
     });
   })
 
