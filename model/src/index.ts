@@ -232,8 +232,30 @@ export const platforma = BlockModelV3.create(blockDataModel)
       anchors: { main: ctx.data.inputAnchor },
       columnsSelector: {
         mode: "enrichment",
+        exclude: [
+          { name: [{ type: "exact", value: "pl7.app/vdj/sequence/annotation" }] },
+          { annotations: { "pl7.app/isSubset": [{ type: "exact", value: "true" }] } },
+        ],
       },
+      // Split per-sample abundance by sampleId — expanded columns define the row universe
+      splitAxes: {
+        match: (spec) =>
+          spec.annotations?.["pl7.app/isAbundance"] === "true" && spec.axesSpec.length > 1,
+        axes: [{ idx: 0 }],
+        asCore: true,
+      },
+      coreJoinType: "full",
       tableState: ctx.data.overlapTableState,
+      columnsDisplayOptions: {
+        visibility: [
+          {
+            match: (spec) =>
+              spec.annotations?.["pl7.app/isAbundance"] === "true" &&
+              spec.name !== "pl7.app/vdj/sampleCount",
+            visibility: "optional",
+          },
+        ],
+      },
     });
   })
 
@@ -244,6 +266,22 @@ export const platforma = BlockModelV3.create(blockDataModel)
       anchors: { main: ctx.data.inputAnchor },
       columnsSelector: {
         mode: "enrichment",
+        exclude: [
+          // Exclude sampleId-only columns (Sample label, metadata) — they have only
+          // one axis matching sampleId. partialAxesMatch: false means ALL column axes
+          // must be accounted for by the selector's axis patterns.
+          {
+            axes: [{ name: [{ type: "exact", value: "pl7.app/sampleId" }] }],
+            partialAxesMatch: false,
+          },
+          // Exclude sequence annotations and subset columns
+          { name: [{ type: "exact", value: "pl7.app/vdj/sequence/annotation" }] },
+          {
+            annotations: {
+              "pl7.app/isSubset": [{ type: "exact", value: "true" }],
+            },
+          },
+        ],
       },
       tableState: ctx.data.sampleTableState,
     });
