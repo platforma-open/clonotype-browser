@@ -3,6 +3,7 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 file := import("@platforma-sdk/workflow-tengo:file")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+pFramesUtil := import("@platforma-sdk/workflow-tengo:pframes.util")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 math := import("math")
@@ -300,6 +301,7 @@ self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
 	inputAnchor := inputs.inputAnchor
 	linkedColumns := inputs.linkedColumns
+	annotationsPf := inputs.annotationsPf
 
 	columnsPerSample := columnBundle.getColumns("perSample")
 	allColumnsPerClonotype := columnBundle.getColumns("perClonotype")
@@ -430,6 +432,25 @@ self.body(func(inputs) {
 	if tsvBuilder != undefined {
 		tsv := tsvBuilder.build()
 		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
+	}
+
+	// Add annotation columns from prerun (not in result pool when export runs)
+	if !is_undefined(annotationsPf) {
+		annotationTsvBuilder := pFrames.tsvFileBuilder().cpu(1).mem("4GiB")
+		annotationTsvBuilder.setAxisHeader(datasetSpec.axesSpec[1], CLONE_KEY_HEADER)
+		hasAnnotations := false
+		maps.forEach(pFramesUtil.pFrameToColumnsMap(annotationsPf), func(id, col) {
+			if !isValidColumn(col) { return }
+			header := ensureUniqueLabel(col.spec.annotations["pl7.app/label"], usedLabelsSet)
+			annotationTsvBuilder.add(col, { header: header })
+			updatedSpec := maps.clone(col.spec)
+			updatedSpec.annotations["pl7.app/label"] = header
+			byCloneSpecs += [updatedSpec]
+			hasAnnotations = true
+		})
+		if hasAnnotations {
+			pfs += [bigTableWf.frame(annotationTsvBuilder.build(), { xsvType: "tsv", inferSchema: false })]
+		}
 	}
 
 	// Collect labels used to ensure global uniqueness

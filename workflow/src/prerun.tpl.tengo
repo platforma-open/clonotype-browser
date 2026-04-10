@@ -25,6 +25,37 @@ wf.body(func(args) {
 	}
 	exports := {}
 
+	// Annotations computation
+
+	annotationSpec := args.annotationSpec
+	annotationAxesSpec := util.getAnnotationAxesSpec(args)
+	annotationsPf := undefined
+
+	if !is_undefined(args.inputAnchor) && !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
+		computedAnnotations := annotations.computeClonotypeAnnotations({
+			title: annotationSpec.title,
+			steps: annotationSpec.steps,
+			inputAnchor: args.inputAnchor,
+			defaultValue: annotationSpec.defaultValue,
+			annotationAxesSpec: annotationAxesSpec,
+			shouldComputeFilters: false
+		})
+
+		annotationsPf = computedAnnotations.annotationsPf
+		outputs["annotationsPf"] = pFrames.exportFrame(annotationsPf)
+
+		if (!is_undefined(args.columnBundle)) {
+			computedStats := annotationsStats.computeClonotypeAnnotationsStats({
+				inputAnchor: args.inputAnchor,
+				annotations: computedAnnotations.annotationsColumn,
+				columnBundle: args.columnBundle
+			})
+
+			outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
+			outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
+		}
+	}
+
 	// Export TSVs
 
 	if args.runExportAll {
@@ -34,7 +65,7 @@ wf.body(func(args) {
 		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 0 }, { anchor: "main", idx: 1 }] }, "perSample")
 		bundleBuilderForExport.addMulti({ axes: [{ anchor: "main", idx: 1 }] }, "perClonotype")
 		bundleBuilderForExport.addSingle({ name: "pl7.app/label", domainAnchor: "main", axes: [{ anchor: "main", idx: 0 }] }, "sampleLabels")
-		
+
 		// Add linker columns
 		bundleBuilderForExport.addMulti({
 			axes: [{ anchor: "main", idx: 1 }],
@@ -75,39 +106,11 @@ wf.body(func(args) {
 			columnBundle: bundleBuilderForExport.build(),
 			inputAnchor: args.inputAnchor,
 			linkedColumns: linkedColumns,
-			byClonotypeLabels: args.tableInputs.byClonotypeLabels
+			byClonotypeLabels: args.tableInputs.byClonotypeLabels,
+			annotationsPf: annotationsPf
 		})
 
 		outputs["tsvZip"] = exportResult.output("tsvZip")
-	}
-	
-	// Annotations computation
-
-	annotationSpec := args.annotationSpec
-	annotationAxesSpec := util.getAnnotationAxesSpec(args)
-
-	if !is_undefined(args.inputAnchor) && !is_undefined(annotationAxesSpec) && len(annotationSpec.steps) > 0 {
-		computedAnnotations := annotations.computeClonotypeAnnotations({
-			title: annotationSpec.title,
-			steps: annotationSpec.steps,
-			inputAnchor: args.inputAnchor,
-			defaultValue: annotationSpec.defaultValue,
-			annotationAxesSpec: annotationAxesSpec,
-			shouldComputeFilters: false
-		})
-
-		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
-
-		if (!is_undefined(args.columnBundle)) {
-			computedStats := annotationsStats.computeClonotypeAnnotationsStats({
-				inputAnchor: args.inputAnchor,
-				annotations: computedAnnotations.annotationsColumn,
-				columnBundle: args.columnBundle
-			})
-
-			outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
-			outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
-		}
 	}
 
 	return {
