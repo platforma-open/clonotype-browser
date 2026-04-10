@@ -1429,7 +1429,7 @@ packages:
     resolution: {integrity: sha512-Iv2W7ZM1xFneEwfDMzD5YUnsZlgm9BzywCiCX9/0gwjYqS23M55fAM6lnC5rRSqrgiu6/zs3IzQMdmu9Cgwe1w==}
 
   '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz':
-    resolution: {integrity: sha512-Dd/77h1dWENrHonfX/GAj82QbsMACq2Rh9MrvmSDCrS0C3BtlAkVVSftkBiOB9fmof4rJhKRZHl2s3S9jaBKcg==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
+    resolution: {integrity: sha512-9B7ha8aV0y3wmSOKovnTTe4xeqcUzJkPk/VSbVpsskPoHdEpPCub+WzDnYh09YIUSg+PHyrlAG6kwMoGrYerYQ==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
     version: 1.63.1
 
   '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':

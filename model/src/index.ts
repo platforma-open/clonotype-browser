@@ -1,10 +1,13 @@
 import type {
   AxesSpec,
+  ColumnData,
+  ColumnDataStatus,
   InferHrefType,
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
-  // PObjectId,
+  PColumnSpec,
+  PObjectId,
   PlRef,
   SUniversalPColumnId,
 } from "@platforma-sdk/model";
@@ -12,12 +15,12 @@ import {
   Annotation,
   BlockModelV3,
   canonicalizeJson,
-  // collectCtxColumnSnapshotProviders,
-  // ColumnCollectionBuilder,
+  collectCtxColumnSnapshotProviders,
+  ColumnCollectionBuilder,
   createPlDataTableSheet,
   createPlDataTableV2,
   createPlDataTableV3,
-  // expandByPartition,
+  expandByPartition,
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
@@ -82,6 +85,34 @@ function prepareToAdvancedFilters(
   ret.sort((a, b) => a.label.localeCompare(b.label));
 
   return ret;
+}
+
+/**
+ * Split columns by partition axis and add split key to domain for unique nativeIds.
+ * Returns undefined if any column's data is not ready.
+ */
+function splitByPartition(
+  snapshots: {
+    id: PObjectId;
+    spec: PColumnSpec;
+    dataStatus: ColumnDataStatus;
+    data: ColumnData | undefined;
+  }[],
+  splitAxisIdx: number,
+) {
+  const { items, complete } = expandByPartition(snapshots, [{ idx: splitAxisIdx }]);
+  if (!complete || items.length === 0) return undefined;
+
+  const splitAxisName = snapshots[0].spec.axesSpec[splitAxisIdx].name;
+  return items.map((col) => {
+    const trace = JSON.parse(col.spec.annotations?.["pl7.app/trace"] ?? "[]");
+    const splitValue = trace[0]?.label ?? "";
+    return {
+      ...col,
+      id: `${col.id}#${splitValue}` as PObjectId,
+      spec: { ...col.spec, domain: { ...col.spec.domain, [splitAxisName]: splitValue } },
+    };
+  });
 }
 
 export const platforma = BlockModelV3.create(blockDataModel)
@@ -232,53 +263,61 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
-    if (!anchorCtx) return undefined;
-
     const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
     if (!anchorSpec) return undefined;
 
-    const collection = new PColumnCollection();
+    // Build anchored collection: prerun first (priority), then ctx sources
+    const builder = new ColumnCollectionBuilder(ctx.services.pframeSpec!);
+    const annotation = ctx.prerun?.resolve({
+      field: "annotationsPf",
+      assertFieldType: "Input",
+      allowPermanentAbsence: true,
+    });
+    if (annotation) builder.addSource(annotation);
+    builder.addSources(collectCtxColumnSnapshotProviders(ctx));
 
-    const annotation = ctx.prerun
-      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
-      ?.getPColumns();
-    if (annotation) collection.addColumns(annotation);
+    const collection = builder.build({ anchors: { main: anchorSpec } });
+    if (!collection) return undefined;
 
-    // result pool is added after the pre-run outputs so that pre-run results take precedence
-    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
-
-    const columns = collection.getColumns(
-      [
-        {
-          domainAnchor: "main",
-          axes: [{ split: true }, { anchor: "main", idx: 1 }],
-          annotations: {
-            "pl7.app/isAbundance": "true",
-          },
-        },
-        {
-          domainAnchor: "main",
-          axes: [{ anchor: "main", idx: 1 }],
-        },
+    const matches = collection.findColumns({
+      mode: "enrichment",
+      maxHops: 0,
+      exclude: [
+        { name: "pl7.app/vdj/sequence/annotation" },
+        { annotations: { "pl7.app/isSubset": "true" } },
+        { axes: [{ name: anchorSpec.axesSpec[0].name }], partialAxesMatch: false },
       ],
-      { anchorCtx, exclude: commonExcludes, dontWaitAllData: true },
+    });
+    collection.dispose();
+
+    // Split multi-axis abundance by sampleId (idx 0)
+    const isAbundanceToSplit = (m: (typeof matches)[number]) =>
+      m.column.spec.annotations?.["pl7.app/isAbundance"] === "true" &&
+      m.column.spec.axesSpec.length > 1;
+
+    const splitColumns = splitByPartition(
+      matches.filter(isAbundanceToSplit).map((m) => ({ ...m.column, id: m.originalId })),
+      0,
     );
+    if (!splitColumns) return undefined;
 
-    if (!columns) return undefined;
-
-    // Convert PColumn[] to DiscoveredColumnSnapshot shape for createPlDataTableV3.
-    // Abundance columns are primary — they define the row universe (full join).
-    const discoveredColumns = columns.map((col) => ({
-      id: col.id as SUniversalPColumnId,
-      spec: col.spec,
-      dataStatus: "ready" as const,
-      data: { get: () => col.data },
-      isPrimary: col.spec.annotations?.["pl7.app/isAbundance"] === "true",
-    }));
-
+    // Merge: split abundance (primary) + enrichment columns (secondary)
     return createPlDataTableV3(ctx, {
-      columns: discoveredColumns,
+      columns: [
+        ...splitColumns.map((col) => ({
+          ...col,
+          id: col.id as SUniversalPColumnId,
+          isPrimary: true as const,
+        })),
+        ...matches
+          .filter((m) => !isAbundanceToSplit(m))
+          .map((m) => ({
+            ...m.column,
+            originalId: m.originalId,
+            linkerPath: m.path,
+            isPrimary: false as const,
+          })),
+      ],
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
       columnsDisplayOptions: {
