@@ -4,6 +4,7 @@ import type {
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
+  // PObjectId,
   PlRef,
   SUniversalPColumnId,
 } from "@platforma-sdk/model";
@@ -11,9 +12,12 @@ import {
   Annotation,
   BlockModelV3,
   canonicalizeJson,
+  // collectCtxColumnSnapshotProviders,
+  // ColumnCollectionBuilder,
   createPlDataTableSheet,
   createPlDataTableV2,
   createPlDataTableV3,
+  // expandByPartition,
   getUniquePartitionKeys,
   PColumnCollection,
   PColumnName,
@@ -228,23 +232,54 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
+    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
+    if (!anchorCtx) return undefined;
+
+    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
+    if (!anchorSpec) return undefined;
+
+    const collection = new PColumnCollection();
+
+    const annotation = ctx.prerun
+      ?.resolve({ field: "annotationsPf", assertFieldType: "Input", allowPermanentAbsence: true })
+      ?.getPColumns();
+    if (annotation) collection.addColumns(annotation);
+
+    // result pool is added after the pre-run outputs so that pre-run results take precedence
+    collection.addColumnProvider(ctx.resultPool).addAxisLabelProvider(ctx.resultPool);
+
+    const columns = collection.getColumns(
+      [
+        {
+          domainAnchor: "main",
+          axes: [{ split: true }, { anchor: "main", idx: 1 }],
+          annotations: {
+            "pl7.app/isAbundance": "true",
+          },
+        },
+        {
+          domainAnchor: "main",
+          axes: [{ anchor: "main", idx: 1 }],
+        },
+      ],
+      { anchorCtx, exclude: commonExcludes, dontWaitAllData: true },
+    );
+
+    if (!columns) return undefined;
+
+    // Convert PColumn[] to DiscoveredColumnSnapshot shape for createPlDataTableV3.
+    // Abundance columns are primary — they define the row universe (full join).
+    const discoveredColumns = columns.map((col) => ({
+      id: col.id as SUniversalPColumnId,
+      spec: col.spec,
+      dataStatus: "ready" as const,
+      data: { get: () => col.data },
+      isPrimary: col.spec.annotations?.["pl7.app/isAbundance"] === "true",
+    }));
+
     return createPlDataTableV3(ctx, {
-      anchors: { main: ctx.data.inputAnchor },
-      columnsSelector: {
-        mode: "enrichment",
-        exclude: [
-          { name: [{ type: "exact", value: "pl7.app/vdj/sequence/annotation" }] },
-          { annotations: { "pl7.app/isSubset": [{ type: "exact", value: "true" }] } },
-        ],
-      },
-      // Split per-sample abundance by sampleId — expanded columns define the row universe
-      splitAxes: {
-        match: (spec) =>
-          spec.annotations?.["pl7.app/isAbundance"] === "true" && spec.axesSpec.length > 1,
-        axes: [{ idx: 0 }],
-        asCore: true,
-      },
-      coreJoinType: "full",
+      columns: discoveredColumns,
+      primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
       columnsDisplayOptions: {
         visibility: [
@@ -263,25 +298,27 @@ export const platforma = BlockModelV3.create(blockDataModel)
     if (ctx.data.inputAnchor === undefined) return undefined;
 
     return createPlDataTableV3(ctx, {
-      anchors: { main: ctx.data.inputAnchor },
-      columnsSelector: {
-        mode: "enrichment",
-        exclude: [
-          // Exclude sampleId-only columns (Sample label, metadata) — they have only
-          // one axis matching sampleId. partialAxesMatch: false means ALL column axes
-          // must be accounted for by the selector's axis patterns.
-          {
-            axes: [{ name: [{ type: "exact", value: "pl7.app/sampleId" }] }],
-            partialAxesMatch: false,
-          },
-          // Exclude sequence annotations and subset columns
-          { name: [{ type: "exact", value: "pl7.app/vdj/sequence/annotation" }] },
-          {
-            annotations: {
-              "pl7.app/isSubset": [{ type: "exact", value: "true" }],
+      discoverColumnOptions: {
+        anchors: { main: ctx.data.inputAnchor },
+        columnsSelector: {
+          mode: "enrichment",
+          exclude: [
+            // Exclude sampleId-only columns (Sample label, metadata) — they have only
+            // one axis matching sampleId. partialAxesMatch: false means ALL column axes
+            // must be accounted for by the selector's axis patterns.
+            {
+              axes: [{ name: [{ type: "exact", value: "pl7.app/sampleId" }] }],
+              partialAxesMatch: false,
             },
-          },
-        ],
+            // Exclude sequence annotations and subset columns
+            { name: [{ type: "exact", value: "pl7.app/vdj/sequence/annotation" }] },
+            {
+              annotations: {
+                "pl7.app/isSubset": [{ type: "exact", value: "true" }],
+              },
+            },
+          ],
+        },
       },
       tableState: ctx.data.sampleTableState,
     });
