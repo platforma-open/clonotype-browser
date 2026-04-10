@@ -281,7 +281,6 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
     const matches = collection.findColumns({
       mode: "enrichment",
-      maxHops: 0,
       exclude: [
         { name: "pl7.app/vdj/sequence/annotation" },
         { annotations: { "pl7.app/isSubset": "true" } },
@@ -290,18 +289,29 @@ export const platforma = BlockModelV3.create(blockDataModel)
     });
     collection.dispose();
 
-    // Split multi-axis abundance by sampleId (idx 0)
-    const isAbundanceToSplit = (m: (typeof matches)[number]) =>
+    // Separate direct enrichments from linked (via linker) columns
+    const isLinked = (m: (typeof matches)[number]) => m.path.length > 0;
+    const directMatches = matches.filter((m) => !isLinked(m));
+    // Linked non-abundance only — linked abundance columns have a different aggregation level
+    // and would expand the row set when joined
+    const linkedMatches = matches.filter(
+      (m) => isLinked(m) && m.column.spec.annotations?.["pl7.app/isAbundance"] !== "true",
+    );
+
+    // Split only direct multi-axis abundance by sampleId (idx 0)
+    const isAbundanceToSplit = (m: (typeof directMatches)[number]) =>
       m.column.spec.annotations?.["pl7.app/isAbundance"] === "true" &&
       m.column.spec.axesSpec.length > 1;
 
     const splitColumns = splitByPartition(
-      matches.filter(isAbundanceToSplit).map((m) => ({ ...m.column, id: m.originalId })),
+      directMatches
+        .filter(isAbundanceToSplit)
+        .map((m) => ({ ...m.column, id: m.originalId })),
       0,
     );
     if (!splitColumns) return undefined;
 
-    // Merge: split abundance (primary) + enrichment columns (secondary)
+    // Merge: split abundance (primary) + direct enrichment (secondary) + linked non-abundance (secondary with linkerPath)
     return createPlDataTableV3(ctx, {
       columns: [
         ...splitColumns.map((col) => ({
@@ -309,7 +319,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
           id: col.id as SUniversalPColumnId,
           isPrimary: true as const,
         })),
-        ...matches
+        ...directMatches
           .filter((m) => !isAbundanceToSplit(m))
           .map((m) => ({
             ...m.column,
@@ -317,6 +327,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
             linkerPath: m.path,
             isPrimary: false as const,
           })),
+        ...linkedMatches.map((m) => ({
+          ...m.column,
+          originalId: m.originalId,
+          linkerPath: m.path,
+          isPrimary: false as const,
+        })),
       ],
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,

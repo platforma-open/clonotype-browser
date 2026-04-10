@@ -79,7 +79,6 @@ wf.body(func(args) {
 		})
 
 		outputs["tsvZip"] = exportResult.output("tsvZip")
-		outputs["exportDebug"] = exportResult.output("exportDebug")
 	}
 	
 	// Annotations computation
