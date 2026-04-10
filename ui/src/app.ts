@@ -2,7 +2,7 @@ import type { Platforma } from "@platforma-open/milaboratories.clonotype-browser
 import { platforma } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import type { PlSelectionModel } from "@platforma-sdk/model";
 import { defineAppV3 } from "@platforma-sdk/ui-vue";
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from "./model";
 import { getValuesForSelectedColumns } from "./utils";
 
@@ -33,7 +33,10 @@ export const sdkPlugin = defineAppV3(
       selectedKeys: [],
     } satisfies PlSelectionModel);
 
-    const isAnnotationModalOpen = ref(false);
+    const uiState = reactive({
+      isAnnotationModalOpen: false,
+    });
+
     const hasSelectedColumns = computed(() => {
       return selectedColumns.value.selectedKeys.length > 0;
     });
@@ -41,8 +44,8 @@ export const sdkPlugin = defineAppV3(
     return {
       progress: () => app.model.outputs.annotationsIsComputing ?? false,
       selectedColumns,
+      uiState,
       hasSelectedColumns,
-      isAnnotationModalOpen,
       routes: {
         "/": () => OverlapPage,
         "/sample": () => SamplePage,
