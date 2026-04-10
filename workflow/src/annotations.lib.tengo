@@ -25,14 +25,17 @@ computeClonotypeAnnotations := func(inputs) {
 		ll.panic("No annotation steps provided")
 	}
 
-	referenceColumn := canonical.encode({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] });
+	referenceColumn := canonical.encode({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] })
+	// Include linker columns so the ptabler can bridge axes when annotation steps
+	// reference linked columns (e.g. clusterSize on clusterId axis via linker from clonotypeKey)
+	linkerSelector := canonical.encode({ annotations: { "pl7.app/isLinkerColumn": "true" }, axes: [{ anchor: "main", idx: 1 }], partialAxesMatch: true })
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,
 		anchorRef: inputAnchor,
 		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
-		additionalColumns: [referenceColumn],
+		additionalColumns: [referenceColumn, linkerSelector],
 		shouldComputeFilters: shouldComputeFilters
 	})
 

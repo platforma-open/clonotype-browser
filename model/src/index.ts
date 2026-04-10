@@ -115,6 +115,53 @@ function splitByPartition(
   });
 }
 
+/**
+ * Find enrichment columns for the overlap view using ColumnCollectionBuilder.
+ * Returns direct + linked non-abundance matches, or undefined if not ready.
+ * Optionally accepts extra sources to add before ctx sources (e.g. prerun annotations).
+ */
+function findOverlapMatches<A, U, S extends { pframeSpec?: unknown }>(
+  ctx: Parameters<typeof collectCtxColumnSnapshotProviders>[0] & {
+    services: S;
+    resultPool: { getPColumnSpecByRef: (ref: PlRef) => PColumnSpec | undefined };
+  },
+  inputAnchor: PlRef,
+  extraSources?: Parameters<ColumnCollectionBuilder["addSource"]>[0][],
+) {
+  const anchorSpec = ctx.resultPool.getPColumnSpecByRef(inputAnchor);
+  if (!anchorSpec) return undefined;
+
+  const builder = new ColumnCollectionBuilder(
+    ctx.services.pframeSpec as ConstructorParameters<typeof ColumnCollectionBuilder>[0],
+  );
+  if (extraSources) {
+    for (const src of extraSources) builder.addSource(src);
+  }
+  builder.addSources(collectCtxColumnSnapshotProviders(ctx));
+
+  const collection = builder.build({ anchors: { main: anchorSpec } });
+  if (!collection) return undefined;
+
+  const matches = collection.findColumns({
+    mode: "enrichment",
+    exclude: [
+      { name: "pl7.app/vdj/sequence/annotation" },
+      { annotations: { "pl7.app/isSubset": "true" } },
+      { axes: [{ name: anchorSpec.axesSpec[0].name }], partialAxesMatch: false },
+    ],
+  });
+  collection.dispose();
+
+  // Direct + linked non-abundance (linked abundance would expand row set)
+  const filtered = matches.filter(
+    (m) =>
+      m.path.length === 0 ||
+      m.column.spec.annotations?.["pl7.app/isAbundance"] !== "true",
+  );
+
+  return { matches: filtered, anchorSpec };
+}
+
 export const platforma = BlockModelV3.create(blockDataModel)
 
   .args<BlockArgs>((data) => {
@@ -228,75 +275,41 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .output("overlapColumns", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
-    const anchorCtx = ctx.resultPool.resolveAnchorCtx({ main: ctx.data.inputAnchor });
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
-    if (anchorCtx == null || anchorSpec == null) return undefined;
+    const result = findOverlapMatches(ctx, ctx.data.inputAnchor);
+    if (!result) return undefined;
 
-    const entries = new PColumnCollection()
-      .addColumnProvider(ctx.resultPool)
-      .addAxisLabelProvider(ctx.resultPool)
-      .getColumns(
-        [
-          {
-            domainAnchor: "main",
-            axes: [{ anchor: "main", idx: 1 }],
-          },
-          {
-            domainAnchor: "main",
-            axes: [{ split: true }, { anchor: "main", idx: 1 }],
-            annotations: {
-              "pl7.app/isAbundance": "true",
-            },
-          },
-        ],
-        { anchorCtx, dontWaitAllData: true },
-      );
+    const entries = result.matches.map((m) => ({
+      id: m.column.id,
+      spec: m.column.spec,
+      data: m.column.data?.get(),
+    })) as PColumn<PColumnDataUniversal>[];
 
-    if (!entries) return undefined;
+    if (entries.length === 0) return undefined;
 
     return {
       pFrame: ctx.createPFrame(entries),
-      columns: prepareToAdvancedFilters(entries, anchorSpec.axesSpec),
+      columns: prepareToAdvancedFilters(entries, result.anchorSpec.axesSpec),
     };
   })
 
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
-    const anchorSpec = ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor);
-    if (!anchorSpec) return undefined;
-
-    // Build anchored collection: prerun first (priority), then ctx sources
-    const builder = new ColumnCollectionBuilder(ctx.services.pframeSpec!);
+    // Include prerun annotations as extra source (priority over ctx sources)
     const annotation = ctx.prerun?.resolve({
       field: "annotationsPf",
       assertFieldType: "Input",
       allowPermanentAbsence: true,
     });
-    if (annotation) builder.addSource(annotation);
-    builder.addSources(collectCtxColumnSnapshotProviders(ctx));
+    const extraSources = annotation ? [annotation] : [];
+    const result = findOverlapMatches(ctx, ctx.data.inputAnchor, extraSources);
+    if (!result) return undefined;
 
-    const collection = builder.build({ anchors: { main: anchorSpec } });
-    if (!collection) return undefined;
-
-    const matches = collection.findColumns({
-      mode: "enrichment",
-      exclude: [
-        { name: "pl7.app/vdj/sequence/annotation" },
-        { annotations: { "pl7.app/isSubset": "true" } },
-        { axes: [{ name: anchorSpec.axesSpec[0].name }], partialAxesMatch: false },
-      ],
-    });
-    collection.dispose();
+    const { matches, anchorSpec } = result;
 
     // Separate direct enrichments from linked (via linker) columns
-    const isLinked = (m: (typeof matches)[number]) => m.path.length > 0;
-    const directMatches = matches.filter((m) => !isLinked(m));
-    // Linked non-abundance only — linked abundance columns have a different aggregation level
-    // and would expand the row set when joined
-    const linkedMatches = matches.filter(
-      (m) => isLinked(m) && m.column.spec.annotations?.["pl7.app/isAbundance"] !== "true",
-    );
+    const directMatches = matches.filter((m) => m.path.length === 0);
+    const linkedMatches = matches.filter((m) => m.path.length > 0);
 
     // Split only direct multi-axis abundance by sampleId (idx 0)
     const isAbundanceToSplit = (m: (typeof directMatches)[number]) =>
