@@ -152,11 +152,12 @@ function findOverlapMatches<A, U, S extends { pframeSpec?: unknown }>(
   });
   collection.dispose();
 
-  // Direct + linked non-abundance (linked abundance would expand row set)
+  // Direct columns: all included.
+  // Linked columns: only per-clonotype (single-axis) columns are included.
+  // Multi-axis linked columns (e.g. per-sample abundance on clusterId) bring
+  // extra dimensions into the join and belong in the sample table instead.
   const filtered = matches.filter(
-    (m) =>
-      m.path.length === 0 ||
-      m.column.spec.annotations?.["pl7.app/isAbundance"] !== "true",
+    (m) => m.path.length === 0 || m.column.spec.axesSpec.length === 1,
   );
 
   return { matches: filtered, anchorSpec };
