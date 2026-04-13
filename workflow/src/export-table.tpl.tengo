@@ -11,12 +11,14 @@ pt := import("@platforma-sdk/workflow-tengo:pt")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
-json := import("json")
+
+specs := import(":specs")
+exportInputs := import(":export-inputs")
 
 self.awaitState("columnBundle", "PColumnBundleWithPartitions")
-self.awaitState("columnBundle", "sampleLabels", "ResourceReady")
-self.awaitState("inputAnchor", "ResourceReady")
+self.awaitState("columnBundle", exportInputs.sampleLabelsKey, "ResourceReady")
 
+// pl-tengo requires importSoftware on one line with a string literal — line break not allowed.
 sevenZipSw := assets.importSoftware("@platforma-open/milaboratories.software-binary-collection.software-7zip:main")
 
 CLONE_KEY_HEADER := "clonotypeKey"
@@ -47,50 +49,11 @@ isValidColumn := func(col) {
 	if col.spec.name == "pl7.app/vdj/sequence/annotation" {
 		return false
 	}
-	if is_undefined(col.spec.annotations["pl7.app/label"]) {
-		return false
-	}
-	return true
+	return !is_undefined(specs.getLabel(col.spec))
 }
 
-// Helper function to add suffixes to duplicate labels
-// Input: map of identifier -> label (from model)
-// Output: map of identifier -> unique label (with suffixes if needed)
-addSuffixesToDuplicateLabels := func(labelMap) {
-	labelCounts := {}
-	labelOccurrences := {}
-	finalLabels := {}
-	
-	// Count occurrences of each label
-	for id, label in labelMap {
-		if is_undefined(labelCounts[label]) {
-			labelCounts[label] = 0
-		}
-		labelCounts[label] += 1
-	}
-	
-	// Add suffixes for duplicates
-	for id, label in labelMap {
-		if labelCounts[label] > 1 {
-			if is_undefined(labelOccurrences[label]) {
-				labelOccurrences[label] = 0
-			}
-			labelOccurrences[label] += 1
-			if labelOccurrences[label] > 1 {
-				finalLabels[id] = label + " (" + string(labelOccurrences[label] - 1) + ")"
-			} else {
-				finalLabels[id] = label
-			}
-		} else {
-			finalLabels[id] = label
-		}
-	}
-	
-	return finalLabels
-}
-
-// Helper function to ensure label uniqueness against used labels
-// Returns the unique label (with suffix if needed) and updates usedLabelsSet
+// Returns label uniqued against usedLabelsSet (mutated): on collision appends
+// " (1)", " (2)", ... until unique, then records the result.
 ensureUniqueLabel := func(label, usedLabelsSet) {
 	if is_undefined(label) {
 		return label
@@ -108,105 +71,104 @@ ensureUniqueLabel := func(label, usedLabelsSet) {
 	return label
 }
 
-// Process linked columns and return frames, updated byCloneSpecs, and linker column names to exclude
-processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, bigTableWf, byCloneSpecs, usedLabels) {
+// Builds a per-linker TSV frame for each linker that can bridge axes, joining
+// the linker column itself + each linked column it brings into the table.
+//
+// Inputs: { columnBundle, datasetSpec, linkedColumns, bigTableWf, byCloneSpecs, usedLabelsSet }
+//   - linkedColumns: { anchorName -> { anchorRef, columns: { queryStr -> label } } }
+//   - usedLabelsSet: shared across the entire export — mutated as labels are taken.
+// Returns: { frames, byCloneSpecs, linkerColumnHeaders }
+//   - linkerColumnHeaders: synthetic headers + linker labels to suppress in the
+//     final select (prevents the linker column being selected twice).
+processLinkedColumns := func(inputs) {
+	columnBundle := inputs.columnBundle
+	datasetSpec := inputs.datasetSpec
+	linkedColumns := inputs.linkedColumns
+	bigTableWf := inputs.bigTableWf
+	byCloneSpecs := inputs.byCloneSpecs
+	usedLabelsSet := inputs.usedLabelsSet
+
 	linkedFrames := []
 	updatedByCloneSpecs := byCloneSpecs
 	linkerColumnHeaders := []
-	
-	usedLabelsSet := {}
-	if !is_undefined(usedLabels) {
-		for label in usedLabels {
-			usedLabelsSet[label] = true
-		}
-	}
-	
-	// Build map of all linked column labels from model
-	allLinkedLabelsMap := {}
-	for linker, data in linkedColumns {
-		if is_undefined(data.labels) {
+
+	for _, anchorName in maps.getKeys(linkedColumns) {
+		data := linkedColumns[anchorName]
+
+		// A linker is unusable if it can't bridge axes — skip the entire entry.
+		if is_undefined(data.anchorRef) {
 			continue
 		}
-		for colName, label in data.labels {
-			allLinkedLabelsMap[colName] = label
+		linkerCol := columnBundle.getColumn(data.anchorRef)
+		if is_undefined(linkerCol) {
+			continue
 		}
-	}
-	
-	derivedLabels := addSuffixesToDuplicateLabels(allLinkedLabelsMap)
-	
-	for linker, data in linkedColumns {
+
+		// Find the linker's cluster axis (the one not matching the dataset's clonotype axis).
+		clusterAxisIdx := undefined
+		if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[1].name {
+			clusterAxisIdx = 0
+		} else if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[0].name {
+			clusterAxisIdx = 1
+		}
+		if is_undefined(clusterAxisIdx) {
+			continue
+		}
+
 		hasValidColumns := false
-		for colName, _ in data.columns {
-			col := columnBundle.getColumn(colName)
+		for queryStr, _ in data.columns {
+			col := columnBundle.getColumn(queryStr)
 			if !is_undefined(col) && isValidColumn(col) {
 				hasValidColumns = true
 				break
 			}
 		}
-		
 		if !hasValidColumns {
 			continue
 		}
-		
+
 		linkedTsvBuilder := pFrames.tsvFileBuilder().cpu(1).mem("4GiB")
 		linkedTsvBuilder.setAxisHeader(datasetSpec.axesSpec[1], CLONE_KEY_HEADER)
-		
-		clusterAxisName := "cluster_" + linker
-		
-		if !is_undefined(data.anchorRef) {
-			linkerCol := columnBundle.getColumn(data.anchorRef)
-			if !is_undefined(linkerCol) {
-				linkerHeader := "linker." + linker
-				linkerLabel := linkerCol.spec.annotations["pl7.app/label"]
-				
-				if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[1].name {
-					linkedTsvBuilder.add(linkerCol, { header: linkerHeader })
-					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[0], clusterAxisName)
-					linkerColumnHeaders = append(linkerColumnHeaders, linkerHeader)
-					if !is_undefined(linkerLabel) {
-						linkerColumnHeaders = append(linkerColumnHeaders, linkerLabel)
-					}
-				} else if datasetSpec.axesSpec[1].name == linkerCol.spec.axesSpec[0].name {
-					linkedTsvBuilder.add(linkerCol, { header: linkerHeader })
-					linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[1], clusterAxisName)
-					linkerColumnHeaders = append(linkerColumnHeaders, linkerHeader)
-					if !is_undefined(linkerLabel) {
-						linkerColumnHeaders = append(linkerColumnHeaders, linkerLabel)
-					}
-				}
-			}
+
+		clusterAxisName := "cluster_" + anchorName
+		linkerHeader := "linker." + anchorName
+		linkerLabel := specs.getLabel(linkerCol.spec)
+
+		linkedTsvBuilder.add(linkerCol, { header: linkerHeader })
+		linkedTsvBuilder.setAxisHeader(linkerCol.spec.axesSpec[clusterAxisIdx], clusterAxisName)
+		linkerColumnHeaders = append(linkerColumnHeaders, linkerHeader)
+		if !is_undefined(linkerLabel) {
+			linkerColumnHeaders = append(linkerColumnHeaders, linkerLabel)
 		}
-		
-		for colName, _ in data.columns {
-			col := columnBundle.getColumn(colName)
+
+		for _, queryStr in maps.getKeys(data.columns) {
+			col := columnBundle.getColumn(queryStr)
 			if is_undefined(col) || !isValidColumn(col) {
 				continue
 			}
-			
-			uniqueHeader := derivedLabels[colName]
-			if is_undefined(uniqueHeader) {
-				uniqueHeader = col.spec.annotations["pl7.app/label"]
+
+			label := data.columns[queryStr]
+			if is_undefined(label) || label == "" {
+				label = specs.getLabel(col.spec)
 			}
-			
-			uniqueHeader = ensureUniqueLabel(uniqueHeader, usedLabelsSet)
-			
+			uniqueHeader := ensureUniqueLabel(label, usedLabelsSet)
+
 			for axisIdx, axis in col.spec.axesSpec {
 				if axis.name != datasetSpec.axesSpec[1].name {
 					axisHeaderName := clusterAxisName + "_" + string(axisIdx)
 					linkedTsvBuilder.setAxisHeader(axis, axisHeaderName)
 				}
 			}
-			
+
 			linkedTsvBuilder.add(col, { header: uniqueHeader })
-			updatedSpec := maps.clone(col.spec)
-			updatedSpec.annotations["pl7.app/label"] = uniqueHeader
-			updatedByCloneSpecs += [updatedSpec]
+			updatedByCloneSpecs += [specs.withLabel(col.spec, uniqueHeader)]
 		}
-		
+
 		linkedTsv := linkedTsvBuilder.build()
-		linkedFrames = append(linkedFrames, bigTableWf.frame(linkedTsv, { xsvType: "tsv", inferSchema: false }))
+		linkedFrames = append(
+			linkedFrames, bigTableWf.frame(linkedTsv, { xsvType: "tsv", inferSchema: false }))
 	}
-	
+
 	return {
 		frames: linkedFrames,
 		byCloneSpecs: updatedByCloneSpecs,
@@ -215,10 +177,10 @@ processLinkedColumns := func(columnBundle, datasetSpec, linkedColumns, bigTableW
 }
 
 // Sort specs by orderPriority (higher priority first)
-sortByOrderPriority := func(specs) {
-	slices.quickSortInPlaceFn(specs, func(a, b) {
-		aPriority := a.annotations["pl7.app/table/orderPriority"]
-		bPriority := b.annotations["pl7.app/table/orderPriority"]
+sortByOrderPriority := func(specList) {
+	slices.quickSortInPlaceFn(specList, func(a, b) {
+		aPriority := specs.getOrderPriority(a)
+		bPriority := specs.getOrderPriority(b)
 		if is_undefined(aPriority) {
 			return false
 		}
@@ -227,14 +189,14 @@ sortByOrderPriority := func(specs) {
 		}
 		return int(aPriority) > int(bPriority)
 	})
-	return specs
+	return specList
 }
 
 // Sort columns by orderPriority (higher priority first)
 sortColumnsByOrderPriority := func(columns) {
 	slices.quickSortInPlaceFn(columns, func(a, b) {
-		aPriority := a.spec.annotations["pl7.app/table/orderPriority"]
-		bPriority := b.spec.annotations["pl7.app/table/orderPriority"]
+		aPriority := specs.getOrderPriority(a.spec)
+		bPriority := specs.getOrderPriority(b.spec)
 		if is_undefined(aPriority) {
 			return false
 		}
@@ -250,7 +212,7 @@ sortColumnsByOrderPriority := func(columns) {
 filterLinkerColumns := func(columns) {
 	result := []
 	for col in columns {
-		if is_undefined(col.spec.annotations) || col.spec.annotations["pl7.app/isLinkerColumn"] != "true" {
+		if !specs.isLinkerColumn(col.spec) {
 			result = append(result, col)
 		}
 	}
@@ -258,19 +220,19 @@ filterLinkerColumns := func(columns) {
 }
 
 // Filter specs by linker headers
-filterSpecsByLinkerHeaders := func(specs, linkerHeaders) {
+filterSpecsByLinkerHeaders := func(specList, linkerHeaders) {
 	if len(linkerHeaders) == 0 {
-		return specs
+		return specList
 	}
-	
+
 	linkerLabelsSet := {}
 	for header in linkerHeaders {
 		linkerLabelsSet[header] = true
 	}
-	
+
 	result := []
-	for spec in specs {
-		label := spec.annotations["pl7.app/label"]
+	for spec in specList {
+		label := specs.getLabel(spec)
 		if is_undefined(linkerLabelsSet[label]) {
 			result = append(result, spec)
 		}
@@ -299,15 +261,14 @@ buildJoinTree := func(frames, joinKey) {
 
 self.body(func(inputs) {
 	columnBundle := inputs.columnBundle
-	inputAnchor := inputs.inputAnchor
 	linkedColumns := inputs.linkedColumns
 	annotationsPf := inputs.annotationsPf
 
-	columnsPerSample := columnBundle.getColumns("perSample")
-	allColumnsPerClonotype := columnBundle.getColumns("perClonotype")
+	columnsPerSample := exportInputs.getPerSampleColumns(columnBundle)
+	allColumnsPerClonotype := exportInputs.getPerClonotypeColumns(columnBundle)
 	columnsPerClonotype := filterLinkerColumns(allColumnsPerClonotype)
-	
-	sampleLabels := columnBundle.getColumn("sampleLabels")
+
+	sampleLabels := exportInputs.getSampleLabelsColumn(columnBundle)
 	sampleLabelsMap := sampleLabels.data.getDataAsJson().data
 
 	byCloneSpecs := []
@@ -346,12 +307,8 @@ self.body(func(inputs) {
 		for partition in partitions {
 			sampleLabel := sampleLabelsMap[key]
 			ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + key)
-			spec := maps.deepTransform(partition.getSpec(), {
-				annotations: {
-					"pl7.app/label": func(label) {
-						return label + " / " + sampleLabel
-					}
-				}
+			spec := specs.mapLabel(partition.getSpec(), func(label) {
+				return label + " / " + sampleLabel
 			})
 			if !axisHeaderSet {
 				builder.setAxisHeader(spec.axesSpec[0], CLONE_KEY_HEADER)
@@ -372,20 +329,23 @@ self.body(func(inputs) {
 		mem(string(int(math.min(math.max(numberOfSamples, 2) * 8, 128))) + "GiB")
 
 	pfs := []
-	datasetSpec := columnBundle.getSpec(inputAnchor)
-	
-	// Get derived labels from model for columnsPerClonotype
+	datasetSpec := exportInputs.getAnchorSpec(columnBundle)
+
+	// Sort per-clonotype columns deterministically before dedup so label suffix
+	// assignment is stable across runs.
+	sortColumnsByOrderPriority(columnsPerClonotype)
+
 	specToLabelMap := inputs.byClonotypeLabels
 	if is_undefined(specToLabelMap) {
 		specToLabelMap = {}
 	}
-	specToLabelMap = addSuffixesToDuplicateLabels(specToLabelMap)
-	
+
+	// Shared across per-clonotype + annotation + linker dedup.
 	usedLabelsSet := {}
 	tsvBuilder := undefined
 	columnsInBuilder := 0
 	columnIndex := 0
-	
+
 	// Build per-clonotype columns
 	for column in columnsPerClonotype {
 		if !isValidColumn(column) {
@@ -409,13 +369,11 @@ self.body(func(inputs) {
 		columnKey := makeColumnKey(column.spec)
 		header := specToLabelMap[columnKey]
 		if is_undefined(header) {
-			header = column.spec.annotations["pl7.app/label"]
+			header = specs.getLabel(column.spec)
 		}
 		header = ensureUniqueLabel(header, usedLabelsSet)
-		
-		updatedSpec := maps.clone(column.spec)
-		updatedSpec.annotations["pl7.app/label"] = header
-		byCloneSpecs += [updatedSpec]
+
+		byCloneSpecs += [specs.withLabel(column.spec, header)]
 		
 		tsvBuilder.add(column, { header: header })
 		columnsInBuilder += 1
@@ -441,11 +399,9 @@ self.body(func(inputs) {
 		hasAnnotations := false
 		maps.forEach(pFramesUtil.pFrameToColumnsMap(annotationsPf), func(id, col) {
 			if !isValidColumn(col) { return }
-			header := ensureUniqueLabel(col.spec.annotations["pl7.app/label"], usedLabelsSet)
+			header := ensureUniqueLabel(specs.getLabel(col.spec), usedLabelsSet)
 			annotationTsvBuilder.add(col, { header: header })
-			updatedSpec := maps.clone(col.spec)
-			updatedSpec.annotations["pl7.app/label"] = header
-			byCloneSpecs += [updatedSpec]
+			byCloneSpecs += [specs.withLabel(col.spec, header)]
 			hasAnnotations = true
 		})
 		if hasAnnotations {
@@ -453,27 +409,26 @@ self.body(func(inputs) {
 		}
 	}
 
-	// Collect labels used to ensure global uniqueness
-	usedLabelsFromPerClonotype := []
-	for spec in byCloneSpecs {
-		if !is_undefined(spec.annotations["pl7.app/label"]) {
-			usedLabelsFromPerClonotype = append(usedLabelsFromPerClonotype, spec.annotations["pl7.app/label"])
-		}
-	}
-	
-	// Process linked columns
+	// usedLabelsSet was populated above by per-clonotype + annotation loops; pass it in
+	// so linker dedup composes against the same set without rebuilding from byCloneSpecs.
 	linkerColumnHeaders := []
 	if !is_undefined(linkedColumns) {
-		linkedResult := processLinkedColumns(columnBundle, datasetSpec, linkedColumns, bigTableWf, byCloneSpecs, usedLabelsFromPerClonotype)
+		linkedResult := processLinkedColumns({
+			columnBundle: columnBundle,
+			datasetSpec: datasetSpec,
+			linkedColumns: linkedColumns,
+			bigTableWf: bigTableWf,
+			byCloneSpecs: byCloneSpecs,
+			usedLabelsSet: usedLabelsSet
+		})
 		pfs += linkedResult.frames
 		byCloneSpecs = linkedResult.byCloneSpecs
 		linkerColumnHeaders = linkedResult.linkerColumnHeaders
 	}
 
-	// Add per-sample frames
+	// maps.forEach iterates in sorted-key order — see SDK maps.lib.tengo:232.
 	maps.forEach(perSampleTsvFiles, func(key, tsv) {
-		perSamplePf := bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })
-		pfs += [perSamplePf]
+		pfs += [bigTableWf.frame(tsv, { xsvType: "tsv", inferSchema: false })]
 	})
 	
 	ll.assert(len(pfs) > 0, "Expected at least one table, got " + string(len(pfs)))
@@ -487,8 +442,9 @@ self.body(func(inputs) {
 	filteredBySampleSpecs := filterSpecsByLinkerHeaders(bySampleSpecs, linkerColumnHeaders)
 
 	// Select columns in order and save
-	bigTablePf = bigTablePf.select(slices.map(filteredByCloneSpecs + filteredBySampleSpecs, func(spec) {
-		return pt.col(spec.annotations["pl7.app/label"])
+	orderedSpecs := filteredByCloneSpecs + filteredBySampleSpecs
+	bigTablePf = bigTablePf.select(slices.map(orderedSpecs, func(spec) {
+		return pt.col(specs.getLabel(spec))
 	})...)
 	bigTablePf.save("big_table.tsv")
 	

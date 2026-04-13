@@ -1,32 +1,38 @@
 import type {
   AxesSpec,
-  ColumnData,
-  ColumnDataStatus,
+  ColumnSnapshot,
   InferHrefType,
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
-  PColumnSpec,
   PObjectId,
   PlRef,
   SUniversalPColumnId,
 } from "@platforma-sdk/model";
 import {
-  Annotation,
   BlockModelV3,
   canonicalizeJson,
-  collectCtxColumnSnapshotProviders,
   ColumnCollectionBuilder,
+  collectCtxColumnSnapshotProviders,
   createPlDataTableSheet,
   createPlDataTableV2,
   createPlDataTableV3,
   expandByPartition,
   getUniquePartitionKeys,
   PColumnCollection,
-  PColumnName,
+  Services,
+  type RenderCtxBase,
+  type RequireServices,
 } from "@platforma-sdk/model";
 import type { AnnotationSpec, TableInputs } from "./types";
 import { commonExcludes, getLinkedColumnsForArgs } from "./column_utils";
+import {
+  Annotation,
+  getTrace,
+  isAbundanceColumn,
+  PColumnName,
+  readAnnotation,
+} from "./schema";
 import { blockDataModel } from "./dataModel";
 
 export type { LinkedColumnEntry } from "./column_utils";
@@ -62,7 +68,7 @@ function prepareToAdvancedFilters(
     return {
       id: entry.id as SUniversalPColumnId,
       spec: entry.spec,
-      label: entry.spec.annotations?.[Annotation.Label] ?? "",
+      label: readAnnotation(entry.spec, Annotation.Label) ?? "",
       axesToBeFixed:
         axesSpec.length > anchorAxesSpec.length
           ? axesSpec.slice(anchorAxesSpec.length).map((axis, i) => {
@@ -73,8 +79,8 @@ function prepareToAdvancedFilters(
               return {
                 idx: anchorAxesSpec.length + i,
                 label:
-                  labelColumn?.spec.annotations?.[Annotation.Label] ??
-                  axis.annotations?.[Annotation.Label] ??
+                  readAnnotation(labelColumn?.spec, Annotation.Label) ??
+                  readAnnotation(axis, Annotation.Label) ??
                   axis.name,
               };
             })
@@ -91,22 +97,19 @@ function prepareToAdvancedFilters(
  * Split columns by partition axis and add split key to domain for unique nativeIds.
  * Returns undefined if any column's data is not ready.
  */
-function splitByPartition(
-  snapshots: {
-    id: PObjectId;
-    spec: PColumnSpec;
-    dataStatus: ColumnDataStatus;
-    data: ColumnData | undefined;
-  }[],
+function splitByPartition<A, U, S extends RequireServices<typeof Services.PFrameSpec>>(
+  ctx: RenderCtxBase<A, U, S>,
+  snapshots: ColumnSnapshot<PObjectId>[],
   splitAxisIdx: number,
 ) {
-  const { items, complete } = expandByPartition(snapshots, [{ idx: splitAxisIdx }]);
+  const { items, complete } = expandByPartition(snapshots, [{ idx: splitAxisIdx }], {
+    axisLabels: (axisId) => ctx.resultPool.findLabels(axisId),
+  });
   if (!complete || items.length === 0) return undefined;
 
   const splitAxisName = snapshots[0].spec.axesSpec[splitAxisIdx].name;
   return items.map((col) => {
-    const trace = JSON.parse(col.spec.annotations?.["pl7.app/trace"] ?? "[]");
-    const splitValue = trace[0]?.label ?? "";
+    const splitValue = getTrace(col.spec)[0]?.label ?? "";
     return {
       ...col,
       id: `${col.id}#${splitValue}` as PObjectId,
@@ -120,20 +123,19 @@ function splitByPartition(
  * Returns direct + linked non-abundance matches, or undefined if not ready.
  * Optionally accepts extra sources to add before ctx sources (e.g. prerun annotations).
  */
-function findOverlapMatches<A, U, S extends { pframeSpec?: unknown }>(
-  ctx: Parameters<typeof collectCtxColumnSnapshotProviders>[0] & {
-    services: S;
-    resultPool: { getPColumnSpecByRef: (ref: PlRef) => PColumnSpec | undefined };
-  },
+function findOverlapMatches<
+  A,
+  U,
+  S extends RequireServices<typeof Services.PFrameSpec>,
+>(
+  ctx: RenderCtxBase<A, U, S>,
   inputAnchor: PlRef,
   extraSources?: Parameters<ColumnCollectionBuilder["addSource"]>[0][],
 ) {
   const anchorSpec = ctx.resultPool.getPColumnSpecByRef(inputAnchor);
   if (!anchorSpec) return undefined;
 
-  const builder = new ColumnCollectionBuilder(
-    ctx.services.pframeSpec as ConstructorParameters<typeof ColumnCollectionBuilder>[0],
-  );
+  const builder = new ColumnCollectionBuilder(ctx.services.pframeSpec);
   if (extraSources) {
     for (const src of extraSources) builder.addSource(src);
   }
@@ -175,6 +177,23 @@ export const platforma = BlockModelV3.create(blockDataModel)
       annotationSpec: data.annotationSpec,
       runExportAll: data.runExportAll,
       tableInputs: data.tableInputs,
+    };
+  })
+
+  // Prerun runs in v3 only when .prerunArgs is defined; return undefined to skip it.
+  // Each branch's inputs are gated independently so unrelated edits don't invalidate
+  // the prerun cache.
+  .prerunArgs((data) => {
+    if (data.inputAnchor === undefined) return undefined;
+    const wantAnnotations = data.annotationSpec.steps.length > 0;
+    const wantExport = data.runExportAll;
+    if (!wantAnnotations && !wantExport) return undefined;
+
+    return {
+      inputAnchor: data.inputAnchor,
+      annotationSpec: wantAnnotations ? data.annotationSpec : { title: "", steps: [] },
+      runExportAll: wantExport,
+      tableInputs: wantExport ? data.tableInputs : undefined,
     };
   })
 
@@ -260,7 +279,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
           }
           const key = canonicalizeJson(keyObj);
 
-          const label = entry.spec.annotations?.[Annotation.Label] || "";
+          const label = readAnnotation(entry.spec, Annotation.Label) || "";
           if (label) {
             byClonotypeLabels[key] = label;
           }
@@ -296,17 +315,18 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
 
-    // Include prerun annotations as extra source (priority over ctx sources)
+    // Include prerun annotations once data is ready — addSource silently drops
+    // unresolved accessors, so passing them earlier only churns the table descriptor.
     const annotation = ctx.prerun?.resolve({
       field: "annotationsPf",
       assertFieldType: "Input",
       allowPermanentAbsence: true,
     });
-    const extraSources = annotation ? [annotation] : [];
+    const extraSources = annotation?.getIsReadyOrError() ? [annotation] : [];
     const result = findOverlapMatches(ctx, ctx.data.inputAnchor, extraSources);
     if (!result) return undefined;
 
-    const { matches, anchorSpec } = result;
+    const { matches } = result;
 
     // Separate direct enrichments from linked (via linker) columns
     const directMatches = matches.filter((m) => m.path.length === 0);
@@ -314,10 +334,10 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
     // Split only direct multi-axis abundance by sampleId (idx 0)
     const isAbundanceToSplit = (m: (typeof directMatches)[number]) =>
-      m.column.spec.annotations?.["pl7.app/isAbundance"] === "true" &&
-      m.column.spec.axesSpec.length > 1;
+      isAbundanceColumn(m.column.spec) && m.column.spec.axesSpec.length > 1;
 
     const splitColumns = splitByPartition(
+      ctx,
       directMatches
         .filter(isAbundanceToSplit)
         .map((m) => ({ ...m.column, id: m.originalId })),
@@ -325,7 +345,8 @@ export const platforma = BlockModelV3.create(blockDataModel)
     );
     if (!splitColumns) return undefined;
 
-    // Merge: split abundance (primary) + direct enrichment (secondary) + linked non-abundance (secondary with linkerPath)
+    // Merge: split abundance (primary) + direct enrichment (secondary)
+    // + linked non-abundance (secondary with linkerPath).
     return createPlDataTableV3(ctx, {
       columns: [
         ...splitColumns.map((col) => ({
@@ -354,8 +375,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
         visibility: [
           {
             match: (spec) =>
-              spec.annotations?.["pl7.app/isAbundance"] === "true" &&
-              spec.name !== "pl7.app/vdj/sampleCount",
+              isAbundanceColumn(spec) && spec.name !== PColumnName.SampleCount,
             visibility: "optional",
           },
         ],
@@ -462,12 +482,14 @@ export const platforma = BlockModelV3.create(blockDataModel)
   })
 
   .sections((ctx) => {
+    // Stats gate matches main's argsValid (inputAnchor + steps) since v3 has no
+    // global argsValid; sections render independently of .args throwing.
+    const showStats =
+      ctx.data.inputAnchor !== undefined && ctx.data.annotationSpec.steps.length > 0;
     return [
       { type: "link", href: "/", label: "Overlap" } as const,
       { type: "link", href: "/sample", label: "By Sample" } as const,
-      ...(ctx.data.annotationSpec.steps.length > 0
-        ? [{ type: "link", href: "/stats", label: "Stats" } as const]
-        : []),
+      ...(showStats ? [{ type: "link", href: "/stats", label: "Stats" } as const] : []),
     ];
   })
 

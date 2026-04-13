@@ -1,12 +1,13 @@
 import type {
   AnchoredPColumnSelector,
+  BlockRenderCtx,
   PColumn,
   PColumnDataUniversal,
   PColumnSpec,
   PlRef,
-  RenderCtx,
 } from "@platforma-sdk/model";
-import { Annotation, canonicalizeJson, deriveLabels, isLabelColumn } from "@platforma-sdk/model";
+import { canonicalizeJson, deriveDistinctLabels, isLabelColumn } from "@platforma-sdk/model";
+import { Annotation, readAnnotation } from "./schema";
 
 /**
  * Common column selectors to exclude from queries.
@@ -93,16 +94,14 @@ export function deriveLabelsFromTrace(
     return new Map();
   }
 
-  // Use existing deriveLabels utility with trace information
-  const derivedLabels = deriveLabels(columns, (col) => col.spec, { includeNativeLabel: true });
+  // Parallel arrays: labels[i] corresponds to columns[i].
+  const labels = deriveDistinctLabels(
+    columns.map((c) => c.spec),
+    { includeNativeLabel: true },
+  );
 
-  // Create a simple map - no suffix handling
   const labelMap = new Map<string, string>();
-  for (const { value, label } of derivedLabels) {
-    // value is the column itself, value.id is the column id
-    labelMap.set(value.id as string, label);
-  }
-
+  columns.forEach((col, i) => labelMap.set(col.id, labels[i]));
   return labelMap;
 }
 
@@ -128,7 +127,7 @@ export interface LinkerInfo<_TArgs, _TUiState> {
  * @returns Array of linker information objects
  */
 export function findLinkerOptions<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: BlockRenderCtx<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
 ): LinkerInfo<TArgs, TUiState>[] {
@@ -167,11 +166,13 @@ export function findLinkerOptions<TArgs, TUiState>(
 
 /**
  * Entry for a linked column group (associated with one linker).
+ * The anchor name is the map key under which this entry is stored in the
+ * parent record — not duplicated as a field here.
  */
 export interface LinkedColumnEntry {
-  anchorName: string;
   anchorRef: PlRef;
-  columns: Record<string, string>; // Map from column ID (as string) to derived label
+  /** Map from canonical AnchoredPColumnSelector query string to the column's derived label. */
+  columns: Record<string, string>;
 }
 
 /**
@@ -184,7 +185,7 @@ export interface LinkedColumnEntry {
  * @returns Record of linked column entries keyed by anchor name, or undefined if not available
  */
 export function getLinkedColumnsForArgs<TArgs, TUiState>(
-  ctx: RenderCtx<TArgs, TUiState>,
+  ctx: BlockRenderCtx<TArgs, TUiState>,
   anchor: PlRef,
   anchorSpec: PColumnSpec,
 ): Record<string, LinkedColumnEntry> | undefined {
@@ -265,7 +266,7 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
 
         // Use derived label from trace, fallback to annotation label
         const derivedLabel =
-          derivedLabelMap.get(p.id as string) || p.spec.annotations?.[Annotation.Label] || "";
+          derivedLabelMap.get(p.id) || readAnnotation(p.spec, Annotation.Label) || "";
 
         // Map query string to label
         columns[queryStr] = derivedLabel;
@@ -273,9 +274,8 @@ export function getLinkedColumnsForArgs<TArgs, TUiState>(
 
       if (Object.keys(columns).length > 0) {
         result[anchorName] = {
-          anchorName,
           anchorRef: linkerOption.ref,
-          columns, // Map from query to derived label
+          columns,
         };
       }
     }

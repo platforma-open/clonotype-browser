@@ -1,0 +1,66 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+
+specs := import(":specs")
+
+// Bundle query keys — private to this file. Consumers access columns via the
+// accessor functions below.
+perSampleKey := "perSample"
+perClonotypeKey := "perClonotype"
+sampleLabelsKey := "sampleLabels"
+
+// Builds the column bundle consumed by the export ephemeral template.
+// Each linked-column query is registered under its canonical query string;
+// export-table looks those columns up via the same string.
+buildExportBundle := func(inputAnchor, linkedColumns) {
+	bundle := wf.createPBundleBuilder()
+	bundle.addAnchor(specs.mainAnchorName, inputAnchor)
+	bundle.addMulti(specs.perSampleSelector, perSampleKey)
+	bundle.addMulti(specs.perClonotypeSelector, perClonotypeKey)
+	bundle.addSingle(specs.sampleLabelsSelector, sampleLabelsKey)
+
+	if !is_undefined(linkedColumns) {
+		for _, anchorName in maps.getKeys(linkedColumns) {
+			entry := linkedColumns[anchorName]
+			if is_undefined(entry.anchorRef) || is_undefined(entry.columns) {
+				continue
+			}
+			bundle.addAnchor(anchorName, entry.anchorRef)
+			for _, queryStr in maps.getKeys(entry.columns) {
+				bundle.addSingle(queryStr)
+			}
+		}
+	}
+
+	return bundle.build()
+}
+
+// === Accessors — how the export template retrieves columns from the bundle. ===
+
+getPerSampleColumns := func(bundle) {
+	return bundle.getColumns(perSampleKey)
+}
+
+getPerClonotypeColumns := func(bundle) {
+	return bundle.getColumns(perClonotypeKey)
+}
+
+getSampleLabelsColumn := func(bundle) {
+	return bundle.getColumn(sampleLabelsKey)
+}
+
+getAnchorSpec := func(bundle) {
+	return bundle.getSpec(specs.mainAnchorName)
+}
+
+export ll.toStrict({
+	// Exposed so templates can reference it in awaitState declarations.
+	sampleLabelsKey: sampleLabelsKey,
+
+	buildExportBundle: buildExportBundle,
+	getPerSampleColumns: getPerSampleColumns,
+	getPerClonotypeColumns: getPerClonotypeColumns,
+	getSampleLabelsColumn: getSampleLabelsColumn,
+	getAnchorSpec: getAnchorSpec
+})

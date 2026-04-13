@@ -4,7 +4,7 @@ pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 annotations := import("@platforma-sdk/workflow-tengo:annotations")
 
-util := import(":util")
+specs := import(":specs")
 
 convertToPFrame := func(...entities) {
 	return slices.reduce(entities, func(acc, v) {
@@ -21,30 +21,27 @@ computeClonotypeAnnotations := func(inputs) {
 	annotationAxesSpec := inputs.annotationAxesSpec
 	shouldComputeFilters := inputs.shouldComputeFilters
 
-    if len(steps) == 0 {
-		ll.panic("No annotation steps provided")
-	}
+	ll.assert(len(steps) > 0, "no annotation steps provided")
 
-	referenceColumn := canonical.encode({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] })
-	// Include linker columns so the ptabler can bridge axes when annotation steps
-	// reference linked columns (e.g. clusterSize on clusterId axis via linker from clonotypeKey)
-	linkerSelector := canonical.encode({ annotations: { "pl7.app/isLinkerColumn": "true" }, axes: [{ anchor: "main", idx: 1 }], partialAxesMatch: true })
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,
 		anchorRef: inputAnchor,
 		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
-		additionalColumns: [referenceColumn, linkerSelector],
+		additionalColumns: [
+			canonical.encode(specs.referenceLabelSelector),
+			canonical.encode(specs.annotationLinkerSelector)
+		],
 		shouldComputeFilters: shouldComputeFilters
 	})
 
 	return {
 		annotationsColumn: result.annotationsColumn,
-        annotationsPf: convertToPFrame(result.annotationsColumn),
+		annotationsPf: convertToPFrame(result.annotationsColumn),
 		filtersColumns: result.annotationsFiltersColumns,
-        filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
-    }
+		filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
+	}
 }
 
 export ll.toStrict({
