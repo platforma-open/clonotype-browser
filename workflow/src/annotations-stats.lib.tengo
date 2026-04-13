@@ -2,13 +2,13 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 
-specs := import(":specs")
+columns := import(":columns")
 
 mainCountKey := "mainCount"
 mainFractionKey := "mainFraction"
 
 getMainAnchor := func(bundle) {
-	return bundle.getColumn(specs.mainAnchorName)
+	return bundle.getColumn(columns.mainAnchorName)
 }
 
 getMainCount := func(bundle) {
@@ -21,9 +21,9 @@ getMainFraction := func(bundle) {
 
 createStatsBundle := func(inputAnchor) {
 	bundle := wf.createPBundleBuilder()
-	bundle.addAnchor(specs.mainAnchorName, inputAnchor)
-	bundle.addSingle(specs.mainFractionSelector, mainFractionKey)
-	bundle.addSingle(specs.mainCountSelector, mainCountKey)
+	bundle.addAnchor(columns.mainAnchorName, inputAnchor)
+	bundle.addSingle(columns.mainFractionSelector, mainFractionKey)
+	bundle.addSingle(columns.mainCountSelector, mainCountKey)
 	return bundle.build()
 }
 
@@ -66,7 +66,7 @@ computeClonotypeAnnotationsStats := func(inputs) {
 	anchorAxesSpec := getMainAnchor(columnBundle).spec.axesSpec
 	sampleAxisSpec := anchorAxesSpec[0]
 	clonotypeAxisSpec := anchorAxesSpec[1]
-	annotationsAxisSpec := specs.columnAsAxisSpec(annotations.spec)
+	annotationsAxisSpec := columns.columnAsAxisSpec(annotations.spec)
 	bySampleAxes := [sampleAxisSpec, annotationsAxisSpec]
 	byAnnotationAxes := [annotationsAxisSpec]
 
@@ -98,10 +98,22 @@ computeClonotypeAnnotationsStats := func(inputs) {
 				{ column: annotations.column, spec: annotationsAxisSpec }
 			],
 			columns: [
-				{ column: ANNOTATION_COUNT_HEADER,    spec: specs.sampleAnnotationsCountSpec(bySampleAxes) },
-				{ column: CLONOTYPE_COUNT_HEADER,     spec: specs.sampleClonotypesNumberSpec(bySampleAxes) },
-				{ column: MAIN_COUNT_SUM_HEADER,      spec: specs.sampleCountSumSpec(bySampleAxes) },
-				{ column: MAIN_FRACTION_SUM_HEADER,   spec: specs.sampleFractionSumSpec(bySampleAxes) }
+				{
+					column: ANNOTATION_COUNT_HEADER,
+					spec: columns.sampleAnnotationsCountSpec(bySampleAxes)
+				},
+				{
+					column: CLONOTYPE_COUNT_HEADER,
+					spec: columns.sampleClonotypesNumberSpec(bySampleAxes)
+				},
+				{
+					column: MAIN_COUNT_SUM_HEADER,
+					spec: columns.sampleCountSumSpec(bySampleAxes)
+				},
+				{
+					column: MAIN_FRACTION_SUM_HEADER,
+					spec: columns.sampleFractionSumSpec(bySampleAxes)
+				}
 			],
 			partitionKeyLength: 1
 		})
@@ -123,8 +135,14 @@ computeClonotypeAnnotationsStats := func(inputs) {
 				{ column: annotations.column, spec: annotationsAxisSpec }
 			],
 			columns: [
-				{ column: ANNOTATION_COUNT_HEADER, spec: specs.totalAnnotationsCountSpec(byAnnotationAxes) },
-				{ column: CLONOTYPE_COUNT_HEADER,  spec: specs.totalClonotypesNumberSpec(byAnnotationAxes) }
+				{
+					column: ANNOTATION_COUNT_HEADER,
+					spec: columns.totalAnnotationsCountSpec(byAnnotationAxes)
+				},
+				{
+					column: CLONOTYPE_COUNT_HEADER,
+					spec: columns.totalClonotypesNumberSpec(byAnnotationAxes)
+				}
 			],
 			partitionKeyLength: 0
 		})

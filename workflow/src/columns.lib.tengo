@@ -71,14 +71,6 @@ referenceLabelSelector := {
 	axes: [{ anchor: mainAnchorName, idx: 1 }]
 }
 
-// Linker columns so the ptabler can bridge axes when annotation steps reference
-// linked columns (e.g. clusterSize on clusterId via the clonotypeKey linker).
-annotationLinkerSelector := {
-	annotations: { "pl7.app/isLinkerColumn": "true" },
-	axes: [{ anchor: mainAnchorName, idx: 1 }],
-	partialAxesMatch: true
-}
-
 // =============================================================================
 // OUTPUT SPECS — PColumns this block produces.
 // =============================================================================
@@ -190,14 +182,6 @@ withLabel := func(spec, label) {
 	return updated
 }
 
-// Returns a deep clone of spec with the display label transformed by fn(currentLabel).
-// Useful for decorating labels (e.g. appending a sample-name suffix).
-mapLabel := func(spec, fn) {
-	annotationTransform := {}
-	annotationTransform[labelAnnotation] = fn
-	return maps.deepTransform(spec, { annotations: annotationTransform })
-}
-
 // Table column sort priority (higher displayed first), or undefined if unspecified.
 getOrderPriority := func(spec) {
 	if is_undefined(spec.annotations) {
@@ -223,7 +207,6 @@ export ll.toStrict({
 	perClonotypeSelector: perClonotypeSelector,
 	sampleLabelsSelector: sampleLabelsSelector,
 	referenceLabelSelector: referenceLabelSelector,
-	annotationLinkerSelector: annotationLinkerSelector,
 
 	sampleAnnotationsCountSpec: sampleAnnotationsCountSpec,
 	sampleClonotypesNumberSpec: sampleClonotypesNumberSpec,
@@ -234,7 +217,6 @@ export ll.toStrict({
 
 	getLabel: getLabel,
 	withLabel: withLabel,
-	mapLabel: mapLabel,
 	getOrderPriority: getOrderPriority,
 	isLinkerColumn: isLinkerColumn,
 

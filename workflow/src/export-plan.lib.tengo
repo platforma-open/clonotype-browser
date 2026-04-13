@@ -1,0 +1,282 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+pFramesUtil := import("@platforma-sdk/workflow-tengo:pframes.util")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
+
+columns := import(":columns")
+exportBundle := import(":export-bundle")
+
+// Canonical spec key. Must stay identical to the model's canonicalizeJson so
+// the per-clonotype label-override map can be looked up here.
+makeColumnKey := func(spec) {
+	keyObj := { name: spec.name }
+	if !is_undefined(spec.domain) && len(spec.domain) > 0 {
+		domain := {}
+		for key, value in spec.domain {
+			if is_string(value) {
+				domain[key] = value
+			}
+		}
+		if len(domain) > 0 {
+			keyObj.domain = domain
+		}
+	}
+	return canonical.encode(keyObj)
+}
+
+// Returns a label unique within usedLabelsSet (mutated). On collision appends
+// " (1)", " (2)", ... until unique.
+ensureUniqueLabel := func(label, usedLabelsSet) {
+	if is_undefined(label) {
+		return label
+	}
+	originalLabel := label
+	suffixCount := 0
+	for {
+		if is_undefined(usedLabelsSet[label]) {
+			break
+		}
+		suffixCount += 1
+		label = originalLabel + " (" + string(suffixCount) + ")"
+	}
+	usedLabelsSet[label] = true
+	return label
+}
+
+// The VDJ sequence-annotation column is a special internal marker — never
+// exported. Otherwise, require a user-visible label.
+isExportable := func(col) {
+	if col.spec.name == "pl7.app/vdj/sequence/annotation" {
+		return false
+	}
+	return !is_undefined(columns.getLabel(col.spec))
+}
+
+// Descending by orderPriority. Items without priority sort after items with it.
+// Ties are not stable (quicksort).
+sortByOrderPriorityDesc := func(list, getSpec) {
+	slices.quickSortInPlaceFn(list, func(a, b) {
+		aPriority := columns.getOrderPriority(getSpec(a))
+		bPriority := columns.getOrderPriority(getSpec(b))
+		if is_undefined(aPriority) {
+			return false
+		}
+		if is_undefined(bPriority) {
+			return true
+		}
+		return int(aPriority) > int(bPriority)
+	})
+	return list
+}
+
+// Emits one linker sub-frame spec. Acceptance:
+//   (a) entry has a resolvable anchorRef,
+//   (b) linker PColumn has exactly two axes and includes the clonotype axis,
+//   (c) at least one linked column is exportable.
+// Returns { group: undefined, byCloneAccum } when rejected. Linked columns
+// are appended to byCloneAccum so they participate in the orderPriority sort.
+buildLinkerGroup := func(inputs) {
+	columnBundle := inputs.columnBundle
+	anchorData := inputs.anchorData
+	clonotypeAxisSpec := inputs.clonotypeAxisSpec
+	usedLabelsSet := inputs.usedLabelsSet
+	byCloneAccum := inputs.byCloneAccum
+
+	empty := { group: undefined, byCloneAccum: byCloneAccum }
+
+	if is_undefined(anchorData.anchorRef) {
+		return empty
+	}
+	linkerCol := columnBundle.getColumn(anchorData.anchorRef)
+	if is_undefined(linkerCol) {
+		return empty
+	}
+	if len(linkerCol.spec.axesSpec) != 2 {
+		return empty
+	}
+	bridgesClonotype := false
+	for axis in linkerCol.spec.axesSpec {
+		if axis.name == clonotypeAxisSpec.name {
+			bridgesClonotype = true
+			break
+		}
+	}
+	if !bridgesClonotype {
+		return empty
+	}
+
+	linkedEntries := []
+	for _, spec in anchorData.columns {
+		col := columnBundle.getColumn(spec.query)
+		if is_undefined(col) || !isExportable(col) {
+			continue
+		}
+		label := spec.header
+		if is_undefined(label) || label == "" {
+			label = columns.getLabel(col.spec)
+		}
+		uniqueLabel := ensureUniqueLabel(label, usedLabelsSet)
+		linkedEntries = append(linkedEntries, { col: col, label: uniqueLabel })
+		byCloneAccum = append(byCloneAccum, {
+			spec: columns.withLabel(col.spec, uniqueLabel),
+			label: uniqueLabel
+		})
+	}
+	if len(linkedEntries) == 0 {
+		return empty
+	}
+
+	return {
+		group: { linkerCol: linkerCol, linkedEntries: linkedEntries },
+		byCloneAccum: byCloneAccum
+	}
+}
+
+/**
+ * Assembles the export plan: which columns go into the main frame vs per-linker
+ * sub-frames, their unique labels, and the final column order.
+ *
+ * Inputs: columnBundle, linkedColumns?, annotationsPf?, byClonotypeLabels?.
+ *
+ * Returns:
+ *   clonotypeAxisSpec  Shared join axis.
+ *   mainEntries        [{col, label}] — per-clonotype + annotation +
+ *                      per-sample partitions, all joining on the clonotype axis.
+ *   linkerGroups       [{linkerCol, linkedEntries}] — one per linker; linkerCol
+ *                      is a join-only bridge and never reaches orderedLabels.
+ *   orderedLabels      Final column order — by-clone (orderPriority desc)
+ *                      followed by per-sample (sample-key sorted).
+ *   numberOfSamples    Sample count; drives resource sizing and empty-plan
+ *                      early-return in the template.
+ */
+build := func(inputs) {
+	columnBundle := inputs.columnBundle
+	linkedColumns := inputs.linkedColumns
+	annotationsPf := inputs.annotationsPf
+	byClonotypeLabels := inputs.byClonotypeLabels
+	if is_undefined(byClonotypeLabels) {
+		byClonotypeLabels = {}
+	}
+
+	datasetSpec := exportBundle.getAnchorSpec(columnBundle)
+	clonotypeAxisSpec := datasetSpec.axesSpec[1]
+	sampleLabelsMap := exportBundle.getSampleLabelsColumn(columnBundle).data.getDataAsJson().data
+
+	// Sort columns before partitioning so partitions inside a sample bucket
+	// appear in orderPriority order.
+	perSampleCols := exportBundle.getPerSampleColumns(columnBundle)
+	sortByOrderPriorityDesc(perSampleCols, func(c) { return c.spec })
+	partitionsBySample := {}
+	for column in perSampleCols {
+		partitions := pFrames.parseData(column).partition(0)
+		maps.forEach(partitions, func(sampleKey, partition) {
+			if is_undefined(partitionsBySample[sampleKey]) {
+				partitionsBySample[sampleKey] = []
+			}
+			partitionsBySample[sampleKey] = append(partitionsBySample[sampleKey], partition)
+		})
+	}
+	numberOfSamples := len(partitionsBySample)
+
+	// pt frame column names equal labels, so labels must be globally unique
+	// across main + every linker sub-frame — one shared dedup set.
+	usedLabelsSet := {}
+
+	perClonotypeCols := []
+	for col in exportBundle.getPerClonotypeColumns(columnBundle) {
+		if !columns.isLinkerColumn(col.spec) {
+			perClonotypeCols = append(perClonotypeCols, col)
+		}
+	}
+	sortByOrderPriorityDesc(perClonotypeCols, func(c) { return c.spec })
+
+	mainEntries := []
+	byCloneEntries := []
+	for column in perClonotypeCols {
+		if !isExportable(column) {
+			continue
+		}
+		label := byClonotypeLabels[makeColumnKey(column.spec)]
+		if is_undefined(label) {
+			label = columns.getLabel(column.spec)
+		}
+		uniqueLabel := ensureUniqueLabel(label, usedLabelsSet)
+		mainEntries = append(mainEntries, { col: column, label: uniqueLabel })
+		byCloneEntries = append(byCloneEntries, {
+			spec: columns.withLabel(column.spec, uniqueLabel),
+			label: uniqueLabel
+		})
+	}
+
+	// Annotation columns are prerun-only; they aren't in the result pool yet,
+	// so the caller passes the PFrame directly.
+	if !is_undefined(annotationsPf) {
+		maps.forEach(pFramesUtil.pFrameToColumnsMap(annotationsPf), func(id, col) {
+			if !isExportable(col) { return }
+			uniqueLabel := ensureUniqueLabel(columns.getLabel(col.spec), usedLabelsSet)
+			mainEntries = append(mainEntries, { col: col, label: uniqueLabel })
+			byCloneEntries = append(byCloneEntries, {
+				spec: columns.withLabel(col.spec, uniqueLabel),
+				label: uniqueLabel
+			})
+		})
+	}
+
+	// maps.forEach iterates sorted keys (SDK maps.lib.tengo:232) — sample
+	// ordering in the output is therefore deterministic.
+	bySampleEntries := []
+	maps.forEach(partitionsBySample, func(sampleKey, partitions) {
+		sampleLabel := sampleLabelsMap[sampleKey]
+		ll.assert(!is_undefined(sampleLabel), "Expected sample label for " + sampleKey)
+		for partition in partitions {
+			partSpec := partition.getSpec()
+			suffixedLabel := columns.getLabel(partSpec) + " / " + sampleLabel
+			uniqueLabel := ensureUniqueLabel(suffixedLabel, usedLabelsSet)
+			mainEntries = append(mainEntries, {
+				col: { spec: partSpec, data: partition.createDataResource() },
+				label: uniqueLabel
+			})
+			bySampleEntries = append(bySampleEntries, { label: uniqueLabel })
+		}
+	})
+
+	linkerGroups := []
+	if !is_undefined(linkedColumns) {
+		for _, anchorName in maps.getKeys(linkedColumns) {
+			result := buildLinkerGroup({
+				columnBundle: columnBundle,
+				anchorData: linkedColumns[anchorName],
+				clonotypeAxisSpec: clonotypeAxisSpec,
+				usedLabelsSet: usedLabelsSet,
+				byCloneAccum: byCloneEntries
+			})
+			byCloneEntries = result.byCloneAccum
+			if !is_undefined(result.group) {
+				linkerGroups = append(linkerGroups, result.group)
+			}
+		}
+	}
+
+	sortByOrderPriorityDesc(byCloneEntries, func(e) { return e.spec })
+	orderedLabels := []
+	for e in byCloneEntries {
+		orderedLabels = append(orderedLabels, e.label)
+	}
+	for e in bySampleEntries {
+		orderedLabels = append(orderedLabels, e.label)
+	}
+
+	return {
+		clonotypeAxisSpec: clonotypeAxisSpec,
+		mainEntries: mainEntries,
+		linkerGroups: linkerGroups,
+		orderedLabels: orderedLabels,
+		numberOfSamples: numberOfSamples
+	}
+}
+
+export ll.toStrict({
+	build: build
+})

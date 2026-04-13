@@ -1,13 +1,13 @@
 import type {
+  AnnotationSpec as _AnnotationSpec,
   AnnotationSpecUi as _AnnotationSpecUi,
   FilterSpec as _FilterSpec,
-  FilterSpecUi as _FilterSpecUI,
   FilterSpecLeaf,
+  FilterSpecUi as _FilterSpecUI,
   PlDataTableStateV2,
   PlRef,
 } from "@platforma-sdk/model";
-import type { AnnotationSpec as _AnnotationSpec } from "@platforma-sdk/model";
-import type { LinkedColumnEntry } from "./column_utils";
+import type { LinkedColumnEntry } from "./tableInputs";
 
 export type { FilterSpecType } from "@platforma-sdk/model";
 
@@ -21,7 +21,6 @@ export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: "and" | "or
 };
 
 export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };
-
 export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
 
 export type TableInputs = {
@@ -29,7 +28,16 @@ export type TableInputs = {
   linkedColumns: Record<string, LinkedColumnEntry>;
 };
 
-/** Unified data model for V3 (replaces separate BlockArgs + UiState) */
+/** Args passed to the workflow — the output shape of `.args(...)`. */
+export type BlockArgs = {
+  inputAnchor?: PlRef;
+  datasetTitle?: string;
+  annotationSpec: AnnotationSpec;
+  runExportAll: boolean;
+  tableInputs?: TableInputs;
+};
+
+/** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: PlRef;
   datasetTitle?: string;
@@ -43,7 +51,11 @@ export type BlockData = {
   annotationSpecUi: AnnotationSpecUi;
 };
 
-/** Legacy args type for upgrade migration */
+/**
+ * Pre-V3 args shape — frozen snapshot consumed by the data-model upgrade.
+ * Keep independent from BlockArgs so that future migrations can freeze the
+ * current args shape under a new Legacy* name without disturbing this one.
+ */
 export type LegacyBlockArgs = {
   inputAnchor?: PlRef;
   datasetTitle?: string;
@@ -52,7 +64,7 @@ export type LegacyBlockArgs = {
   tableInputs?: TableInputs;
 };
 
-/** Legacy UI state type for upgrade migration */
+/** Pre-V3 UI state shape — frozen snapshot consumed by the data-model upgrade. */
 export type LegacyUiState = {
   settingsOpen: boolean;
   overlapTable: { tableState: PlDataTableStateV2 };

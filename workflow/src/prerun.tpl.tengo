@@ -1,17 +1,13 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 smart := import("@platforma-sdk/workflow-tengo:smart")
-assets := import("@platforma-sdk/workflow-tengo:assets")
-render := import("@platforma-sdk/workflow-tengo:render")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
-exportBundle := import(":export-inputs")
+exportAll := import(":export-all")
 
-exportTableTpl := assets.importTemplate(":export-table")
-
-// Stats need synchronous access to abundance columns — prepare the bundle only when
-// the annotation branch will use it. The export branch builds its own bundle inline.
+// Stats need synchronous access to abundance columns — build the bundle only
+// when the annotation branch will actually use it.
 wf.prepare(func(args) {
 	if len(args.annotationSpec.steps) > 0 {
 		return { columnBundle: annotationsStats.createStatsBundle(args.inputAnchor) }
@@ -29,13 +25,15 @@ wf.body(func(args) {
 	annotationsPf := undefined
 
 	if len(args.annotationSpec.steps) > 0 {
+		linkedColumns := is_undefined(args.tableInputs) ? undefined : args.tableInputs.linkedColumns
 		computedAnnotations := annotations.computeClonotypeAnnotations({
 			title: args.annotationSpec.title,
 			steps: args.annotationSpec.steps,
 			inputAnchor: args.inputAnchor,
 			defaultValue: args.annotationSpec.defaultValue,
 			annotationAxesSpec: annotationsStats.getAnnotationAxesSpec(args.columnBundle),
-			shouldComputeFilters: false
+			shouldComputeFilters: false,
+			linkedColumns: linkedColumns
 		})
 
 		annotationsPf = computedAnnotations.annotationsPf
@@ -51,16 +49,12 @@ wf.body(func(args) {
 	}
 
 	if args.runExportAll {
-		columnBundle := exportBundle.buildExportBundle(
-			args.inputAnchor, args.tableInputs.linkedColumns)
-
-		exportResult := render.createEphemeral(exportTableTpl, {
-			columnBundle: columnBundle,
+		exportResult := exportAll.render({
+			inputAnchor: args.inputAnchor,
 			linkedColumns: args.tableInputs.linkedColumns,
 			byClonotypeLabels: args.tableInputs.byClonotypeLabels,
 			annotationsPf: annotationsPf
 		})
-
 		outputs["tsvZip"] = exportResult.output("tsvZip")
 	}
 

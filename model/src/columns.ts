@@ -1,10 +1,9 @@
 /**
- * PColumn schema knowledge specific to this block — extends SDK constants with
- * names/annotations this block consumes or recognizes, and provides read helpers
- * typed against the extended schema.
- *
- * Consumers should import from here (not from `@platforma-sdk/model`) so SDK and
- * block-level constants live under the same namespace.
+ * Block-level PColumn vocabulary. Extends the SDK's `PColumnName` and
+ * `Annotation` enums with names and keys this block consumes, and exposes
+ * read helpers typed against the extension. Block code imports from here
+ * rather than `@platforma-sdk/model` so SDK and block-level constants share
+ * one namespace.
  */
 
 import {
@@ -18,15 +17,16 @@ import {
   type Trace,
 } from "@platforma-sdk/model";
 
-// =============================================================================
-// EXTENDED CONSTANTS
-// =============================================================================
+/** Well-known axis names — re-exported from the SDK for single-namespace imports. */
+export { PAxisName } from "@platforma-sdk/model";
 
 /** Well-known PColumn names — SDK's set plus names this block references. */
 export const PColumnName = {
   ...SdkPColumnName,
   /** Per-sample clonotype count — produced by upstream VDJ blocks. */
   SampleCount: "pl7.app/vdj/sampleCount",
+  /** Sequence-annotation marker column — internal, never exported. */
+  SequenceAnnotation: "pl7.app/vdj/sequence/annotation",
 } as const;
 
 const ANNOTATION_EXTENSIONS = {
@@ -40,17 +40,13 @@ export const Annotation = {
   ...ANNOTATION_EXTENSIONS,
 } as const;
 
-/** Typed annotation-value map — SDK's typed shape plus the values for our extensions. */
+/** Typed annotation-value map — SDK's shape plus block extensions. */
 export type Annotation = SdkAnnotationType &
   Partial<{
     [ANNOTATION_EXTENSIONS.IsAbundance]: string;
   }>;
 
-// =============================================================================
-// READ HELPERS — typed against the extended Annotation schema.
-// =============================================================================
-
-/** Plain annotation read; same signature as SDK's, but typed against extended Annotation. */
+/** SDK's readAnnotation, typed against the extended Annotation schema. */
 export function readAnnotation<T extends keyof Annotation>(
   spec: { annotations?: Metadata | undefined } | undefined,
   key: T,
@@ -58,16 +54,12 @@ export function readAnnotation<T extends keyof Annotation>(
   return sdkReadAnnotation(spec, key as never) as Annotation[T] | undefined;
 }
 
-// =============================================================================
-// PREDICATES & DECODED ACCESSORS
-// =============================================================================
-
 /** True if the column carries an abundance measurement. */
 export function isAbundanceColumn(spec: PColumnSpec): boolean {
   return readAnnotation(spec, Annotation.IsAbundance) === "true";
 }
 
-/** Parsed trace entries for a column (derivation lineage), or empty if absent. */
+/** Parsed trace entries (derivation lineage), or empty if absent. */
 export function getTrace(spec: PColumnSpec): Trace {
   const raw = readAnnotation(spec, Annotation.Trace);
   return raw ? (parseJson(raw) ?? []) : [];

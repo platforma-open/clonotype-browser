@@ -1,16 +1,32 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 slices := import("@platforma-sdk/workflow-tengo:slices")
+maps := import("@platforma-sdk/workflow-tengo:maps")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 annotations := import("@platforma-sdk/workflow-tengo:annotations")
 
-specs := import(":specs")
+columns := import(":columns")
 
 convertToPFrame := func(...entities) {
 	return slices.reduce(entities, func(acc, v) {
 		acc.add(v.column, v.spec, v.data)
 		return acc
 	}, pFrames.pFrameBuilder()).build()
+}
+
+// Per-linker single-match ids — SDK's `bundle.addById` rejects multi-match.
+linkerIds := func(linkedColumns) {
+	if is_undefined(linkedColumns) {
+		return []
+	}
+	ids := []
+	for _, anchorName in maps.getKeys(linkedColumns) {
+		entry := linkedColumns[anchorName]
+		if !is_undefined(entry.anchorId) {
+			ids = append(ids, entry.anchorId)
+		}
+	}
+	return ids
 }
 
 computeClonotypeAnnotations := func(inputs) {
@@ -20,8 +36,14 @@ computeClonotypeAnnotations := func(inputs) {
 	defaultValue := inputs.defaultValue
 	annotationAxesSpec := inputs.annotationAxesSpec
 	shouldComputeFilters := inputs.shouldComputeFilters
+	linkedColumns := inputs.linkedColumns
 
 	ll.assert(len(steps) > 0, "no annotation steps provided")
+
+	additionalColumns := append(
+		[canonical.encode(columns.referenceLabelSelector)],
+		linkerIds(linkedColumns)...
+	)
 
 	result := annotations.computeAnnotations({
 		title: title,
@@ -29,10 +51,7 @@ computeClonotypeAnnotations := func(inputs) {
 		anchorRef: inputAnchor,
 		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
-		additionalColumns: [
-			canonical.encode(specs.referenceLabelSelector),
-			canonical.encode(specs.annotationLinkerSelector)
-		],
+		additionalColumns: additionalColumns,
 		shouldComputeFilters: shouldComputeFilters
 	})
 
