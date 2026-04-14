@@ -52,9 +52,8 @@ buildLinkerDf := func(ptWf, clonotypeAxisSpec, group, anchorIdx) {
 self.body(func(inputs) {
 	plan := exportPlan.build({
 		columnBundle: inputs.columnBundle,
-		linkedColumns: inputs.linkedColumns,
-		annotationsPf: inputs.annotationsPf,
-		byClonotypeLabels: inputs.byClonotypeLabels
+		linkerCount: inputs.linkerCount,
+		annotationsPf: inputs.annotationsPf
 	})
 
 	// No per-sample data → model treats Null tsvZip as "no export available".

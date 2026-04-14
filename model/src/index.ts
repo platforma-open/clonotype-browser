@@ -34,16 +34,11 @@ import {
   readAnnotation,
 } from "./columns";
 import { blockDataModel } from "./dataModel";
-import { buildTableInputs } from "./tableInputs";
 import type { BlockArgs, BlockData } from "./types";
 
 export { blockDataModel } from "./dataModel";
-export type { LinkedColumn, LinkedColumnEntry } from "./tableInputs";
 export * from "./types";
 
-// Builds the labelled column list consumed by the annotation-modal filter UI.
-// Labels go through `deriveDistinctLabels` with linker paths — the "via <linker>"
-// suffix disambiguates same-named columns reached through different linkers.
 function buildFilterUiColumns(
   matches: readonly ColumnMatch[],
   anchorAxesSpec: AxesSpec,
@@ -86,8 +81,6 @@ function buildFilterUiColumns(
   return ret;
 }
 
-// Splits snapshots along a partition axis, baking the split key into each
-// result's domain so native ids stay unique. Undefined if any data is unready.
 function splitByPartition<A, U, S extends RequireServices<typeof Services.PFrameSpec>>(
   ctx: RenderCtxBase<A, U, S>,
   snapshots: ColumnSnapshot<PObjectId>[],
@@ -109,8 +102,7 @@ function splitByPartition<A, U, S extends RequireServices<typeof Services.PFrame
   });
 }
 
-// Enrichment matches for the overlap view. Extra sources are added before
-// ctx sources so prerun-produced annotations participate in the search.
+// Extra sources are added before ctx sources so prerun annotations participate.
 function findOverlapMatches<A, U, S extends RequireServices<typeof Services.PFrameSpec>>(
   ctx: RenderCtxBase<A, U, S>,
   inputAnchor: PlRef,
@@ -152,6 +144,14 @@ function compileAnnotationSpec(ui: BlockData["annotationSpecUi"]): BlockArgs["an
   };
 }
 
+function hasCompiledSteps(ui: BlockData["annotationSpecUi"]): boolean {
+  try {
+    return compileAnnotationSpec(ui).steps.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 const inputAnchorSpecs = [
   {
     axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ClonotypeKey }],
@@ -167,30 +167,25 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .args<BlockArgs>((data) => {
     if (data.inputAnchor === undefined) throw new Error("No input anchor");
-    if (data.annotationSpecUi.steps.length === 0) throw new Error("No annotation steps");
+    const annotationSpec = compileAnnotationSpec(data.annotationSpecUi);
+    if (annotationSpec.steps.length === 0) throw new Error("No annotation steps");
     return {
       inputAnchor: data.inputAnchor,
-      annotationSpec: compileAnnotationSpec(data.annotationSpecUi),
+      annotationSpec,
       runExportAll: data.runExportAll,
-      tableInputs: data.tableInputs,
     };
   })
 
-  // Each branch's inputs are gated independently so unrelated edits don't
-  // invalidate the prerun cache. tableInputs goes to both branches:
-  // annotations need linkedColumns; export needs the full TableInputs.
   .prerunArgs((data) => {
     if (data.inputAnchor === undefined) return undefined;
-    const wantAnnotations = data.annotationSpecUi.steps.length > 0;
+    const annotationSpec = compileAnnotationSpec(data.annotationSpecUi);
+    const wantAnnotations = annotationSpec.steps.length > 0;
     const wantExport = data.runExportAll;
     if (!wantAnnotations && !wantExport) return undefined;
     return {
       inputAnchor: data.inputAnchor,
-      annotationSpec: wantAnnotations
-        ? compileAnnotationSpec(data.annotationSpecUi)
-        : { title: "", steps: [] },
+      annotationSpec: wantAnnotations ? annotationSpec : { title: "", steps: [] },
       runExportAll: wantExport,
-      tableInputs: wantAnnotations || wantExport ? data.tableInputs : undefined,
     };
   })
 
@@ -200,17 +195,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .output("annotationsIsComputing", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return false;
-    if (ctx.data.annotationSpecUi.steps.length === 0) return false;
+    if (!hasCompiledSteps(ctx.data.annotationSpecUi)) return false;
     return ctx.prerun?.resolve({
       field: "annotationsPf",
       assertFieldType: "Input",
       allowPermanentAbsence: true,
     }) === undefined;
-  })
-
-  .output("tableInputs", (ctx) => {
-    if (ctx.data.inputAnchor === undefined) return undefined;
-    return buildTableInputs(ctx, ctx.data.inputAnchor);
   })
 
   .output("overlapColumns", (ctx) => {
@@ -371,7 +361,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
   })
 
   .output("exportedTsvZip", (ctx) => {
-    if (ctx.data.inputAnchor === undefined) return undefined;
+    if (ctx.data.inputAnchor === undefined) return null;
     const tsvResource = ctx.prerun?.resolve({
       field: "tsvZip",
       assertFieldType: "Input",
@@ -384,7 +374,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .sections((ctx) => {
     const showStats =
-      ctx.data.inputAnchor !== undefined && ctx.data.annotationSpecUi.steps.length > 0;
+      ctx.data.inputAnchor !== undefined && hasCompiledSteps(ctx.data.annotationSpecUi);
     return [
       { type: "link", href: "/", label: "Overlap" } as const,
       { type: "link", href: "/sample", label: "By Sample" } as const,
@@ -399,14 +389,20 @@ export const platforma = BlockModelV3.create(blockDataModel)
   )
 
   .title((ctx) => {
-    if (ctx.data.annotationSpecUi.steps.length > 0) {
-      return `Clonotype Annotation - ${ctx.data.annotationSpecUi.title}`;
-    }
-    const { inputAnchor } = ctx.data;
-    if (inputAnchor) {
-      const options = ctx.resultPool.getOptions(inputAnchorSpecs, { refsWithEnrichments: true });
-      const label = options.find((o) => plRefsEqual(o.ref, inputAnchor))?.label;
-      if (label) return `Clonotype Browser - ${label}`;
+    try {
+      if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
+        return `Clonotype Annotation - ${ctx.data.annotationSpecUi.title}`;
+      }
+      const { inputAnchor } = ctx.data;
+      if (inputAnchor) {
+        const options = ctx.resultPool.getOptions(inputAnchorSpecs, {
+          refsWithEnrichments: true,
+        });
+        const label = options.find((o) => plRefsEqual(o.ref, inputAnchor))?.label;
+        if (label) return `Clonotype Browser - ${label}`;
+      }
+    } catch {
+      // render context may not be fully initialized yet
     }
     return "Clonotype Browser";
   })

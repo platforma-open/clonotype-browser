@@ -15,7 +15,6 @@ export const blockDataModel = new DataModelBuilder()
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
     inputAnchor: args.inputAnchor,
     runExportAll: args.runExportAll ?? false,
-    tableInputs: args.tableInputs ?? { byClonotypeLabels: {}, linkedColumns: {} },
     settingsOpen: uiState?.settingsOpen ?? true,
     overlapTableState: uiState?.overlapTable?.tableState ?? createPlDataTableStateV2(),
     sampleTableState: uiState?.sampleTable?.tableState ?? createPlDataTableStateV2(),
@@ -28,7 +27,6 @@ export const blockDataModel = new DataModelBuilder()
   }))
   .init(() => ({
     runExportAll: false,
-    tableInputs: { byClonotypeLabels: {}, linkedColumns: {} },
     settingsOpen: true,
     overlapTableState: createPlDataTableStateV2(),
     sampleTableState: createPlDataTableStateV2(),

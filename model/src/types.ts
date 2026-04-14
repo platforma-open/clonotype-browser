@@ -7,7 +7,6 @@ import type {
   PlDataTableStateV2,
   PlRef,
 } from "@platforma-sdk/model";
-import type { LinkedColumnEntry } from "./tableInputs";
 
 export type FilterSpec = _FilterSpec<
   FilterSpecLeaf,
@@ -21,24 +20,17 @@ export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: "and" | "or
 export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };
 export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
 
-export type TableInputs = {
-  byClonotypeLabels: Record<string, string>;
-  linkedColumns: Record<string, LinkedColumnEntry>;
-};
-
 /** Args passed to the workflow — the output shape of `.args(...)`. */
 export type BlockArgs = {
   inputAnchor?: PlRef;
   annotationSpec: AnnotationSpec;
   runExportAll: boolean;
-  tableInputs?: TableInputs;
 };
 
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: PlRef;
   runExportAll: boolean;
-  tableInputs?: TableInputs;
   settingsOpen: boolean;
   overlapTableState: PlDataTableStateV2;
   sampleTableState: PlDataTableStateV2;
@@ -56,7 +48,6 @@ export type LegacyBlockArgs = {
   datasetTitle?: string;
   annotationSpec: AnnotationSpec;
   runExportAll: boolean;
-  tableInputs?: TableInputs;
 };
 
 /** Pre-V3 UI state shape — frozen snapshot consumed by the data-model upgrade. */

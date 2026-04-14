@@ -5,27 +5,31 @@ pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
 exportAll := import(":export-all")
+linkers := import(":linkers")
 
-// Stats need synchronous access to abundance columns — build the bundle only
-// when the annotation branch will actually use it.
 wf.prepare(func(args) {
+	result := {}
 	if len(args.annotationSpec.steps) > 0 {
-		return { columnBundle: annotationsStats.createStatsBundle(args.inputAnchor) }
+		result.columnBundle = annotationsStats.createStatsBundle(args.inputAnchor)
 	}
-	return {}
+	if len(args.annotationSpec.steps) > 0 || args.runExportAll {
+		result.linkerBundle = linkers.discover(args.inputAnchor)
+	}
+	return result
 })
 
 wf.body(func(args) {
-	// Model treats Null tsvZip as "no export available".
 	outputs := {
 		tsvZip: smart.createNullResource()
 	}
 	exports := {}
 
+	linkerInfos := is_undefined(args.linkerBundle) ? undefined : linkers.extract(args.linkerBundle)
+
 	annotationsPf := undefined
 
 	if len(args.annotationSpec.steps) > 0 {
-		linkedColumns := is_undefined(args.tableInputs) ? undefined : args.tableInputs.linkedColumns
+		linkerIds := is_undefined(linkerInfos) ? [] : linkers.buildIds(linkerInfos)
 		computedAnnotations := annotations.computeClonotypeAnnotations({
 			title: args.annotationSpec.title,
 			steps: args.annotationSpec.steps,
@@ -33,7 +37,7 @@ wf.body(func(args) {
 			defaultValue: args.annotationSpec.defaultValue,
 			annotationAxesSpec: annotationsStats.getAnnotationAxesSpec(args.columnBundle),
 			shouldComputeFilters: false,
-			linkedColumns: linkedColumns
+			linkerIds: linkerIds
 		})
 
 		annotationsPf = computedAnnotations.annotationsPf
@@ -51,8 +55,7 @@ wf.body(func(args) {
 	if args.runExportAll {
 		exportResult := exportAll.render({
 			inputAnchor: args.inputAnchor,
-			linkedColumns: args.tableInputs.linkedColumns,
-			byClonotypeLabels: args.tableInputs.byClonotypeLabels,
+			linkerInfos: linkerInfos,
 			annotationsPf: annotationsPf
 		})
 		outputs["tsvZip"] = exportResult.output("tsvZip")

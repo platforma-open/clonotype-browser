@@ -6,23 +6,12 @@ exportBundle := import(":export-bundle")
 
 exportTableTpl := assets.importTemplate(":export-table")
 
-/**
- * Renders the "Export All" pipeline into a zipped TSV. `output("tsvZip")`
- * yields the zip file resource, or a Null resource when no per-sample data
- * exists.
- *
- * Inputs: inputAnchor (required), linkedColumns?, byClonotypeLabels?,
- * annotationsPf?.
- */
 render := func(inputs) {
-	bundle := exportBundle.build(
-		inputs.inputAnchor,
-		inputs.linkedColumns
-	)
+	linkerInfos := inputs.linkerInfos
+	bundle := exportBundle.build(inputs.inputAnchor, linkerInfos)
 	return renderSdk.createEphemeral(exportTableTpl, {
 		columnBundle: bundle,
-		linkedColumns: inputs.linkedColumns,
-		byClonotypeLabels: inputs.byClonotypeLabels,
+		linkerCount: is_undefined(linkerInfos) ? 0 : len(linkerInfos),
 		annotationsPf: inputs.annotationsPf
 	})
 }

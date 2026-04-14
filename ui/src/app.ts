@@ -2,25 +2,16 @@ import type { Platforma } from "@platforma-open/milaboratories.clonotype-browser
 import { platforma } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import type { PlSelectionModel } from "@platforma-sdk/model";
 import { defineAppV3 } from "@platforma-sdk/ui-vue";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, reactive, ref } from "vue";
 import { getValuesForSelectedColumns } from "./utils";
 
 import AnnotationStatsPage from "./pages/AnnotationStatsPage.vue";
 import OverlapPage from "./pages/OverlapPage.vue";
 import SamplePage from "./pages/SamplePage.vue";
+
 export const sdkPlugin = defineAppV3(
   platforma as Platforma,
   (app) => {
-    // .args() only receives data, but tableInputs needs resultPool — sync the model output back.
-    watch(
-      () => [app.model.outputs.tableInputs, app.model.data.inputAnchor] as const,
-      ([tableInputs, inputAnchor]) => {
-        app.model.data.tableInputs = inputAnchor
-          ? (tableInputs ?? { byClonotypeLabels: {}, linkedColumns: {} })
-          : undefined;
-      },
-    );
-
     const selectedColumns = ref({
       axesSpec: [],
       selectedKeys: [],

@@ -190,7 +190,6 @@ getOrderPriority := func(spec) {
 	return spec.annotations[orderPriorityAnnotation]
 }
 
-// True if this column is a linker (bridges two axes together).
 isLinkerColumn := func(spec) {
 	if is_undefined(spec.annotations) {
 		return false

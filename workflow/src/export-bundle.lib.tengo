@@ -1,40 +1,32 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
-maps := import("@platforma-sdk/workflow-tengo:maps")
 
 columns := import(":columns")
 
-// Bundle-internal keys. Kept private — callers read via the accessors below.
 perSampleKey := "perSample"
 perClonotypeKey := "perClonotype"
 sampleLabelsKey := "sampleLabels"
 
-/** Builds the column bundle consumed by the export template. */
-build := func(inputAnchor, linkedColumns) {
+linkerKey := func(i) { return "linker_" + string(i) }
+linkedKey := func(i) { return "linked_" + string(i) }
+
+build := func(inputAnchor, linkerInfos) {
 	bundle := wf.createPBundleBuilder()
 	bundle.addAnchor(columns.mainAnchorName, inputAnchor)
 	bundle.addMulti(columns.perSampleSelector, perSampleKey)
 	bundle.addMulti(columns.perClonotypeSelector, perClonotypeKey)
 	bundle.addSingle(columns.sampleLabelsSelector, sampleLabelsKey)
 
-	if !is_undefined(linkedColumns) {
-		for _, anchorName in maps.getKeys(linkedColumns) {
-			entry := linkedColumns[anchorName]
-			if is_undefined(entry.anchorRef) || is_undefined(entry.columns) {
-				continue
-			}
-			bundle.addAnchor(anchorName, entry.anchorRef)
-			for _, col in entry.columns {
-				bundle.addSingle(col.query)
-			}
+	if !is_undefined(linkerInfos) {
+		for i, info in linkerInfos {
+			bundle.addSingle(info.selector, linkerKey(i))
+			bundle.addMulti(info.linkedSelector, linkedKey(i))
 		}
 	}
 
 	return bundle.build()
 }
 
-/** Declares the template-level await-state deps for a bundle produced by
- * `build`. Call from the template's init scope, passing `self`. */
 declareAwaitStates := func(tpl) {
 	tpl.awaitState("columnBundle", "PColumnBundleWithPartitions")
 	tpl.awaitState("columnBundle", sampleLabelsKey, "ResourceReady")
@@ -56,11 +48,21 @@ getAnchorSpec := func(bundle) {
 	return bundle.getSpec(columns.mainAnchorName)
 }
 
+getLinkerColumn := func(bundle, i) {
+	return bundle.getColumn(linkerKey(i))
+}
+
+getLinkedColumns := func(bundle, i) {
+	return bundle.getColumns(linkedKey(i))
+}
+
 export ll.toStrict({
 	build: build,
 	declareAwaitStates: declareAwaitStates,
 	getPerSampleColumns: getPerSampleColumns,
 	getPerClonotypeColumns: getPerClonotypeColumns,
 	getSampleLabelsColumn: getSampleLabelsColumn,
-	getAnchorSpec: getAnchorSpec
+	getAnchorSpec: getAnchorSpec,
+	getLinkerColumn: getLinkerColumn,
+	getLinkedColumns: getLinkedColumns
 })

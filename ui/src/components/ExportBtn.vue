@@ -30,10 +30,12 @@ async function exportTsv() {
     }
   } finally {
     exporting.value = false;
+    app.model.data.runExportAll = false;
   }
 }
 
 const disabled = computed(() => {
+  if (!app.model.data.inputAnchor) return true;
   return app.model.data.runExportAll ? app.model.outputs.exportedTsvZip === null : false;
 });
 
