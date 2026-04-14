@@ -8,19 +8,10 @@ canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
 // Replicates @platforma-sdk/model pickStringDomain.
 pickStringDomain := func(domain) {
-	if is_undefined(domain) {
+	if is_undefined(domain) || len(domain) == 0 {
 		return undefined
 	}
-	out := {}
-	for k, v in domain {
-		if is_string(v) {
-			out[k] = v
-		}
-	}
-	if len(out) == 0 {
-		return undefined
-	}
-	return out
+	return domain
 }
 
 // Replicates @platforma-sdk/model linkerSingleMatchQuery.
