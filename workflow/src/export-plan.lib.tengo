@@ -4,9 +4,25 @@ slices := import("@platforma-sdk/workflow-tengo:slices")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 pFramesUtil := import("@platforma-sdk/workflow-tengo:pframes.util")
 
+text := import("text")
+
 columns := import(":columns")
 exportBundle := import(":export-bundle")
 modelUtils := import(":model-utils")
+
+linkerLabel := func(spec) {
+	if is_undefined(spec.annotations) {
+		return undefined
+	}
+	label := spec.annotations["pl7.app/linkLabel"]
+	if is_undefined(label) {
+		label = spec.annotations["pl7.app/label"]
+	}
+	if is_undefined(label) {
+		return undefined
+	}
+	return text.trim_space(label)
+}
 
 ensureUniqueLabel := func(label, usedLabelsSet) {
 	if is_undefined(label) {
@@ -132,20 +148,35 @@ build := func(inputs) {
 	}
 	sortByOrderPriorityDesc(perClonotypeCols, func(c) { return c.spec })
 
-	exportablePerClonotype := []
+	// Derive labels across per-clonotype AND linked columns in one batch,
+	// matching the UI table's disambiguation scope.
+	allExportableEntries := []
 	for col in perClonotypeCols {
 		if isExportable(col) {
-			exportablePerClonotype = append(exportablePerClonotype, col)
+			allExportableEntries = append(allExportableEntries, { col: col })
 		}
 	}
-	perClonotypeLabelMap := {}
-	if len(exportablePerClonotype) > 0 {
-		derivedLabels := modelUtils.deriveDistinctLabels(
-			slices.map(exportablePerClonotype, func(c) { return c.spec }),
+	for i := 0; i < linkerCount; i += 1 {
+		ll := linkerLabel(exportBundle.getLinkerColumn(columnBundle, i).spec)
+		for col in exportBundle.getLinkedColumns(columnBundle, i) {
+			if isExportable(col) && col.spec.name != "pl7.app/label" {
+				allExportableEntries = append(allExportableEntries, { col: col, linkerLabel: ll })
+			}
+		}
+	}
+
+	labelMap := {}
+	if len(allExportableEntries) > 0 {
+		distinctLabels := modelUtils.deriveDistinctLabels(
+			slices.map(allExportableEntries, func(e) { return e.col.spec }),
 			columns.getLabel
 		)
-		for i, col in exportablePerClonotype {
-			perClonotypeLabelMap[col.key] = derivedLabels[i]
+		for i, entry in allExportableEntries {
+			label := distinctLabels[i]
+			if !is_undefined(entry.linkerLabel) {
+				label = label + " via " + entry.linkerLabel
+			}
+			labelMap[entry.col.key] = label
 		}
 	}
 
@@ -155,7 +186,7 @@ build := func(inputs) {
 		if !isExportable(column) {
 			continue
 		}
-		label := perClonotypeLabelMap[column.key]
+		label := labelMap[column.key]
 		if is_undefined(label) {
 			label = columns.getLabel(column.spec)
 		}
@@ -195,27 +226,6 @@ build := func(inputs) {
 		}
 	})
 
-	// Derive labels across ALL linked columns from ALL linkers at once,
-	// so columns with the same name from different linkers get trace-disambiguated.
-	allLinkedCols := []
-	for i := 0; i < linkerCount; i += 1 {
-		for col in exportBundle.getLinkedColumns(columnBundle, i) {
-			if isExportable(col) && col.spec.name != "pl7.app/label" {
-				allLinkedCols = append(allLinkedCols, col)
-			}
-		}
-	}
-	linkedLabelMap := {}
-	if len(allLinkedCols) > 0 {
-		distinctLabels := modelUtils.deriveDistinctLabels(
-			slices.map(allLinkedCols, func(c) { return c.spec }),
-			columns.getLabel
-		)
-		for i, col in allLinkedCols {
-			linkedLabelMap[col.key] = distinctLabels[i]
-		}
-	}
-
 	linkerGroups := []
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
@@ -223,7 +233,7 @@ build := func(inputs) {
 		result := buildLinkerGroup({
 			linkerCol: linkerCol,
 			linkedCols: linkedCols,
-			labelMap: linkedLabelMap,
+			labelMap: labelMap,
 			clonotypeAxisSpec: clonotypeAxisSpec,
 			usedLabelsSet: usedLabelsSet,
 			byCloneAccum: byCloneEntries
