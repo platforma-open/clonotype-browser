@@ -197,6 +197,13 @@ isLinkerColumn := func(spec) {
 	return spec.annotations[isLinkerAnnotation] == "true"
 }
 
+isHidden := func(spec) {
+	if is_undefined(spec.annotations) {
+		return false
+	}
+	return spec.annotations["pl7.app/table/visibility"] == "hidden"
+}
+
 export ll.toStrict({
 	mainAnchorName: mainAnchorName,
 
@@ -218,6 +225,7 @@ export ll.toStrict({
 	withLabel: withLabel,
 	getOrderPriority: getOrderPriority,
 	isLinkerColumn: isLinkerColumn,
+	isHidden: isHidden,
 
 	columnAsAxisSpec: columnAsAxisSpec
 })

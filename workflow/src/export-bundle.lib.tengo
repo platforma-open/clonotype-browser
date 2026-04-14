@@ -1,5 +1,6 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
+slices := import("@platforma-sdk/workflow-tengo:slices")
 
 columns := import(":columns")
 
@@ -33,7 +34,9 @@ declareAwaitStates := func(tpl) {
 }
 
 getPerSampleColumns := func(bundle) {
-	return bundle.getColumns(perSampleKey)
+	return slices.filter(bundle.getColumns(perSampleKey), func(col) {
+		return !columns.isHidden(col.spec)
+	})
 }
 
 getPerClonotypeColumns := func(bundle) {
