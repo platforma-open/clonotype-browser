@@ -152,9 +152,6 @@ build := func(inputs) {
 	// Track per-linker-group entry ranges for direct index access later.
 	// Skip linked columns already present in per-clonotype (PBundle
 	// enrichment resolves the same column under both selectors).
-	// Dedup linked columns across linker groups by PBundle column key —
-	// the same physical column can match multiple linker selectors.
-	addedLinkedColKeys := {}
 	linkerGroupMeta := []
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
@@ -170,10 +167,6 @@ build := func(inputs) {
 			if !is_undefined(perClonKeys[colMatchKey(col.spec)]) {
 				continue
 			}
-			if !is_undefined(addedLinkedColKeys[col.key]) {
-				continue
-			}
-			addedLinkedColKeys[col.key] = true
 			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerPath })
 		}
 		linkerGroupMeta = append(linkerGroupMeta, {
