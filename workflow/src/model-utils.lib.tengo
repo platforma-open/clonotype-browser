@@ -220,10 +220,57 @@ minimizeTypeSet := func(typeSet, records, stats) {
 	return result
 }
 
+// Extract spec from an entry. Entry is either a plain PColumnSpec
+// or { spec: PColumnSpec, linkerPath: [{spec: linkerSpec}] }.
+extractSpec := func(entry) {
+	if !is_undefined(entry.spec) && !is_undefined(entry.spec.name) {
+		return entry.spec
+	}
+	return entry
+}
+
+// Extract linker labels from an entry's linkerPath, replicating
+// the TypeScript extractLinkerLabels from derive_distinct_labels.ts.
+extractLinkerLabels := func(entry) {
+	if is_undefined(entry.linkerPath) || len(entry.linkerPath) == 0 {
+		return []
+	}
+	labels := []
+	for step in entry.linkerPath {
+		label := undefined
+		if !is_undefined(step.spec) && !is_undefined(step.spec.annotations) {
+			label = step.spec.annotations["pl7.app/linkLabel"]
+			if is_undefined(label) {
+				label = step.spec.annotations["pl7.app/label"]
+			}
+		}
+		if !is_undefined(label) {
+			trimmed := text.trim_space(label)
+			if len(trimmed) > 0 {
+				labels = append(labels, trimmed)
+			}
+		}
+	}
+	return labels
+}
+
 // Replicates @platforma-sdk/model deriveDistinctLabels with { includeNativeLabel: true }.
-// Takes a list of PColumnSpecs and a getLabel function.
+//
+// Each entry is either a plain PColumnSpec or { spec: PColumnSpec, linkerPath: [{spec: linkerSpec}] }.
+// Entries with linkerPath get a "via <label>" suffix, matching the TypeScript applyLinkerSuffixes.
 // Returns a list of distinct labels (same order as input).
-deriveDistinctLabels := func(specs, getLabel) {
+deriveDistinctLabels := func(entries, getLabel) {
+	// Phase 0: extract specs and compute linker suffixes (before disambiguation).
+	specs := slices.map(entries, func(e) { return extractSpec(e) })
+	linkerSuffixes := slices.map(entries, func(e) {
+		linkerLabels := extractLinkerLabels(e)
+		if len(linkerLabels) == 0 {
+			return undefined
+		}
+		return "via " + text.join(linkerLabels, " > ")
+	})
+
+	// Phase 1-4: core disambiguation on plain specs.
 	records := slices.map(specs, func(spec) { return enrichRecord(spec, getLabel) })
 	stats := collectTypeStats(records)
 	classified := classifyTypes(stats, len(specs))
@@ -234,46 +281,62 @@ deriveDistinctLabels := func(specs, getLabel) {
 		return buildLabels(records, typeSet, force)
 	}
 
+	result := undefined
+
 	if len(mainTypes) == 0 {
 		typeSet := {}
 		typeSet[LABEL_TYPE_FULL] = true
-		return build(typeSet, true)
+		result = build(typeSet, true)
 	}
 
-	includedCount := 0
-	additionalType := -1
-	for includedCount < len(mainTypes) {
-		currentSet := {}
-		currentSet[LABEL_TYPE_FULL] = true
-		for i := 0; i < includedCount; i += 1 {
-			currentSet[mainTypes[i]] = true
-		}
-		if additionalType >= 0 {
-			currentSet[mainTypes[additionalType]] = true
-		}
+	if is_undefined(result) {
+		includedCount := 0
+		additionalType := -1
+		for includedCount < len(mainTypes) {
+			currentSet := {}
+			currentSet[LABEL_TYPE_FULL] = true
+			for i := 0; i < includedCount; i += 1 {
+				currentSet[mainTypes[i]] = true
+			}
+			if additionalType >= 0 {
+				currentSet[mainTypes[additionalType]] = true
+			}
 
-		candidateResult := build(currentSet, false)
-		if !is_undefined(candidateResult) && countUnique(candidateResult) == len(specs) {
-			minimized := minimizeTypeSet(currentSet, records, stats)
-			return build(minimized, false)
-		}
+			candidateResult := build(currentSet, false)
+			if !is_undefined(candidateResult) && countUnique(candidateResult) == len(specs) {
+				minimized := minimizeTypeSet(currentSet, records, stats)
+				result = build(minimized, false)
+				break
+			}
 
-		additionalType += 1
-		if additionalType >= len(mainTypes) {
-			includedCount += 1
-			additionalType = includedCount
+			additionalType += 1
+			if additionalType >= len(mainTypes) {
+				includedCount += 1
+				additionalType = includedCount
+			}
 		}
 	}
 
-	fallbackSet := {}
-	for _, t in mainTypes {
-		fallbackSet[t] = true
+	if is_undefined(result) {
+		fallbackSet := {}
+		for _, t in mainTypes {
+			fallbackSet[t] = true
+		}
+		for _, t in secondaryTypes {
+			fallbackSet[t] = true
+		}
+		minimized := minimizeTypeSet(fallbackSet, records, stats)
+		result = build(minimized, true)
 	}
-	for _, t in secondaryTypes {
-		fallbackSet[t] = true
+
+	// Phase 5: apply linker suffixes (matches TypeScript applyLinkerSuffixes).
+	for i := 0; i < len(result); i += 1 {
+		if !is_undefined(linkerSuffixes[i]) {
+			result[i] = result[i] + " " + linkerSuffixes[i]
+		}
 	}
-	minimized := minimizeTypeSet(fallbackSet, records, stats)
-	return build(minimized, true)
+
+	return result
 }
 
 export ll.toStrict({
