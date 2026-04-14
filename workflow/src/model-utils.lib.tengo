@@ -6,27 +6,25 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
-// Replicates @platforma-sdk/model pickStringDomain.
-pickStringDomain := func(domain) {
+optionalDomain := func(domain) {
 	if is_undefined(domain) || len(domain) == 0 {
 		return undefined
 	}
 	return domain
 }
 
-// Replicates @platforma-sdk/model linkerSingleMatchQuery.
 linkerSingleMatchQuery := func(spec) {
 	axes := []
 	for axis in spec.axesSpec {
 		entry := { name: axis.name, type: axis.type }
-		domain := pickStringDomain(axis.domain)
+		domain := optionalDomain(axis.domain)
 		if !is_undefined(domain) {
 			entry.domain = domain
 		}
 		axes = append(axes, entry)
 	}
 	selector := { name: spec.name, axes: axes }
-	colDomain := pickStringDomain(spec.domain)
+	colDomain := optionalDomain(spec.domain)
 	if !is_undefined(colDomain) {
 		selector.domain = colDomain
 	}
@@ -35,19 +33,17 @@ linkerSingleMatchQuery := func(spec) {
 
 buildLinkedSelector := func(axisSpec) {
 	entry := { name: axisSpec.name, type: axisSpec.type }
-	domain := pickStringDomain(axisSpec.domain)
+	domain := optionalDomain(axisSpec.domain)
 	if !is_undefined(domain) {
 		entry.domain = domain
 	}
 	return { axes: [entry] }
 }
 
-// Replicates @platforma-sdk/model makeColumnKey.
 makeColumnKey := func(spec) {
 	keyObj := { name: spec.name }
-	colDomain := pickStringDomain(spec.domain)
-	if !is_undefined(colDomain) {
-		keyObj.domain = colDomain
+	if !is_undefined(spec.domain) && len(spec.domain) > 0 {
+		keyObj.domain = spec.domain
 	}
 	return canonical.encode(keyObj)
 }
@@ -281,7 +277,6 @@ deriveDistinctLabels := func(specs, getLabel) {
 }
 
 export ll.toStrict({
-	pickStringDomain: pickStringDomain,
 	linkerSingleMatchQuery: linkerSingleMatchQuery,
 	buildLinkedSelector: buildLinkedSelector,
 	makeColumnKey: makeColumnKey,
