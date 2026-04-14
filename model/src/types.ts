@@ -9,8 +9,6 @@ import type {
 } from "@platforma-sdk/model";
 import type { LinkedColumnEntry } from "./tableInputs";
 
-export type { FilterSpecType } from "@platforma-sdk/model";
-
 export type FilterSpec = _FilterSpec<
   FilterSpecLeaf,
   { id: number; name?: string; isExpanded?: boolean }
@@ -31,7 +29,6 @@ export type TableInputs = {
 /** Args passed to the workflow — the output shape of `.args(...)`. */
 export type BlockArgs = {
   inputAnchor?: PlRef;
-  datasetTitle?: string;
   annotationSpec: AnnotationSpec;
   runExportAll: boolean;
   tableInputs?: TableInputs;
@@ -40,8 +37,6 @@ export type BlockArgs = {
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: PlRef;
-  datasetTitle?: string;
-  annotationSpec: AnnotationSpec;
   runExportAll: boolean;
   tableInputs?: TableInputs;
   settingsOpen: boolean;

@@ -23,10 +23,9 @@ export { PAxisName } from "@platforma-sdk/model";
 /** Well-known PColumn names — SDK's set plus names this block references. */
 export const PColumnName = {
   ...SdkPColumnName,
-  /** Per-sample clonotype count — produced by upstream VDJ blocks. */
   SampleCount: "pl7.app/vdj/sampleCount",
-  /** Sequence-annotation marker column — internal, never exported. */
   SequenceAnnotation: "pl7.app/vdj/sequence/annotation",
+  AnnotationResult: "pl7.app/annotation/result",
 } as const;
 
 const ANNOTATION_EXTENSIONS = {

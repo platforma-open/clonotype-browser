@@ -2,7 +2,6 @@ import type {
   AxesSpec,
   ColumnMatch,
   ColumnSnapshot,
-  InferHrefType,
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
@@ -14,12 +13,14 @@ import {
   BlockModelV3,
   ColumnCollectionBuilder,
   collectCtxColumnSnapshotProviders,
+  convertFilterSpecsToExpressionSpecs,
   createPlDataTableSheet,
   createPlDataTableV3,
   deriveDistinctLabels,
   expandByPartition,
   getUniquePartitionKeys,
   OutputColumnProvider,
+  plRefsEqual,
   Services,
   type RenderCtxBase,
   type RequireServices,
@@ -34,7 +35,7 @@ import {
 } from "./columns";
 import { blockDataModel } from "./dataModel";
 import { buildTableInputs } from "./tableInputs";
-import type { BlockArgs } from "./types";
+import type { BlockArgs, BlockData } from "./types";
 
 export { blockDataModel } from "./dataModel";
 export type { LinkedColumn, LinkedColumnEntry } from "./tableInputs";
@@ -143,15 +144,33 @@ function findOverlapMatches<A, U, S extends RequireServices<typeof Services.PFra
   return { matches: filtered, anchorSpec };
 }
 
+function compileAnnotationSpec(ui: BlockData["annotationSpecUi"]): BlockArgs["annotationSpec"] {
+  return {
+    title: ui.title,
+    steps: convertFilterSpecsToExpressionSpecs(ui.steps),
+    defaultValue: ui.defaultValue,
+  };
+}
+
+const inputAnchorSpecs = [
+  {
+    axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ClonotypeKey }],
+    annotations: { [Annotation.IsAnchor]: "true" },
+  },
+  {
+    axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ScClonotypeKey }],
+    annotations: { [Annotation.IsAnchor]: "true" },
+  },
+];
+
 export const platforma = BlockModelV3.create(blockDataModel)
 
   .args<BlockArgs>((data) => {
     if (data.inputAnchor === undefined) throw new Error("No input anchor");
-    if (data.annotationSpec.steps.length === 0) throw new Error("No annotation steps");
+    if (data.annotationSpecUi.steps.length === 0) throw new Error("No annotation steps");
     return {
       inputAnchor: data.inputAnchor,
-      datasetTitle: data.datasetTitle,
-      annotationSpec: data.annotationSpec,
+      annotationSpec: compileAnnotationSpec(data.annotationSpecUi),
       runExportAll: data.runExportAll,
       tableInputs: data.tableInputs,
     };
@@ -162,37 +181,31 @@ export const platforma = BlockModelV3.create(blockDataModel)
   // annotations need linkedColumns; export needs the full TableInputs.
   .prerunArgs((data) => {
     if (data.inputAnchor === undefined) return undefined;
-    const wantAnnotations = data.annotationSpec.steps.length > 0;
+    const wantAnnotations = data.annotationSpecUi.steps.length > 0;
     const wantExport = data.runExportAll;
     if (!wantAnnotations && !wantExport) return undefined;
     return {
       inputAnchor: data.inputAnchor,
-      annotationSpec: wantAnnotations ? data.annotationSpec : { title: "", steps: [] },
+      annotationSpec: wantAnnotations
+        ? compileAnnotationSpec(data.annotationSpecUi)
+        : { title: "", steps: [] },
       runExportAll: wantExport,
       tableInputs: wantAnnotations || wantExport ? data.tableInputs : undefined,
     };
   })
 
   .output("inputOptions", (ctx) =>
-    ctx.resultPool.getOptions(
-      [
-        {
-          axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ClonotypeKey }],
-          annotations: { [Annotation.IsAnchor]: "true" },
-        },
-        {
-          axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ScClonotypeKey }],
-          annotations: { [Annotation.IsAnchor]: "true" },
-        },
-      ],
-      { refsWithEnrichments: true },
-    ),
+    ctx.resultPool.getOptions(inputAnchorSpecs, { refsWithEnrichments: true }),
   )
 
   .output("annotationsIsComputing", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return false;
-    if (ctx.data.annotationSpec.steps.length === 0) return false;
-    return ctx.prerun?.resolve("annotationsPf") === undefined;
+    if (ctx.data.annotationSpecUi.steps.length === 0) return false;
+    return ctx.prerun?.resolve({
+      field: "annotationsPf",
+      assertFieldType: "Input",
+      allowPermanentAbsence: true,
+    }) === undefined;
   })
 
   .output("tableInputs", (ctx) => {
@@ -205,7 +218,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
     const result = findOverlapMatches(ctx, ctx.data.inputAnchor);
     if (!result) return undefined;
 
-    const entries = result.matches.map((m) => ({
+    // Annotation results must not appear as filter inputs for their own definition.
+    const matches = result.matches.filter(
+      (m) => m.column.spec.name !== PColumnName.AnnotationResult,
+    );
+
+    const entries = matches.map((m) => ({
       id: m.column.id,
       spec: m.column.spec,
       data: m.column.data?.get(),
@@ -214,7 +232,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
     return {
       pFrame: ctx.createPFrame(entries),
-      columns: buildFilterUiColumns(result.matches, result.anchorSpec.axesSpec),
+      columns: buildFilterUiColumns(matches, result.anchorSpec.axesSpec),
     };
   })
 
@@ -365,9 +383,8 @@ export const platforma = BlockModelV3.create(blockDataModel)
   })
 
   .sections((ctx) => {
-    // V3 has no global argsValid; mirror `.args(...)`'s throw condition.
     const showStats =
-      ctx.data.inputAnchor !== undefined && ctx.data.annotationSpec.steps.length > 0;
+      ctx.data.inputAnchor !== undefined && ctx.data.annotationSpecUi.steps.length > 0;
     return [
       { type: "link", href: "/", label: "Overlap" } as const,
       { type: "link", href: "/sample", label: "By Sample" } as const,
@@ -382,16 +399,19 @@ export const platforma = BlockModelV3.create(blockDataModel)
   )
 
   .title((ctx) => {
-    if (ctx.data.annotationSpec.steps.length > 0) {
-      return `Clonotype Annotation - ${ctx.data.annotationSpec.title}`;
+    if (ctx.data.annotationSpecUi.steps.length > 0) {
+      return `Clonotype Annotation - ${ctx.data.annotationSpecUi.title}`;
     }
-    return ctx.data.datasetTitle
-      ? `Clonotype Browser - ${ctx.data.datasetTitle}`
-      : "Clonotype Browser";
+    const { inputAnchor } = ctx.data;
+    if (inputAnchor) {
+      const options = ctx.resultPool.getOptions(inputAnchorSpecs, { refsWithEnrichments: true });
+      const label = options.find((o) => plRefsEqual(o.ref, inputAnchor))?.label;
+      if (label) return `Clonotype Browser - ${label}`;
+    }
+    return "Clonotype Browser";
   })
 
   .done();
 
 export type Platforma = typeof platforma;
 export type BlockOutputs = InferOutputsType<typeof platforma>;
-export type Href = InferHrefType<typeof platforma>;

@@ -1,12 +1,19 @@
-import { createPlDataTableStateV2, DataModelBuilder } from "@platforma-sdk/model";
+import {
+  createPlDataTableStateV2,
+  DataModelBuilder,
+  type PlDataTableStateV2,
+} from "@platforma-sdk/model";
 import type { BlockData, LegacyBlockArgs, LegacyUiState } from "./types";
 
+/** V1 schema: sampleTableState could be absent for early Ver_2026_04_07 data. */
+type BlockDataV1 = Omit<BlockData, "sampleTableState"> & {
+  sampleTableState?: PlDataTableStateV2;
+};
+
 export const blockDataModel = new DataModelBuilder()
-  .from<BlockData>("Ver_2026_04_07")
+  .from<BlockDataV1>("Ver_2026_04_07")
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
     inputAnchor: args.inputAnchor,
-    datasetTitle: args.datasetTitle,
-    annotationSpec: args.annotationSpec ?? { title: "", steps: [] },
     runExportAll: args.runExportAll ?? false,
     tableInputs: args.tableInputs ?? { byClonotypeLabels: {}, linkedColumns: {} },
     settingsOpen: uiState?.settingsOpen ?? true,
@@ -15,8 +22,11 @@ export const blockDataModel = new DataModelBuilder()
     statsTableState: uiState?.statsTable?.tableState ?? createPlDataTableStateV2(),
     annotationSpecUi: uiState?.annotationSpec ?? { title: "", steps: [] },
   }))
+  .migrate<BlockData>("Ver_2026_04_14", (prev) => ({
+    ...prev,
+    sampleTableState: prev.sampleTableState ?? createPlDataTableStateV2(),
+  }))
   .init(() => ({
-    annotationSpec: { title: "", steps: [] },
     runExportAll: false,
     tableInputs: { byClonotypeLabels: {}, linkedColumns: {} },
     settingsOpen: true,
