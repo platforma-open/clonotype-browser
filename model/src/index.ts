@@ -260,7 +260,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
         ...splitColumns.map((col) => ({
           ...col,
           id: col.id as SUniversalPColumnId,
-          isPrimary: true as const,
+          isPrimary: true,
         })),
         ...directMatches
           .filter((m) => !isAbundanceToSplit(m))
@@ -268,13 +268,13 @@ export const platforma = BlockModelV3.create(blockDataModel)
             ...m.column,
             originalId: m.originalId,
             linkerPath: m.path,
-            isPrimary: false as const,
+            isPrimary: false,
           })),
         ...linkedMatches.map((m) => ({
           ...m.column,
           originalId: m.originalId,
           linkerPath: m.path,
-          isPrimary: false as const,
+          isPrimary: false,
         })),
       ],
       primaryJoinType: "full",
@@ -354,7 +354,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       columns: [...annotationSnapshots, ...splitSampleSnapshots].map((s) => ({
         ...s,
         id: s.id as SUniversalPColumnId,
-        isPrimary: true as const,
+        isPrimary: true,
       })),
       tableState: ctx.data.statsTableState,
     });
