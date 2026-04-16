@@ -1,0 +1,71 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+
+columns := import(":columns")
+
+perSampleKey := "perSample"
+perClonotypeKey := "perClonotype"
+sampleLabelsKey := "sampleLabels"
+
+linkerKey := func(i) { return "linker_" + string(i) }
+linkedKey := func(i) { return "linked_" + string(i) }
+
+build := func(inputAnchor, linkerInfos) {
+	bundle := wf.createPBundleBuilder()
+	bundle.addAnchor(columns.mainAnchorName, inputAnchor)
+	bundle.addMulti(columns.perSampleSelector, perSampleKey)
+	bundle.addMulti(columns.perClonotypeSelector, perClonotypeKey)
+	bundle.addSingle(columns.sampleLabelsSelector, sampleLabelsKey)
+
+	if !is_undefined(linkerInfos) {
+		for i, info in linkerInfos {
+			bundle.addSingle(info.selector, linkerKey(i))
+			bundle.addMulti(info.linkedSelector, linkedKey(i))
+		}
+	}
+
+	return bundle.build()
+}
+
+declareAwaitStates := func(tpl) {
+	tpl.awaitState("columnBundle", "PColumnBundleWithPartitions")
+	tpl.awaitState("columnBundle", sampleLabelsKey, "ResourceReady")
+}
+
+getPerSampleColumns := func(bundle) {
+	return slices.filter(bundle.getColumns(perSampleKey), func(col) {
+		return !columns.isHidden(col.spec)
+	})
+}
+
+getPerClonotypeColumns := func(bundle) {
+	return bundle.getColumns(perClonotypeKey)
+}
+
+getSampleLabelsColumn := func(bundle) {
+	return bundle.getColumn(sampleLabelsKey)
+}
+
+getAnchorSpec := func(bundle) {
+	return bundle.getSpec(columns.mainAnchorName)
+}
+
+getLinkerColumn := func(bundle, i) {
+	return bundle.getColumn(linkerKey(i))
+}
+
+getLinkedColumns := func(bundle, i) {
+	return bundle.getColumns(linkedKey(i))
+}
+
+export ll.toStrict({
+	build: build,
+	declareAwaitStates: declareAwaitStates,
+	getPerSampleColumns: getPerSampleColumns,
+	getPerClonotypeColumns: getPerClonotypeColumns,
+	getSampleLabelsColumn: getSampleLabelsColumn,
+	getAnchorSpec: getAnchorSpec,
+	getLinkerColumn: getLinkerColumn,
+	getLinkedColumns: getLinkedColumns
+})

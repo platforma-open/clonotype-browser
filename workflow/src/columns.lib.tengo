@@ -1,0 +1,231 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+
+// Annotation keys consumed/produced by this block — the Platforma schema contract.
+labelAnnotation := "pl7.app/label"
+orderPriorityAnnotation := "pl7.app/table/orderPriority"
+isLinkerAnnotation := "pl7.app/isLinkerColumn"
+
+// Anchor name for the input dataset — shared by every selector below and by the
+// bundle constructors that register this anchor.
+mainAnchorName := "main"
+
+// All output specs share this domain so multiple block instances do not collide
+// in the result pool.
+runScopedDomain := func() {
+	return { "pl7.app/clonotypeAnnotationRunId": wf.getBlockId() }
+}
+
+// =============================================================================
+// INPUT SELECTORS — what this block looks for in the result pool.
+// =============================================================================
+
+// --- Stats inputs (consumed by the annotation branch in prerun) ---
+
+mainCountSelector := {
+	axes: [
+		{ anchor: mainAnchorName, idx: 0 },
+		{ anchor: mainAnchorName, idx: 1 }
+	],
+	annotations: {
+		"pl7.app/isAbundance": "true",
+		"pl7.app/abundance/normalized": "false",
+		"pl7.app/abundance/isPrimary": "true"
+	}
+}
+
+mainFractionSelector := {
+	axes: [
+		{ anchor: mainAnchorName, idx: 0 },
+		{ anchor: mainAnchorName, idx: 1 }
+	],
+	annotations: {
+		"pl7.app/isAbundance": "true",
+		"pl7.app/abundance/normalized": "true",
+		"pl7.app/abundance/isPrimary": "true"
+	}
+}
+
+// --- Export inputs (consumed by the export branch in prerun) ---
+
+perSampleSelector := {
+	axes: [{ anchor: mainAnchorName, idx: 0 }, { anchor: mainAnchorName, idx: 1 }]
+}
+
+perClonotypeSelector := {
+	axes: [{ anchor: mainAnchorName, idx: 1 }]
+}
+
+sampleLabelsSelector := {
+	name: "pl7.app/label",
+	domainAnchor: mainAnchorName,
+	axes: [{ anchor: mainAnchorName, idx: 0 }]
+}
+
+// --- Annotation compute inputs (passed as additionalColumns to the SDK) ---
+
+// Per-clonotype label column — used as the reference label in annotation expressions.
+referenceLabelSelector := {
+	name: "pl7.app/label",
+	axes: [{ anchor: mainAnchorName, idx: 1 }]
+}
+
+// =============================================================================
+// OUTPUT SPECS — PColumns this block produces.
+// =============================================================================
+
+// --- Per-sample × annotation stats (prerun, consumed by the model's stats table) ---
+
+sampleAnnotationsCountSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Int",
+		name: "pl7.app/clonotypeAnnotation/stats/annotation_count",
+		annotations: { "pl7.app/label": "Annotations count" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+sampleClonotypesNumberSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Int",
+		name: "pl7.app/clonotypeAnnotation/stats/clonotype_count",
+		annotations: { "pl7.app/label": "Clonotypes Number" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+sampleCountSumSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Double",
+		name: "pl7.app/clonotypeAnnotation/stats/main_count_sum",
+		annotations: { "pl7.app/label": "Count sum" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+sampleFractionSumSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Double",
+		name: "pl7.app/clonotypeAnnotation/stats/main_fraction_sum",
+		annotations: { "pl7.app/label": "Fraction sum" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+// --- Per-annotation totals (prerun, consumed by the model's stats table) ---
+
+totalAnnotationsCountSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Long",
+		name: "pl7.app/clonotypeAnnotation/stats/annotation_count",
+		annotations: { "pl7.app/label": "Total Count of Annotations" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+totalClonotypesNumberSpec := func(axesSpec) {
+	return {
+		kind: "PColumn",
+		valueType: "Long",
+		name: "pl7.app/clonotypeAnnotation/stats/clonotype_count",
+		annotations: { "pl7.app/label": "Total Number of Clonotypes" },
+		domain: runScopedDomain(),
+		axesSpec: axesSpec
+	}
+}
+
+// =============================================================================
+// SPEC TRANSFORMATIONS
+// =============================================================================
+
+// Annotation column values become axis keys in the stats outputs; valueType
+// maps to axis type.
+columnAsAxisSpec := func(spec) {
+	return {
+		type: spec.valueType,
+		name: spec.name,
+		domain: spec.domain,
+		annotations: spec.annotations
+	}
+}
+
+// =============================================================================
+// ANNOTATION ACCESSORS — purpose-named reads/writes on PColumn specs.
+// =============================================================================
+
+// Display label shown to users, or undefined if unlabelled.
+getLabel := func(spec) {
+	if is_undefined(spec.annotations) {
+		return undefined
+	}
+	return spec.annotations[labelAnnotation]
+}
+
+// Returns a deep clone of spec with the display label replaced.
+withLabel := func(spec, label) {
+	updated := maps.clone(spec)
+	if is_undefined(updated.annotations) {
+		updated.annotations = {}
+	}
+	updated.annotations[labelAnnotation] = label
+	return updated
+}
+
+// Table column sort priority (higher displayed first), or undefined if unspecified.
+getOrderPriority := func(spec) {
+	if is_undefined(spec.annotations) {
+		return undefined
+	}
+	return spec.annotations[orderPriorityAnnotation]
+}
+
+isLinkerColumn := func(spec) {
+	if is_undefined(spec.annotations) {
+		return false
+	}
+	return spec.annotations[isLinkerAnnotation] == "true"
+}
+
+isHidden := func(spec) {
+	if is_undefined(spec.annotations) {
+		return false
+	}
+	return spec.annotations["pl7.app/table/visibility"] == "hidden"
+}
+
+export ll.toStrict({
+	mainAnchorName: mainAnchorName,
+
+	mainCountSelector: mainCountSelector,
+	mainFractionSelector: mainFractionSelector,
+	perSampleSelector: perSampleSelector,
+	perClonotypeSelector: perClonotypeSelector,
+	sampleLabelsSelector: sampleLabelsSelector,
+	referenceLabelSelector: referenceLabelSelector,
+
+	sampleAnnotationsCountSpec: sampleAnnotationsCountSpec,
+	sampleClonotypesNumberSpec: sampleClonotypesNumberSpec,
+	sampleCountSumSpec: sampleCountSumSpec,
+	sampleFractionSumSpec: sampleFractionSumSpec,
+	totalAnnotationsCountSpec: totalAnnotationsCountSpec,
+	totalClonotypesNumberSpec: totalClonotypesNumberSpec,
+
+	getLabel: getLabel,
+	withLabel: withLabel,
+	getOrderPriority: getOrderPriority,
+	isLinkerColumn: isLinkerColumn,
+	isHidden: isHidden,
+
+	columnAsAxisSpec: columnAsAxisSpec
+})

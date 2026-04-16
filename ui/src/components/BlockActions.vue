@@ -19,7 +19,7 @@ withDefaults(
 const app = useApp();
 
 function openAnnotations() {
-  app.isAnnotationModalOpen = true;
+  app.uiState.isAnnotationModalOpen = true;
 }
 
 function openSettings() {

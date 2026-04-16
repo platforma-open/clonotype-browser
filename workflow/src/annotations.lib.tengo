@@ -4,7 +4,7 @@ pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 annotations := import("@platforma-sdk/workflow-tengo:annotations")
 
-util := import(":util")
+columns := import(":columns")
 
 convertToPFrame := func(...entities) {
 	return slices.reduce(entities, func(acc, v) {
@@ -20,28 +20,31 @@ computeClonotypeAnnotations := func(inputs) {
 	defaultValue := inputs.defaultValue
 	annotationAxesSpec := inputs.annotationAxesSpec
 	shouldComputeFilters := inputs.shouldComputeFilters
+	linkerIds := is_undefined(inputs.linkerIds) ? [] : inputs.linkerIds
 
-    if len(steps) == 0 {
-		ll.panic("No annotation steps provided")
-	}
+	ll.assert(len(steps) > 0, "no annotation steps provided")
 
-	referenceColumn := canonical.encode({ name: "pl7.app/label", axes: [{ anchor: "main", idx: 1 }] });
+	additionalColumns := append(
+		[canonical.encode(columns.referenceLabelSelector)],
+		linkerIds...
+	)
+
 	result := annotations.computeAnnotations({
 		title: title,
 		steps: steps,
 		anchorRef: inputAnchor,
 		defaultValue: defaultValue,
 		resultAxesSpec: annotationAxesSpec,
-		additionalColumns: [referenceColumn],
+		additionalColumns: additionalColumns,
 		shouldComputeFilters: shouldComputeFilters
 	})
 
 	return {
 		annotationsColumn: result.annotationsColumn,
-        annotationsPf: convertToPFrame(result.annotationsColumn),
+		annotationsPf: convertToPFrame(result.annotationsColumn),
 		filtersColumns: result.annotationsFiltersColumns,
-        filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
-    }
+		filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
+	}
 }
 
 export ll.toStrict({

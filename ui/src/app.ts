@@ -2,38 +2,25 @@ import type { Platforma } from "@platforma-open/milaboratories.clonotype-browser
 import { platforma } from "@platforma-open/milaboratories.clonotype-browser-3.model";
 import type { PlSelectionModel } from "@platforma-sdk/model";
 import { defineAppV3 } from "@platforma-sdk/ui-vue";
-import { computed, ref } from "vue";
-import { processAnnotationUiStateToArgsState, syncDatasetTitle, syncTableInputs } from "./model";
+import { computed, reactive, ref } from "vue";
 import { getValuesForSelectedColumns } from "./utils";
 
 import AnnotationStatsPage from "./pages/AnnotationStatsPage.vue";
 import OverlapPage from "./pages/OverlapPage.vue";
 import SamplePage from "./pages/SamplePage.vue";
-import { stateMigration } from "./migration";
 
 export const sdkPlugin = defineAppV3(
   platforma as Platforma,
   (app) => {
-    stateMigration(app.model.data);
-    syncDatasetTitle(
-      () => app.model.data,
-      () => app.model.outputs.inputOptions,
-    );
-    syncTableInputs(
-      () => app.model.data,
-      () => app.model.outputs.tableInputs,
-    );
-    processAnnotationUiStateToArgsState(
-      () => app.model.data.annotationSpecUi,
-      () => app.model.data.annotationSpec,
-    );
-
     const selectedColumns = ref({
       axesSpec: [],
       selectedKeys: [],
     } satisfies PlSelectionModel);
 
-    const isAnnotationModalOpen = ref(false);
+    const uiState = reactive({
+      isAnnotationModalOpen: false,
+    });
+
     const hasSelectedColumns = computed(() => {
       return selectedColumns.value.selectedKeys.length > 0;
     });
@@ -41,8 +28,8 @@ export const sdkPlugin = defineAppV3(
     return {
       progress: () => app.model.outputs.annotationsIsComputing ?? false,
       selectedColumns,
+      uiState,
       hasSelectedColumns,
-      isAnnotationModalOpen,
       routes: {
         "/": () => OverlapPage,
         "/sample": () => SamplePage,

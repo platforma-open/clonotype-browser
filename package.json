@@ -23,7 +23,7 @@
     "shx": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
-  "pnpm": {
+  "//pnpm": {
     "overrides": {
       "@milaboratories/pl-model-common": "link:../../core/platforma/lib/model/common/",
       "@platforma-sdk/model": "link:../../core/platforma/sdk/model/",

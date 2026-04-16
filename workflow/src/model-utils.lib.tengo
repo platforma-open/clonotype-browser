@@ -1,0 +1,347 @@
+json := import("json")
+text := import("text")
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
+
+optionalDomain := func(domain) {
+	if is_undefined(domain) || len(domain) == 0 {
+		return undefined
+	}
+	return domain
+}
+
+linkerSingleMatchQuery := func(spec) {
+	axes := []
+	for axis in spec.axesSpec {
+		entry := { name: axis.name, type: axis.type }
+		domain := optionalDomain(axis.domain)
+		if !is_undefined(domain) {
+			entry.domain = domain
+		}
+		axes = append(axes, entry)
+	}
+	selector := { name: spec.name, axes: axes }
+	colDomain := optionalDomain(spec.domain)
+	if !is_undefined(colDomain) {
+		selector.domain = colDomain
+	}
+	return selector
+}
+
+buildLinkedSelector := func(axisSpec) {
+	entry := { name: axisSpec.name, type: axisSpec.type }
+	domain := optionalDomain(axisSpec.domain)
+	if !is_undefined(domain) {
+		entry.domain = domain
+	}
+	return { axes: [entry] }
+}
+
+makeColumnKey := func(spec) {
+	keyObj := { name: spec.name }
+	if !is_undefined(spec.domain) && len(spec.domain) > 0 {
+		keyObj.domain = spec.domain
+	}
+	return canonical.encode(keyObj)
+}
+
+
+// ============================================================================
+// deriveDistinctLabels — exact port of @platforma-sdk/model deriveDistinctLabels
+// with options { includeNativeLabel: true }.
+// ============================================================================
+
+DISTANCE_PENALTY := 0.001
+LABEL_TYPE := "__LABEL__"
+LABEL_TYPE_FULL := "__LABEL__@1"
+SEPARATOR := " / "
+
+enrichRecord := func(spec, getLabel) {
+	label := getLabel(spec)
+	traceStr := is_undefined(spec.annotations) ? undefined : spec.annotations["pl7.app/trace"]
+	baseTrace := []
+	if !is_undefined(traceStr) {
+		parsed := json.decode(traceStr)
+		if is_array(parsed) {
+			baseTrace = parsed
+		}
+	}
+
+	trace := []
+	if !is_undefined(label) {
+		trace = append(trace, { label: label, type: LABEL_TYPE, importance: -2 })
+	}
+	for entry in baseTrace {
+		trace = append(trace, entry)
+	}
+
+	occurrences := {}
+	reversed := []
+	for i := len(trace) - 1; i >= 0; i -= 1 {
+		entry := trace[i]
+		entryType := is_undefined(entry.type) ? "" : entry.type
+		occIdx := is_undefined(occurrences[entryType]) ? 1 : occurrences[entryType] + 1
+		occurrences[entryType] = occIdx
+		reversed = append(reversed, {
+			label: is_undefined(entry.label) ? "" : entry.label,
+			type: entryType,
+			importance: is_undefined(entry.importance) ? 0 : entry.importance,
+			fullType: entryType + "@" + string(occIdx),
+			occurrenceIndex: occIdx
+		})
+	}
+	fullTrace := []
+	for i := len(reversed) - 1; i >= 0; i -= 1 {
+		fullTrace = append(fullTrace, reversed[i])
+	}
+	return { fullTrace: fullTrace }
+}
+
+collectTypeStats := func(records) {
+	importances := {}
+	countByType := {}
+
+	for record in records {
+		traceLen := len(record.fullTrace)
+		for i, ft in record.fullTrace {
+			distance := (traceLen - i) * DISTANCE_PENALTY
+			adjusted := ft.importance - distance
+
+			countByType[ft.fullType] = is_undefined(countByType[ft.fullType]) ? 1 : countByType[ft.fullType] + 1
+
+			current := importances[ft.fullType]
+			if is_undefined(current) || adjusted > current {
+				importances[ft.fullType] = adjusted
+			}
+		}
+	}
+	return { importances: importances, countByType: countByType }
+}
+
+classifyTypes := func(stats, totalRecords) {
+	entries := []
+	for _, typeName in maps.getKeys(stats.importances) {
+		entries = append(entries, { type: typeName, importance: stats.importances[typeName] })
+	}
+	slices.quickSortInPlaceFn(entries, func(a, b) {
+		if a.importance != b.importance {
+			return a.importance > b.importance
+		}
+		return a.type < b.type
+	})
+
+	mainTypes := []
+	secondaryTypes := []
+	for entry in entries {
+		if text.has_suffix(entry.type, "@1") || stats.countByType[entry.type] == totalRecords {
+			mainTypes = append(mainTypes, entry.type)
+		} else {
+			secondaryTypes = append(secondaryTypes, entry.type)
+		}
+	}
+	return { mainTypes: mainTypes, secondaryTypes: secondaryTypes }
+}
+
+buildLabels := func(records, includedTypes, force) {
+	result := []
+	for r in records {
+		parts := []
+		for ft in r.fullTrace {
+			if !is_undefined(includedTypes[ft.fullType]) && includedTypes[ft.fullType] {
+				parts = append(parts, ft.label)
+			}
+		}
+		if len(parts) == 0 {
+			if !force {
+				return undefined
+			}
+			result = append(result, "Unlabeled")
+			continue
+		}
+		result = append(result, text.join(parts, SEPARATOR))
+	}
+	return result
+}
+
+countUnique := func(labels) {
+	if is_undefined(labels) {
+		return 0
+	}
+	seen := {}
+	for label in labels {
+		seen[label] = true
+	}
+	return len(seen)
+}
+
+setWithout := func(set, key) {
+	result := {}
+	for k, v in set {
+		if k != key && v {
+			result[k] = true
+		}
+	}
+	return result
+}
+
+minimizeTypeSet := func(typeSet, records, stats) {
+	initialResult := buildLabels(records, typeSet, false)
+	if is_undefined(initialResult) {
+		return typeSet
+	}
+	targetCardinality := countUnique(initialResult)
+	result := maps.clone(typeSet)
+
+	removable := []
+	for _, typeName in maps.getKeys(result) {
+		if !result[typeName] || typeName == LABEL_TYPE_FULL {
+			continue
+		}
+		imp := is_undefined(stats.importances[typeName]) ? 0 : stats.importances[typeName]
+		removable = append(removable, { type: typeName, importance: imp })
+	}
+	slices.quickSortInPlaceFn(removable, func(a, b) {
+		if a.importance != b.importance {
+			return a.importance < b.importance
+		}
+		return a.type < b.type
+	})
+
+	for entry in removable {
+		candidate := setWithout(result, entry.type)
+		candidateResult := buildLabels(records, candidate, false)
+		if !is_undefined(candidateResult) && countUnique(candidateResult) >= targetCardinality {
+			result = setWithout(result, entry.type)
+		}
+	}
+	return result
+}
+
+// Extract spec from an entry. Entry is either a plain PColumnSpec
+// or { spec: PColumnSpec, linkerPath: [{spec: linkerSpec}] }.
+extractSpec := func(entry) {
+	if !is_undefined(entry.spec) && !is_undefined(entry.spec.name) {
+		return entry.spec
+	}
+	return entry
+}
+
+// Extract linker labels from an entry's linkerPath, replicating
+// the TypeScript extractLinkerLabels from derive_distinct_labels.ts.
+extractLinkerLabels := func(entry) {
+	if is_undefined(entry.linkerPath) || len(entry.linkerPath) == 0 {
+		return []
+	}
+	labels := []
+	for step in entry.linkerPath {
+		label := undefined
+		if !is_undefined(step.spec) && !is_undefined(step.spec.annotations) {
+			label = step.spec.annotations["pl7.app/linkLabel"]
+			if is_undefined(label) {
+				label = step.spec.annotations["pl7.app/label"]
+			}
+		}
+		if !is_undefined(label) {
+			trimmed := text.trim_space(label)
+			if len(trimmed) > 0 {
+				labels = append(labels, trimmed)
+			}
+		}
+	}
+	return labels
+}
+
+// Replicates @platforma-sdk/model deriveDistinctLabels with { includeNativeLabel: true }.
+//
+// Each entry is either a plain PColumnSpec or { spec: PColumnSpec, linkerPath: [{spec: linkerSpec}] }.
+// Entries with linkerPath get a "via <label>" suffix, matching the TypeScript applyLinkerSuffixes.
+// Returns a list of distinct labels (same order as input).
+deriveDistinctLabels := func(entries, getLabel) {
+	// Phase 0: extract specs and compute linker suffixes (before disambiguation).
+	specs := slices.map(entries, func(e) { return extractSpec(e) })
+	linkerSuffixes := slices.map(entries, func(e) {
+		linkerLabels := extractLinkerLabels(e)
+		if len(linkerLabels) == 0 {
+			return undefined
+		}
+		return "via " + text.join(linkerLabels, " > ")
+	})
+
+	// Phase 1-4: core disambiguation on plain specs.
+	records := slices.map(specs, func(spec) { return enrichRecord(spec, getLabel) })
+	stats := collectTypeStats(records)
+	classified := classifyTypes(stats, len(specs))
+	mainTypes := classified.mainTypes
+	secondaryTypes := classified.secondaryTypes
+
+	build := func(typeSet, force) {
+		return buildLabels(records, typeSet, force)
+	}
+
+	result := undefined
+
+	if len(mainTypes) == 0 {
+		typeSet := {}
+		typeSet[LABEL_TYPE_FULL] = true
+		result = build(typeSet, true)
+	}
+
+	if is_undefined(result) {
+		includedCount := 0
+		additionalType := -1
+		for includedCount < len(mainTypes) {
+			currentSet := {}
+			currentSet[LABEL_TYPE_FULL] = true
+			for i := 0; i < includedCount; i += 1 {
+				currentSet[mainTypes[i]] = true
+			}
+			if additionalType >= 0 {
+				currentSet[mainTypes[additionalType]] = true
+			}
+
+			candidateResult := build(currentSet, false)
+			if !is_undefined(candidateResult) && countUnique(candidateResult) == len(specs) {
+				minimized := minimizeTypeSet(currentSet, records, stats)
+				result = build(minimized, false)
+				break
+			}
+
+			additionalType += 1
+			if additionalType >= len(mainTypes) {
+				includedCount += 1
+				additionalType = includedCount
+			}
+		}
+	}
+
+	if is_undefined(result) {
+		fallbackSet := {}
+		for _, t in mainTypes {
+			fallbackSet[t] = true
+		}
+		for _, t in secondaryTypes {
+			fallbackSet[t] = true
+		}
+		minimized := minimizeTypeSet(fallbackSet, records, stats)
+		result = build(minimized, true)
+	}
+
+	// Phase 5: apply linker suffixes (matches TypeScript applyLinkerSuffixes).
+	for i := 0; i < len(result); i += 1 {
+		if !is_undefined(linkerSuffixes[i]) {
+			result[i] = result[i] + " " + linkerSuffixes[i]
+		}
+	}
+
+	return result
+}
+
+export ll.toStrict({
+	linkerSingleMatchQuery: linkerSingleMatchQuery,
+	buildLinkedSelector: buildLinkedSelector,
+	makeColumnKey: makeColumnKey,
+	deriveDistinctLabels: deriveDistinctLabels
+})

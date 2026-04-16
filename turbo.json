@@ -6,11 +6,11 @@
       "outputs": [],
       "dependsOn": ["^build"]
     },
-    "linter:check": {
+    "linter": {
       "outputs": [],
       "dependsOn": ["^build"]
     },
-    "formatter:check": {
+    "formatter": {
       "outputs": [],
       "dependsOn": ["^build"]
     },
@@ -18,7 +18,7 @@
       "inputs": ["$TURBO_DEFAULT$"],
       "env": ["PL_PKG_DEV", "PL_DOCKER_REGISTRY_PUSH_TO"],
       "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"],
-      "dependsOn": ["type-check", "linter:check", "formatter:check", "^build"]
+      "dependsOn": ["type-check", "linter", "formatter", "^build"]
     },
     "do-pack": {
       "dependsOn": ["build"],

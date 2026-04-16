@@ -15,7 +15,7 @@ async function handleDeleteSchema() {
 
 <template>
   <PlAnnotationsModal
-    v-model:opened="app.isAnnotationModalOpen"
+    v-model:opened="app.uiState.isAnnotationModalOpen"
     v-model:annotation="app.model.data.annotationSpecUi"
     :columns="app.model.outputs.overlapColumns?.columns ?? []"
     :hasSelectedColumns="app.hasSelectedColumns"
