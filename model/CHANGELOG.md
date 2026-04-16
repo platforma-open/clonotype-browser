@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 1.1.3
+
+### Patch Changes
+
+- 96c7232: Migration to createTable v3 API
+
 ## 1.1.2
 
 ### Patch Changes
