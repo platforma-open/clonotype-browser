@@ -19,11 +19,11 @@ withDefaults(
 const app = useApp();
 
 function openAnnotations() {
-  app.isAnnotationModalOpen = true;
+  app.uiState.isAnnotationModalOpen = true;
 }
 
 function openSettings() {
-  app.model.ui.settingsOpen = true;
+  app.model.data.settingsOpen = true;
 }
 </script>
 

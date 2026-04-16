@@ -1,0 +1,56 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
+
+columns := import(":columns")
+modelUtils := import(":model-utils")
+
+discover := func(inputAnchor) {
+	bundle := wf.createPBundleBuilder()
+	bundle.addAnchor(columns.mainAnchorName, inputAnchor)
+	bundle.addMulti({
+		axes: [{ anchor: columns.mainAnchorName, idx: 1 }],
+		annotations: { "pl7.app/isLinkerColumn": "true" },
+		partialAxesMatch: true
+	}, "linkers")
+	return bundle.build()
+}
+
+extract := func(bundle) {
+	clonotypeAxisName := bundle.getSpec(columns.mainAnchorName).axesSpec[1].name
+	allCols := bundle.getColumns("linkers")
+
+	result := []
+	for col in allCols {
+		spec := col.spec
+		if len(spec.axesSpec) != 2 {
+			continue
+		}
+		otherAxisIdx := 0
+		if spec.axesSpec[0].name == clonotypeAxisName {
+			otherAxisIdx = 1
+		}
+		otherAxis := spec.axesSpec[otherAxisIdx]
+		selector := modelUtils.linkerSingleMatchQuery(spec)
+		result = append(result, {
+			selector: selector,
+			canonicalId: canonical.encode(selector),
+			linkedSelector: modelUtils.buildLinkedSelector(otherAxis)
+		})
+	}
+	return result
+}
+
+buildIds := func(linkerInfos) {
+	ids := []
+	for info in linkerInfos {
+		ids = append(ids, info.canonicalId)
+	}
+	return ids
+}
+
+export ll.toStrict({
+	discover: discover,
+	extract: extract,
+	buildIds: buildIds
+})

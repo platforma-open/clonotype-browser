@@ -9,14 +9,14 @@ const suggest = useColumnSuggestion();
 
 // Actions
 async function handleDeleteSchema() {
-  Object.assign(app.model.ui.annotationSpec, getDefaultAnnotationScript());
+  Object.assign(app.model.data.annotationSpecUi, getDefaultAnnotationScript());
 }
 </script>
 
 <template>
   <PlAnnotationsModal
-    v-model:opened="app.isAnnotationModalOpen"
-    v-model:annotation="app.model.ui.annotationSpec"
+    v-model:opened="app.uiState.isAnnotationModalOpen"
+    v-model:annotation="app.model.data.annotationSpecUi"
     :columns="app.model.outputs.overlapColumns?.columns ?? []"
     :hasSelectedColumns="app.hasSelectedColumns"
     :getValuesForSelectedColumns="app.getValuesForSelectedColumns"

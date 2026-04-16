@@ -1,0 +1,21 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+renderSdk := import("@platforma-sdk/workflow-tengo:render")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+
+exportBundle := import(":export-bundle")
+
+exportTableTpl := assets.importTemplate(":export-table")
+
+render := func(inputs) {
+	linkerInfos := inputs.linkerInfos
+	bundle := exportBundle.build(inputs.inputAnchor, linkerInfos)
+	return renderSdk.createEphemeral(exportTableTpl, {
+		columnBundle: bundle,
+		linkerCount: is_undefined(linkerInfos) ? 0 : len(linkerInfos),
+		annotationsPf: inputs.annotationsPf
+	})
+}
+
+export ll.toStrict({
+	render: render
+})

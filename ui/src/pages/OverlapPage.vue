@@ -8,7 +8,7 @@ import SettingsModal from "../components/SettingsModal.vue";
 const app = useApp();
 
 const tableSettings = usePlDataTableSettingsV2({
-  sourceId: () => app.model.args.inputAnchor,
+  sourceId: () => app.model.data.inputAnchor,
   model: () => app.model.outputs.overlapTable,
 });
 </script>
@@ -22,7 +22,7 @@ const tableSettings = usePlDataTableSettingsV2({
     <PlAgDataTableV2
       key="overlap-table"
       ref="tableInstance"
-      v-model="app.model.ui.overlapTable.tableState"
+      v-model="app.model.data.overlapTableState"
       v-model:selection="app.selectedColumns"
       :settings="tableSettings"
     />

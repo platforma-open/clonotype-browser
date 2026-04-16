@@ -6,10 +6,10 @@ const app = useApp();
 </script>
 
 <template>
-  <PlSlideModal v-model="app.model.ui.settingsOpen" :close-on-outside-click="true">
+  <PlSlideModal v-model="app.model.data.settingsOpen" :close-on-outside-click="true">
     <template #title>Settings</template>
     <PlDropdownRef
-      v-model="app.model.args.inputAnchor"
+      v-model="app.model.data.inputAnchor"
       :options="app.model.outputs.inputOptions"
       label="Select dataset"
       clearable
