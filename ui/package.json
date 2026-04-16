@@ -10,7 +10,7 @@
     "type-check": "ts-builder type-check --target block-ui",
     "linter:check": "ts-builder linter --check",
     "formatter:check": "ts-builder formatter --check",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "fmt": "ts-builder format",
     "do-pack": "shx rm -f *.tgz && pnpm pack && shx mv *.tgz package.tgz"
   },
