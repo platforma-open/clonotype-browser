@@ -7,6 +7,7 @@ pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
 columns := import(":columns")
+linkers := import(":linkers")
 
 wf.setPreRun(assets.importTemplate(":prerun"))
 
@@ -16,6 +17,7 @@ wf.prepare(func(args) {
 		bundle := wf.createPBundleBuilder()
 		bundle.addAnchor(columns.mainAnchorName, args.inputAnchor)
 		result.columnBundle = bundle.build()
+		result.linkerBundle = linkers.discover(args.inputAnchor)
 	}
 	return result
 })
@@ -26,17 +28,20 @@ wf.body(func(args) {
 
 	annotationSpec := args.annotationSpec
 	annotationAxesSpec := annotationsStats.getAnnotationAxesSpec(args.columnBundle)
+	linkerInfos := is_undefined(args.linkerBundle) ? undefined : linkers.extract(args.linkerBundle)
 
 	if !is_undefined(args.inputAnchor) &&
 		!is_undefined(annotationAxesSpec) &&
 		len(annotationSpec.steps) > 0 {
+		linkerIds := is_undefined(linkerInfos) ? [] : linkers.buildIds(linkerInfos)
 		computedAnnotations := annotations.computeClonotypeAnnotations({
 			title: annotationSpec.title,
 			steps: annotationSpec.steps,
 			inputAnchor: args.inputAnchor,
 			defaultValue: annotationSpec.defaultValue,
 			annotationAxesSpec: annotationAxesSpec,
-			shouldComputeFilters: true
+			shouldComputeFilters: true,
+			linkerIds: linkerIds
 		})
 
 		exports["annotationsPf"] = computedAnnotations.annotationsPf
