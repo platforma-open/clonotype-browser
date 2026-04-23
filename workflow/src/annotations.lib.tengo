@@ -1,4 +1,7 @@
+json := import("json")
+
 ll := import("@platforma-sdk/workflow-tengo:ll")
+maps := import("@platforma-sdk/workflow-tengo:maps")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
@@ -36,9 +39,22 @@ computeClonotypeAnnotations := func(inputs) {
 		shouldComputeFilters: shouldComputeFilters
 	})
 
+	// Expose the annotation column as a discrete filter so downstream blocks
+	// (e.g. TCR/antibody lead selection) render a multi-select dropdown.
+	// The possible values are the step labels.
+	stepLabels := slices.map(steps, func(s) { return s.name })
+	annotationsColumn := maps.deepMerge(result.annotationsColumn, {
+		spec: {
+			annotations: {
+				"pl7.app/isDiscreteFilter": "true",
+				"pl7.app/discreteValues": string(json.encode(stepLabels))
+			}
+		}
+	})
+
 	return {
-		annotationsColumn: result.annotationsColumn,
-		annotationsPf: convertToPFrame(result.annotationsColumn),
+		annotationsColumn: annotationsColumn,
+		annotationsPf: convertToPFrame(annotationsColumn),
 		filtersColumns: result.annotationsFiltersColumns,
 		filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
 	}
