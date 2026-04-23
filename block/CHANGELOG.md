@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 1.1.7
+
+### Patch Changes
+
+- 6a9a242: Publish pending changes from #24: SDK bump (model 1.65.10, ui-vue 1.66.0) and AnnotationModal prop/v-model refactor. Also bump `@platforma-sdk/block-tools` to 2.7.11.
+- Updated dependencies [6a9a242]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@1.1.4
+  - @platforma-open/milaboratories.clonotype-browser-3.ui@1.1.4
+
 ## 1.1.6
 
 ### Patch Changes
