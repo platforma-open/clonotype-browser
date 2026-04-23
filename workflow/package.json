@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-3.workflow",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Tengo-based template",
   "scripts": {
     "build": "shx rm -rf dist && pl-tengo check && pl-tengo build",
