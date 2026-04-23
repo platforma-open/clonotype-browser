@@ -20,8 +20,6 @@ const tableSettings = usePlDataTableSettingsV2({
       <BlockActions show-export />
     </template>
     <PlAgDataTableV2
-      key="overlap-table"
-      ref="tableInstance"
       v-model="app.model.data.overlapTableState"
       v-model:selection="app.selectedColumns"
       :settings="tableSettings"

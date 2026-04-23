@@ -23,7 +23,7 @@ import {
   plRefsEqual,
   Services,
   type RenderCtxBase,
-  type RequireServices,
+  type RequireServices
 } from "@platforma-sdk/model";
 import {
   Annotation,
