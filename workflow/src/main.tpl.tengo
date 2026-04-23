@@ -6,8 +6,19 @@ pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
+columns := import(":columns")
 
 wf.setPreRun(assets.importTemplate(":prerun"))
+
+wf.prepare(func(args) {
+	result := {}
+	if len(args.annotationSpec.steps) > 0 {
+		bundle := wf.createPBundleBuilder()
+		bundle.addAnchor(columns.mainAnchorName, args.inputAnchor)
+		result.columnBundle = bundle.build()
+	}
+	return result
+})
 
 wf.body(func(args) {
 	outputs := {}
