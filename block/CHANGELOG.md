@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 1.1.8
+
+### Patch Changes
+
+- ba419d2: Mark the annotation column as a discrete filter and expose step labels via `pl7.app/discreteValues`. This lets downstream blocks (e.g. TCR/antibody lead selection) render the annotation column as a multi-select dropdown instead of a free-text string filter.
+- Updated dependencies [ba419d2]
+  - @platforma-open/milaboratories.clonotype-browser-3.workflow@1.0.7
+
 ## 1.1.7
 
 ### Patch Changes
