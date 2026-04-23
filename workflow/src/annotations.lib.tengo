@@ -24,10 +24,7 @@ computeClonotypeAnnotations := func(inputs) {
 
 	ll.assert(len(steps) > 0, "no annotation steps provided")
 
-	additionalColumns := append(
-		[canonical.encode(columns.referenceLabelSelector)],
-		linkerIds...
-	)
+	additionalColumns := [canonical.encode(columns.referenceLabelSelector)] + linkerIds
 
 	result := annotations.computeAnnotations({
 		title: title,
