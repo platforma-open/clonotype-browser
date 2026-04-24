@@ -110,18 +110,32 @@ build := func(inputs) {
 		return key
 	}
 
-	// Build index: colMatchKey → linkerPath for linked columns.
+	// Match key including "via {linkerLabel}" suffix — UI derives labels
+	// via deriveDistinctLabels which appends that suffix for linked cols.
+	linkedMatchKey := func(spec, linkerLabel) {
+		label := columns.getLabel(spec)
+		if is_undefined(label) {
+			return spec.name
+		}
+		return spec.name + "\t" + label + " via " + linkerLabel
+	}
+
+	// Build index: colMatchKey → { linkerPath, linkerLabel } for linked columns.
 	// Per-clonotype columns with matching keys were projected through
 	// a linker bridge by PBundle enrichment and need the same linkerPath.
-	linkedKeyToLinkerPath := {}
+	linkedKeyToLinker := {}
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
 		linkerPath := [{ spec: linkerCol.spec }]
+		linkerLabel := columns.getLabel(linkerCol.spec)
 		for col in exportBundle.getLinkedColumns(columnBundle, i) {
 			if columns.isLinkerColumn(col.spec) {
 				continue
 			}
-			linkedKeyToLinkerPath[colMatchKey(col.spec)] = linkerPath
+			linkedKeyToLinker[colMatchKey(col.spec)] = {
+				linkerPath: linkerPath,
+				linkerLabel: linkerLabel
+			}
 		}
 	}
 
@@ -136,11 +150,15 @@ build := func(inputs) {
 			continue
 		}
 		key := colMatchKey(col.spec)
+		linkerInfo := linkedKeyToLinker[key]
+		// UI may send raw or "via {linker}"-suffixed key — check both.
 		if !is_undefined(hiddenKeysSet[key]) {
 			continue
 		}
-		linkerPath := linkedKeyToLinkerPath[key]
-		if !is_undefined(linkerPath) {
+		if !is_undefined(linkerInfo) && !is_undefined(hiddenKeysSet[linkedMatchKey(col.spec, linkerInfo.linkerLabel)]) {
+			continue
+		}
+		if !is_undefined(linkerInfo) {
 			// This per-clonotype column is a projection of a linked column
 			// (same name+label). Skip label columns (name=pl7.app/label) here;
 			// the linked group has the original, plus data columns with real
@@ -148,7 +166,7 @@ build := func(inputs) {
 			if col.spec.name == "pl7.app/label" {
 				continue
 			}
-			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerPath })
+			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerInfo.linkerPath })
 			perClonKeys[key] = true
 		} else {
 			allExportableEntries = append(allExportableEntries, { col: col })
@@ -171,6 +189,7 @@ build := func(inputs) {
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
 		linkerPath := [{ spec: linkerCol.spec }]
+		linkerLabel := columns.getLabel(linkerCol.spec)
 		startIdx := len(allExportableEntries)
 		for col in exportBundle.getLinkedColumns(columnBundle, i) {
 			if !isExportable(col) {
@@ -184,6 +203,9 @@ build := func(inputs) {
 				continue
 			}
 			if !is_undefined(hiddenKeysSet[key]) {
+				continue
+			}
+			if !is_undefined(hiddenKeysSet[linkedMatchKey(col.spec, linkerLabel)]) {
 				continue
 			}
 			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerPath })
@@ -219,10 +241,14 @@ build := func(inputs) {
 			continue
 		}
 		key := colMatchKey(column.spec)
+		linkerInfo := linkedKeyToLinker[key]
 		if !is_undefined(hiddenKeysSet[key]) {
 			continue
 		}
-		if !is_undefined(linkedKeyToLinkerPath[key]) && column.spec.name == "pl7.app/label" {
+		if !is_undefined(linkerInfo) && !is_undefined(hiddenKeysSet[linkedMatchKey(column.spec, linkerInfo.linkerLabel)]) {
+			continue
+		}
+		if !is_undefined(linkerInfo) && column.spec.name == "pl7.app/label" {
 			continue
 		}
 		uniqueLabel := ensureUniqueLabel(allLabels[labelIdx], usedLabelsSet)
