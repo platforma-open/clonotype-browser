@@ -229,46 +229,13 @@ extractSpec := func(entry) {
 	return entry
 }
 
-// Extract linker labels from an entry's linkerPath, replicating
-// the TypeScript extractLinkerLabels from derive_distinct_labels.ts.
-extractLinkerLabels := func(entry) {
-	if is_undefined(entry.linkerPath) || len(entry.linkerPath) == 0 {
-		return []
-	}
-	labels := []
-	for step in entry.linkerPath {
-		label := undefined
-		if !is_undefined(step.spec) && !is_undefined(step.spec.annotations) {
-			label = step.spec.annotations["pl7.app/linkLabel"]
-			if is_undefined(label) {
-				label = step.spec.annotations["pl7.app/label"]
-			}
-		}
-		if !is_undefined(label) {
-			trimmed := text.trim_space(label)
-			if len(trimmed) > 0 {
-				labels = append(labels, trimmed)
-			}
-		}
-	}
-	return labels
-}
-
-// Replicates @platforma-sdk/model deriveDistinctLabels with { includeNativeLabel: true }.
+// Replicates @platforma-sdk/model deriveDistinctLabels with { includeNativeLabel: true }
+// and linkerLabelFormatter returning undefined (no "via ..." suffix).
 //
-// Each entry is either a plain PColumnSpec or { spec: PColumnSpec, linkerPath: [{spec: linkerSpec}] }.
-// Entries with linkerPath get a "via <label>" suffix, matching the TypeScript applyLinkerSuffixes.
+// Each entry is either a plain PColumnSpec or { spec: PColumnSpec, ... }.
 // Returns a list of distinct labels (same order as input).
 deriveDistinctLabels := func(entries, getLabel) {
-	// Phase 0: extract specs and compute linker suffixes (before disambiguation).
 	specs := slices.map(entries, func(e) { return extractSpec(e) })
-	linkerSuffixes := slices.map(entries, func(e) {
-		linkerLabels := extractLinkerLabels(e)
-		if len(linkerLabels) == 0 {
-			return undefined
-		}
-		return "via " + text.join(linkerLabels, " > ")
-	})
 
 	// Phase 1-4: core disambiguation on plain specs.
 	records := slices.map(specs, func(spec) { return enrichRecord(spec, getLabel) })
@@ -327,13 +294,6 @@ deriveDistinctLabels := func(entries, getLabel) {
 		}
 		minimized := minimizeTypeSet(fallbackSet, records, stats)
 		result = build(minimized, true)
-	}
-
-	// Phase 5: apply linker suffixes (matches TypeScript applyLinkerSuffixes).
-	for i := 0; i < len(result); i += 1 {
-		if !is_undefined(linkerSuffixes[i]) {
-			result[i] = result[i] + " " + linkerSuffixes[i]
-		}
 	}
 
 	return result
