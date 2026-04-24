@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-3.ui
 
+## 1.2.0
+
+### Minor Changes
+
+- 3753a29: export only visible columns
+
+### Patch Changes
+
+- Updated dependencies [3753a29]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@1.2.0
+
 ## 1.1.5
 
 ### Patch Changes

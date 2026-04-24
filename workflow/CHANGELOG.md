@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 1.1.0
+
+### Minor Changes
+
+- 3753a29: export only visible columns
+
 ## 1.0.7
 
 ### Patch Changes
