@@ -173,6 +173,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       inputAnchor: data.inputAnchor,
       annotationSpec,
       runExportAll: data.runExportAll,
+      exportHiddenKeys: data.exportHiddenKeys,
     };
   })
 
@@ -186,6 +187,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       inputAnchor: data.inputAnchor,
       annotationSpec: wantAnnotations ? annotationSpec : { title: "", steps: [] },
       runExportAll: wantExport,
+      exportHiddenKeys: wantExport ? data.exportHiddenKeys : undefined,
     };
   })
 
@@ -279,6 +281,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
       ],
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
+      labelsOptions: {
+        linkerLabelFormatter: () => undefined,
+      },
       columnsDisplayOptions: {
         visibility: [
           {
@@ -309,6 +314,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
             { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
           ],
         },
+      },
+      labelsOptions: {
+        linkerLabelFormatter: () => undefined,
       },
       tableState: ctx.data.sampleTableState,
     });

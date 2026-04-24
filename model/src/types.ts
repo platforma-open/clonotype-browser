@@ -25,12 +25,14 @@ export type BlockArgs = {
   inputAnchor?: PlRef;
   annotationSpec: AnnotationSpec;
   runExportAll: boolean;
+  exportHiddenKeys?: string[];
 };
 
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: PlRef;
   runExportAll: boolean;
+  exportHiddenKeys?: string[];
   settingsOpen: boolean;
   overlapTableState: PlDataTableStateV2;
   sampleTableState: PlDataTableStateV2;

@@ -12,7 +12,8 @@ render := func(inputs) {
 	return renderSdk.createEphemeral(exportTableTpl, {
 		columnBundle: bundle,
 		linkerCount: is_undefined(linkerInfos) ? 0 : len(linkerInfos),
-		annotationsPf: inputs.annotationsPf
+		annotationsPf: inputs.annotationsPf,
+		exportHiddenKeys: inputs.exportHiddenKeys
 	})
 }
 
