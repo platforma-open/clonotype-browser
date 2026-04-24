@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.ui
 
+## 1.1.5
+
+### Patch Changes
+
+- e363360: fix stucked values in dropdown
+
 ## 1.1.4
 
 ### Patch Changes
