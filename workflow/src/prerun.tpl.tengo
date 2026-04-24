@@ -56,7 +56,8 @@ wf.body(func(args) {
 		exportResult := exportAll.render({
 			inputAnchor: args.inputAnchor,
 			linkerInfos: linkerInfos,
-			annotationsPf: annotationsPf
+			annotationsPf: annotationsPf,
+			exportHiddenKeys: args.exportHiddenKeys
 		})
 		outputs["tsvZip"] = exportResult.output("tsvZip")
 	}

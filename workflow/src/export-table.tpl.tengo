@@ -53,7 +53,8 @@ self.body(func(inputs) {
 	plan := exportPlan.build({
 		columnBundle: inputs.columnBundle,
 		linkerCount: inputs.linkerCount,
-		annotationsPf: inputs.annotationsPf
+		annotationsPf: inputs.annotationsPf,
+		exportHiddenKeys: inputs.exportHiddenKeys
 	})
 
 	// No per-sample data → model treats Null tsvZip as "no export available".

@@ -173,6 +173,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       inputAnchor: data.inputAnchor,
       annotationSpec,
       runExportAll: data.runExportAll,
+      exportHiddenKeys: data.exportHiddenKeys,
     };
   })
 
@@ -186,6 +187,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       inputAnchor: data.inputAnchor,
       annotationSpec: wantAnnotations ? annotationSpec : { title: "", steps: [] },
       runExportAll: wantExport,
+      exportHiddenKeys: wantExport ? data.exportHiddenKeys : undefined,
     };
   })
 

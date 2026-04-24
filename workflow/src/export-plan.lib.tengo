@@ -51,6 +51,12 @@ build := func(inputs) {
 	columnBundle := inputs.columnBundle
 	linkerCount := is_undefined(inputs.linkerCount) ? 0 : inputs.linkerCount
 	annotationsPf := inputs.annotationsPf
+	hiddenKeysSet := {}
+	if !is_undefined(inputs.exportHiddenKeys) {
+		for k in inputs.exportHiddenKeys {
+			hiddenKeysSet[k] = true
+		}
+	}
 
 	datasetSpec := exportBundle.getAnchorSpec(columnBundle)
 	clonotypeAxisSpec := datasetSpec.axesSpec[1]
@@ -130,6 +136,9 @@ build := func(inputs) {
 			continue
 		}
 		key := colMatchKey(col.spec)
+		if !is_undefined(hiddenKeysSet[key]) {
+			continue
+		}
 		linkerPath := linkedKeyToLinkerPath[key]
 		if !is_undefined(linkerPath) {
 			// This per-clonotype column is a projection of a linked column
@@ -146,9 +155,15 @@ build := func(inputs) {
 		}
 	}
 	annotationStartIdx := len(allExportableEntries)
+	filteredAnnotationCols := []
 	for col in annotationCols {
+		if !is_undefined(hiddenKeysSet[colMatchKey(col.spec)]) {
+			continue
+		}
+		filteredAnnotationCols = append(filteredAnnotationCols, col)
 		allExportableEntries = append(allExportableEntries, { col: col })
 	}
+	annotationCols = filteredAnnotationCols
 	// Track per-linker-group entry ranges for direct index access later.
 	// Skip linked columns already present in per-clonotype (PBundle
 	// enrichment resolves the same column under both selectors).
@@ -164,7 +179,11 @@ build := func(inputs) {
 			if columns.isLinkerColumn(col.spec) {
 				continue
 			}
-			if !is_undefined(perClonKeys[colMatchKey(col.spec)]) {
+			key := colMatchKey(col.spec)
+			if !is_undefined(perClonKeys[key]) {
+				continue
+			}
+			if !is_undefined(hiddenKeysSet[key]) {
 				continue
 			}
 			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerPath })
@@ -192,10 +211,18 @@ build := func(inputs) {
 	mainEntries := []
 	byCloneEntries := []
 
-	// Per-clonotype columns.
+	// Per-clonotype columns. Filter logic must mirror the first loop above
+	// so labelIdx stays aligned with allExportableEntries ordering.
 	labelIdx := 0
 	for column in perClonotypeCols {
-		if !isExportable(column) {
+		if !isExportable(column) || columns.isHidden(column.spec) {
+			continue
+		}
+		key := colMatchKey(column.spec)
+		if !is_undefined(hiddenKeysSet[key]) {
+			continue
+		}
+		if !is_undefined(linkedKeyToLinkerPath[key]) && column.spec.name == "pl7.app/label" {
 			continue
 		}
 		uniqueLabel := ensureUniqueLabel(allLabels[labelIdx], usedLabelsSet)
@@ -225,6 +252,11 @@ build := func(inputs) {
 		for partition in partitions {
 			partSpec := partition.getSpec()
 			suffixedLabel := columns.getLabel(partSpec) + " / " + sampleLabel
+			// Per-sample UI columns carry the suffixed label — match on
+			// (name, suffixedLabel) so hiding one sample doesn't drop others.
+			if !is_undefined(hiddenKeysSet[partSpec.name + "\t" + suffixedLabel]) {
+				continue
+			}
 			uniqueLabel := ensureUniqueLabel(suffixedLabel, usedLabelsSet)
 			mainEntries = append(mainEntries, {
 				col: { spec: partSpec, data: partition.createDataResource() },
