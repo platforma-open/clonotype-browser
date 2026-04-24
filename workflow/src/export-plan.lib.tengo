@@ -110,39 +110,27 @@ build := func(inputs) {
 		return key
 	}
 
-	// Match key including "via {linkerLabel}" suffix — UI derives labels
-	// via deriveDistinctLabels which appends that suffix for linked cols.
-	linkedMatchKey := func(spec, linkerLabel) {
-		label := columns.getLabel(spec)
-		if is_undefined(label) {
-			return spec.name
-		}
-		return spec.name + "\t" + label + " via " + linkerLabel
-	}
-
-	// Build index: colMatchKey → { linkerPath, linkerLabel } for linked columns.
+	// Build index: colMatchKey → linkerPath for linked columns.
 	// Per-clonotype columns with matching keys were projected through
 	// a linker bridge by PBundle enrichment and need the same linkerPath.
 	linkedKeyToLinker := {}
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
 		linkerPath := [{ spec: linkerCol.spec }]
-		linkerLabel := columns.getLabel(linkerCol.spec)
 		for col in exportBundle.getLinkedColumns(columnBundle, i) {
 			if columns.isLinkerColumn(col.spec) {
 				continue
 			}
-			linkedKeyToLinker[colMatchKey(col.spec)] = {
-				linkerPath: linkerPath,
-				linkerLabel: linkerLabel
-			}
+			linkedKeyToLinker[colMatchKey(col.spec)] = { linkerPath: linkerPath }
 		}
 	}
 
 	// Build allExportableEntries: per-clonotype + annotation + linked columns.
-	// All participate in deriveDistinctLabels for correct disambiguation,
-	// replicating the SDK model's scope exactly.
-	// Hidden per-clonotype columns are excluded to match the UI table.
+	// Hidden (via UI hiddenKeys) columns still participate in deriveDistinctLabels
+	// — UI derives labels over all discovered columns, hidden or not, and we must
+	// match that scope to reproduce its derived labels exactly. User-hidden keys
+	// use the DERIVED label (post-disambiguation trace suffix), so the filter is
+	// deferred until allLabels is known.
 	allExportableEntries := []
 	perClonKeys := {}
 	for col in perClonotypeCols {
@@ -151,18 +139,9 @@ build := func(inputs) {
 		}
 		key := colMatchKey(col.spec)
 		linkerInfo := linkedKeyToLinker[key]
-		// UI may send raw or "via {linker}"-suffixed key — check both.
-		if !is_undefined(hiddenKeysSet[key]) {
-			continue
-		}
-		if !is_undefined(linkerInfo) && !is_undefined(hiddenKeysSet[linkedMatchKey(col.spec, linkerInfo.linkerLabel)]) {
-			continue
-		}
 		if !is_undefined(linkerInfo) {
-			// This per-clonotype column is a projection of a linked column
-			// (same name+label). Skip label columns (name=pl7.app/label) here;
-			// the linked group has the original, plus data columns with real
-			// values. Keep non-label projected columns and mark them via.
+			// Projection of a linked column (same name+label). Skip label
+			// columns — the linked group has the original.
 			if col.spec.name == "pl7.app/label" {
 				continue
 			}
@@ -173,15 +152,9 @@ build := func(inputs) {
 		}
 	}
 	annotationStartIdx := len(allExportableEntries)
-	filteredAnnotationCols := []
 	for col in annotationCols {
-		if !is_undefined(hiddenKeysSet[colMatchKey(col.spec)]) {
-			continue
-		}
-		filteredAnnotationCols = append(filteredAnnotationCols, col)
 		allExportableEntries = append(allExportableEntries, { col: col })
 	}
-	annotationCols = filteredAnnotationCols
 	// Track per-linker-group entry ranges for direct index access later.
 	// Skip linked columns already present in per-clonotype (PBundle
 	// enrichment resolves the same column under both selectors).
@@ -189,7 +162,6 @@ build := func(inputs) {
 	for i := 0; i < linkerCount; i += 1 {
 		linkerCol := exportBundle.getLinkerColumn(columnBundle, i)
 		linkerPath := [{ spec: linkerCol.spec }]
-		linkerLabel := columns.getLabel(linkerCol.spec)
 		startIdx := len(allExportableEntries)
 		for col in exportBundle.getLinkedColumns(columnBundle, i) {
 			if !isExportable(col) {
@@ -202,12 +174,6 @@ build := func(inputs) {
 			if !is_undefined(perClonKeys[key]) {
 				continue
 			}
-			if !is_undefined(hiddenKeysSet[key]) {
-				continue
-			}
-			if !is_undefined(hiddenKeysSet[linkedMatchKey(col.spec, linkerLabel)]) {
-				continue
-			}
 			allExportableEntries = append(allExportableEntries, { col: col, linkerPath: linkerPath })
 		}
 		linkerGroupMeta = append(linkerGroupMeta, {
@@ -217,8 +183,10 @@ build := func(inputs) {
 		})
 	}
 
-	// Derive labels with linkerPath support — "via" suffix is applied
-	// inside deriveDistinctLabels, matching the SDK model exactly.
+	// Derive labels including hidden candidates — UI writes derived labels
+	// back into the spec.pl7.app/label annotation (via withLabelAnnotations),
+	// so its exportHiddenKeys use `name\tderivedLabel`. Matching that scope
+	// here is required for the derived-label hide check below.
 	allLabels := []
 	if len(allExportableEntries) > 0 {
 		deriveEntries := slices.map(allExportableEntries, func(e) {
@@ -230,11 +198,21 @@ build := func(inputs) {
 		allLabels = modelUtils.deriveDistinctLabels(deriveEntries, columns.getLabel)
 	}
 
+	// UI's ExportBtn collectHiddenKeys uses `spec.name + "\t" + spec.annotations["pl7.app/label"]`,
+	// where that annotation carries the derived label (UI overwrites it in withLabelAnnotations).
+	// Mirror that key shape here.
+	isDerivedHidden := func(spec, derivedLabel) {
+		if is_undefined(derivedLabel) {
+			return false
+		}
+		return !is_undefined(hiddenKeysSet[spec.name + "\t" + derivedLabel])
+	}
+
 	mainEntries := []
 	byCloneEntries := []
 
-	// Per-clonotype columns. Filter logic must mirror the first loop above
-	// so labelIdx stays aligned with allExportableEntries ordering.
+	// Per-clonotype columns. First-pass predicates must match the first loop
+	// above so labelIdx stays aligned with allExportableEntries ordering.
 	labelIdx := 0
 	for column in perClonotypeCols {
 		if !isExportable(column) || columns.isHidden(column.spec) {
@@ -242,17 +220,15 @@ build := func(inputs) {
 		}
 		key := colMatchKey(column.spec)
 		linkerInfo := linkedKeyToLinker[key]
-		if !is_undefined(hiddenKeysSet[key]) {
-			continue
-		}
-		if !is_undefined(linkerInfo) && !is_undefined(hiddenKeysSet[linkedMatchKey(column.spec, linkerInfo.linkerLabel)]) {
-			continue
-		}
 		if !is_undefined(linkerInfo) && column.spec.name == "pl7.app/label" {
 			continue
 		}
-		uniqueLabel := ensureUniqueLabel(allLabels[labelIdx], usedLabelsSet)
+		currentLabel := allLabels[labelIdx]
 		labelIdx += 1
+		if isDerivedHidden(column.spec, currentLabel) {
+			continue
+		}
+		uniqueLabel := ensureUniqueLabel(currentLabel, usedLabelsSet)
 		mainEntries = append(mainEntries, { col: column, label: uniqueLabel })
 		byCloneEntries = append(byCloneEntries, {
 			spec: columns.withLabel(column.spec, uniqueLabel),
@@ -263,7 +239,11 @@ build := func(inputs) {
 	// Annotation columns — use derived labels, not raw getLabel.
 	for i := 0; i < len(annotationCols); i += 1 {
 		col := annotationCols[i]
-		uniqueLabel := ensureUniqueLabel(allLabels[annotationStartIdx + i], usedLabelsSet)
+		currentLabel := allLabels[annotationStartIdx + i]
+		if isDerivedHidden(col.spec, currentLabel) {
+			continue
+		}
+		uniqueLabel := ensureUniqueLabel(currentLabel, usedLabelsSet)
 		mainEntries = append(mainEntries, { col: col, label: uniqueLabel })
 		byCloneEntries = append(byCloneEntries, {
 			spec: columns.withLabel(col.spec, uniqueLabel),
@@ -311,7 +291,11 @@ build := func(inputs) {
 		linkedEntries := []
 		for idx := meta.startIdx; idx < meta.endIdx; idx += 1 {
 			entry := allExportableEntries[idx]
-			uniqueLabel := ensureUniqueLabel(allLabels[idx], usedLabelsSet)
+			currentLabel := allLabels[idx]
+			if isDerivedHidden(entry.col.spec, currentLabel) {
+				continue
+			}
+			uniqueLabel := ensureUniqueLabel(currentLabel, usedLabelsSet)
 			linkedEntries = append(linkedEntries, { col: entry.col, label: uniqueLabel })
 			byCloneEntries = append(byCloneEntries, {
 				spec: columns.withLabel(entry.col.spec, uniqueLabel),
@@ -323,7 +307,35 @@ build := func(inputs) {
 		}
 	}
 
-	sortByOrderPriorityDesc(byCloneEntries, func(e) { return e.spec })
+	// Match UI ordering: label columns on the clonotype axis (Clone Id) first,
+	// label columns on a linker's non-clonotype axis (Cluster Id, one per linker)
+	// next, all other columns after — sorted by order priority within each class.
+	linkerAxisNames := {}
+	for meta in linkerGroupMeta {
+		for axis in meta.linkerCol.spec.axesSpec {
+			if axis.name != clonotypeAxisSpec.name {
+				linkerAxisNames[axis.name] = true
+			}
+		}
+	}
+	classifyAxisClass := func(spec) {
+		if spec.name != "pl7.app/label" { return 2 }
+		if len(spec.axesSpec) != 1 { return 2 }
+		axisName := spec.axesSpec[0].name
+		if axisName == clonotypeAxisSpec.name { return 0 }
+		if !is_undefined(linkerAxisNames[axisName]) { return 1 }
+		return 2
+	}
+	slices.quickSortInPlaceFn(byCloneEntries, func(a, b) {
+		ca := classifyAxisClass(a.spec)
+		cb := classifyAxisClass(b.spec)
+		if ca != cb { return ca < cb }
+		aPriority := columns.getOrderPriority(a.spec)
+		bPriority := columns.getOrderPriority(b.spec)
+		if is_undefined(aPriority) { return false }
+		if is_undefined(bPriority) { return true }
+		return int(aPriority) > int(bPriority)
+	})
 	orderedLabels := []
 	for e in byCloneEntries {
 		orderedLabels = append(orderedLabels, e.label)
