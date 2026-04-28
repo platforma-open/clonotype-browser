@@ -28,7 +28,7 @@ async function setupProject(
 ) {
   const sndBlockId = await project.addBlock('Samples & Data', samplesAndDataBlockSpec);
   const clonotypingBlockId = await project.addBlock('MiXCR Clonotyping', clonotypingBlockSpec);
-  const annotationBlockId = await project.addBlock('Clonotype Annotation', annotationBlockSpec);
+  const annotationBlockId = await project.addBlock('Sequence Annotation', annotationBlockSpec);
 
   const metaColumnDonorId = uniquePlId();
   const metaColumnTissueId = uniquePlId();

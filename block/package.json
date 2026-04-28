@@ -24,16 +24,17 @@
       "ui": "@platforma-open/milaboratories.clonotype-browser-3.ui/dist"
     },
     "meta": {
-      "title": "Clonotype Browser",
+      "title": "Sequence Browser",
       "logo": "file:../logos/block-logo.png",
       "url": "https://github.com/platforma-open/clonotype-browser",
       "support": "mailto:support@milaboratories.com",
-      "description": "Interactive browser for exploring and annotating T/B cell clonotypes with custom tags for tracking, filtering, and downstream analysis.",
+      "description": "Interactive browser for exploring and annotating sequences (T/B cell clonotypes or peptides) with custom tags for tracking, filtering, and downstream analysis.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:./CHANGELOG.md",
       "tags": [
         "airr",
         "vdj",
+        "peptide",
         "annotation"
       ],
       "organization": {

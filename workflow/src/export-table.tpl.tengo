@@ -39,9 +39,9 @@ joinDfTree := func(dfs, joinKey) {
 // Linker column is fed under a synthetic never-projected name — it's only
 // the cluster↔clonotype bridge. Linked columns keyed on the cluster axis
 // join to it through shared axis specs.
-buildLinkerDf := func(ptWf, clonotypeAxisSpec, group, anchorIdx) {
+buildLinkerDf := func(ptWf, sequenceAxisSpec, group, anchorIdx) {
 	entries := [pt.p.column("__linker_" + string(anchorIdx), group.linkerCol)]
-	selectExprs := [pt.sc.axis(clonotypeAxisSpec).alias(CLONE_KEY_HEADER)]
+	selectExprs := [pt.sc.axis(sequenceAxisSpec).alias(CLONE_KEY_HEADER)]
 	for e in group.linkedEntries {
 		entries = append(entries, pt.p.column(e.label, e.col))
 		selectExprs = append(selectExprs, pt.col(e.label))
@@ -69,7 +69,7 @@ self.body(func(inputs) {
 	ptWf := pt.workflow().cpu(cpuBudget).mem(string(int(memBudget)) + "GiB")
 
 	mainPts := slices.map(plan.mainEntries, func(e) { return pt.p.column(e.label, e.col) })
-	mainSelectExprs := [pt.sc.axis(plan.clonotypeAxisSpec).alias(CLONE_KEY_HEADER)]
+	mainSelectExprs := [pt.sc.axis(plan.sequenceAxisSpec).alias(CLONE_KEY_HEADER)]
 	for e in plan.mainEntries {
 		mainSelectExprs = append(mainSelectExprs, pt.col(e.label))
 	}
@@ -77,7 +77,7 @@ self.body(func(inputs) {
 
 	allFrames := [mainDf]
 	for i, group in plan.linkerGroups {
-		allFrames = append(allFrames, buildLinkerDf(ptWf, plan.clonotypeAxisSpec, group, i))
+		allFrames = append(allFrames, buildLinkerDf(ptWf, plan.sequenceAxisSpec, group, i))
 	}
 	joinedDf := joinDfTree(allFrames, CLONE_KEY_HEADER)
 

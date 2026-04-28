@@ -14,7 +14,7 @@ mainAnchorName := "main"
 // All output specs share this domain so multiple block instances do not collide
 // in the result pool.
 runScopedDomain := func() {
-	return { "pl7.app/clonotypeAnnotationRunId": wf.getBlockId() }
+	return { "pl7.app/annotationRunId": wf.getBlockId() }
 }
 
 // =============================================================================
@@ -81,19 +81,19 @@ sampleAnnotationsCountSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Int",
-		name: "pl7.app/clonotypeAnnotation/stats/annotation_count",
+		name: "pl7.app/annotation/stats/annotation_count",
 		annotations: { "pl7.app/label": "Annotations count" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
 	}
 }
 
-sampleClonotypesNumberSpec := func(axesSpec) {
+sampleSequencesNumberSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Int",
-		name: "pl7.app/clonotypeAnnotation/stats/clonotype_count",
-		annotations: { "pl7.app/label": "Clonotypes Number" },
+		name: "pl7.app/annotation/stats/sequence_count",
+		annotations: { "pl7.app/label": "Sequence Number" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
 	}
@@ -103,7 +103,7 @@ sampleCountSumSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Double",
-		name: "pl7.app/clonotypeAnnotation/stats/main_count_sum",
+		name: "pl7.app/annotation/stats/main_count_sum",
 		annotations: { "pl7.app/label": "Count sum" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
@@ -114,7 +114,7 @@ sampleFractionSumSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Double",
-		name: "pl7.app/clonotypeAnnotation/stats/main_fraction_sum",
+		name: "pl7.app/annotation/stats/main_fraction_sum",
 		annotations: { "pl7.app/label": "Fraction sum" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
@@ -127,19 +127,19 @@ totalAnnotationsCountSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Long",
-		name: "pl7.app/clonotypeAnnotation/stats/annotation_count",
+		name: "pl7.app/annotation/stats/annotation_count",
 		annotations: { "pl7.app/label": "Total Count of Annotations" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
 	}
 }
 
-totalClonotypesNumberSpec := func(axesSpec) {
+totalSequencesNumberSpec := func(axesSpec) {
 	return {
 		kind: "PColumn",
 		valueType: "Long",
-		name: "pl7.app/clonotypeAnnotation/stats/clonotype_count",
-		annotations: { "pl7.app/label": "Total Number of Clonotypes" },
+		name: "pl7.app/annotation/stats/sequence_count",
+		annotations: { "pl7.app/label": "Total Number of Sequences" },
 		domain: runScopedDomain(),
 		axesSpec: axesSpec
 	}
@@ -215,11 +215,11 @@ export ll.toStrict({
 	referenceLabelSelector: referenceLabelSelector,
 
 	sampleAnnotationsCountSpec: sampleAnnotationsCountSpec,
-	sampleClonotypesNumberSpec: sampleClonotypesNumberSpec,
+	sampleSequencesNumberSpec: sampleSequencesNumberSpec,
 	sampleCountSumSpec: sampleCountSumSpec,
 	sampleFractionSumSpec: sampleFractionSumSpec,
 	totalAnnotationsCountSpec: totalAnnotationsCountSpec,
-	totalClonotypesNumberSpec: totalClonotypesNumberSpec,
+	totalSequencesNumberSpec: totalSequencesNumberSpec,
 
 	getLabel: getLabel,
 	withLabel: withLabel,

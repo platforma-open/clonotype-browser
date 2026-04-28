@@ -39,18 +39,18 @@ getAnnotationAxesSpec := func(columnBundle) {
 
 	axesCount := len(anchor.spec.axesSpec)
 	ll.assert(axesCount == 2,
-		"input anchor must have exactly 2 axes (sample, clonotype), found %d", axesCount)
+		"input anchor must have exactly 2 axes (sample, sequence), found %d", axesCount)
 
 	return [anchor.spec.axesSpec[1]]
 }
 
 // In-workflow DataFrame column names.
 SAMPLE_KEY_HEADER := "sample_key"
-CLONOTYPE_KEY_HEADER := "clonotype_key"
+SEQUENCE_KEY_HEADER := "sequence_key"
 MAIN_COUNT_HEADER := "main_count"
 MAIN_FRACTION_HEADER := "main_fraction"
 ANNOTATION_COUNT_HEADER := "annotation_count"
-CLONOTYPE_COUNT_HEADER := "clonotype_count"
+SEQUENCE_COUNT_HEADER := "sequence_count"
 MAIN_COUNT_SUM_HEADER := "main_count_sum"
 MAIN_FRACTION_SUM_HEADER := "main_fraction_sum"
 
@@ -58,14 +58,14 @@ MAIN_FRACTION_SUM_HEADER := "main_fraction_sum"
 SAMPLE_STATS_FRAME := "sample_stats"
 ANNOTATION_STATS_FRAME := "annotation_stats"
 
-computeClonotypeAnnotationsStats := func(inputs) {
+computeAnnotationsStats := func(inputs) {
 	annotations := inputs.annotations
 	columnBundle := inputs.columnBundle
 	mainCount := getMainCount(columnBundle)
 	mainFraction := getMainFraction(columnBundle)
 	anchorAxesSpec := getMainAnchor(columnBundle).spec.axesSpec
 	sampleAxisSpec := anchorAxesSpec[0]
-	clonotypeAxisSpec := anchorAxesSpec[1]
+	sequenceAxisSpec := anchorAxesSpec[1]
 	annotationsAxisSpec := columns.columnAsAxisSpec(annotations.spec)
 	bySampleAxes := [sampleAxisSpec, annotationsAxisSpec]
 	byAnnotationAxes := [annotationsAxisSpec]
@@ -80,7 +80,7 @@ computeClonotypeAnnotationsStats := func(inputs) {
 	)).
 		select(
 			pt.sc.axis(sampleAxisSpec).alias(SAMPLE_KEY_HEADER),
-			pt.sc.axis(clonotypeAxisSpec).alias(CLONOTYPE_KEY_HEADER),
+			pt.sc.axis(sequenceAxisSpec).alias(SEQUENCE_KEY_HEADER),
 			pt.col(annotations.column),
 			pt.col(MAIN_COUNT_HEADER),
 			pt.col(MAIN_FRACTION_HEADER)
@@ -88,7 +88,7 @@ computeClonotypeAnnotationsStats := func(inputs) {
 		groupBy(SAMPLE_KEY_HEADER, annotations.column).
 		agg(
 			pt.col(annotations.column).count().alias(ANNOTATION_COUNT_HEADER),
-			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER),
+			pt.col(SEQUENCE_KEY_HEADER).count().alias(SEQUENCE_COUNT_HEADER),
 			pt.col(MAIN_COUNT_HEADER).sum().alias(MAIN_COUNT_SUM_HEADER),
 			pt.col(MAIN_FRACTION_HEADER).sum().alias(MAIN_FRACTION_SUM_HEADER)
 		).
@@ -103,8 +103,8 @@ computeClonotypeAnnotationsStats := func(inputs) {
 					spec: columns.sampleAnnotationsCountSpec(bySampleAxes)
 				},
 				{
-					column: CLONOTYPE_COUNT_HEADER,
-					spec: columns.sampleClonotypesNumberSpec(bySampleAxes)
+					column: SEQUENCE_COUNT_HEADER,
+					spec: columns.sampleSequencesNumberSpec(bySampleAxes)
 				},
 				{
 					column: MAIN_COUNT_SUM_HEADER,
@@ -122,13 +122,13 @@ computeClonotypeAnnotationsStats := func(inputs) {
 	// Project the clonotype axis as a column so it can be counted.
 	ptWf.frame(pt.p.column(annotations.column, annotations)).
 		select(
-			pt.sc.axis(clonotypeAxisSpec).alias(CLONOTYPE_KEY_HEADER),
+			pt.sc.axis(sequenceAxisSpec).alias(SEQUENCE_KEY_HEADER),
 			pt.col(annotations.column)
 		).
 		groupBy(annotations.column).
 		agg(
 			pt.col(annotations.column).count().alias(ANNOTATION_COUNT_HEADER),
-			pt.col(CLONOTYPE_KEY_HEADER).count().alias(CLONOTYPE_COUNT_HEADER)
+			pt.col(SEQUENCE_KEY_HEADER).count().alias(SEQUENCE_COUNT_HEADER)
 		).
 		saveFrameDirect(ANNOTATION_STATS_FRAME, {
 			axes: [
@@ -140,8 +140,8 @@ computeClonotypeAnnotationsStats := func(inputs) {
 					spec: columns.totalAnnotationsCountSpec(byAnnotationAxes)
 				},
 				{
-					column: CLONOTYPE_COUNT_HEADER,
-					spec: columns.totalClonotypesNumberSpec(byAnnotationAxes)
+					column: SEQUENCE_COUNT_HEADER,
+					spec: columns.totalSequencesNumberSpec(byAnnotationAxes)
 				}
 			],
 			partitionKeyLength: 0
@@ -158,5 +158,5 @@ computeClonotypeAnnotationsStats := func(inputs) {
 export ll.toStrict({
 	createStatsBundle: createStatsBundle,
 	getAnnotationAxesSpec: getAnnotationAxesSpec,
-	computeClonotypeAnnotationsStats: computeClonotypeAnnotationsStats
+	computeAnnotationsStats: computeAnnotationsStats
 })

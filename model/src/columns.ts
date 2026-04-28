@@ -23,10 +23,18 @@ export { PAxisName } from "@platforma-sdk/model";
 /** Well-known PColumn names — SDK's set plus names this block references. */
 export const PColumnName = {
   ...SdkPColumnName,
-  SampleCount: "pl7.app/vdj/sampleCount",
   SequenceAnnotation: "pl7.app/vdj/sequence/annotation",
   AnnotationResult: "pl7.app/annotation/result",
 } as const;
+
+/**
+ * Sample-count column names accepted from upstream. MiXCR-side blocks emit
+ * `pl7.app/vdj/sampleCount`; peptide-extraction emits `pl7.app/sampleCount`.
+ */
+const SAMPLE_COUNT_NAMES = [
+  "pl7.app/vdj/sampleCount",
+  "pl7.app/sampleCount",
+] as const;
 
 const ANNOTATION_EXTENSIONS = {
   /** Marks a column as an abundance measurement (counts or fractions). */
@@ -56,6 +64,11 @@ export function readAnnotation<T extends keyof Annotation>(
 /** True if the column carries an abundance measurement. */
 export function isAbundanceColumn(spec: PColumnSpec): boolean {
   return readAnnotation(spec, Annotation.IsAbundance) === "true";
+}
+
+/** True if the column is a per-clonotype/per-peptide sample-count from any upstream. */
+export function isSampleCountColumn(spec: PColumnSpec): boolean {
+  return (SAMPLE_COUNT_NAMES as readonly string[]).includes(spec.name);
 }
 
 /** Parsed trace entries (derivation lineage), or empty if absent. */

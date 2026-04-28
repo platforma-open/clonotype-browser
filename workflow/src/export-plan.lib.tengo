@@ -59,7 +59,7 @@ build := func(inputs) {
 	}
 
 	datasetSpec := exportBundle.getAnchorSpec(columnBundle)
-	clonotypeAxisSpec := datasetSpec.axesSpec[1]
+	sequenceAxisSpec := datasetSpec.axesSpec[1]
 	sampleLabelsMap := exportBundle.getSampleLabelsColumn(columnBundle).data.getDataAsJson().data
 
 	perSampleCols := exportBundle.getPerSampleColumns(columnBundle)
@@ -280,7 +280,7 @@ build := func(inputs) {
 		if len(linkerCol.spec.axesSpec) != 2 { continue }
 		bridgesClonotype := false
 		for axis in linkerCol.spec.axesSpec {
-			if axis.name == clonotypeAxisSpec.name {
+			if axis.name == sequenceAxisSpec.name {
 				bridgesClonotype = true
 				break
 			}
@@ -313,7 +313,7 @@ build := func(inputs) {
 	linkerAxisNames := {}
 	for meta in linkerGroupMeta {
 		for axis in meta.linkerCol.spec.axesSpec {
-			if axis.name != clonotypeAxisSpec.name {
+			if axis.name != sequenceAxisSpec.name {
 				linkerAxisNames[axis.name] = true
 			}
 		}
@@ -322,7 +322,7 @@ build := func(inputs) {
 		if spec.name != "pl7.app/label" { return 2 }
 		if len(spec.axesSpec) != 1 { return 2 }
 		axisName := spec.axesSpec[0].name
-		if axisName == clonotypeAxisSpec.name { return 0 }
+		if axisName == sequenceAxisSpec.name { return 0 }
 		if !is_undefined(linkerAxisNames[axisName]) { return 1 }
 		return 2
 	}
@@ -345,7 +345,7 @@ build := func(inputs) {
 	}
 
 	return {
-		clonotypeAxisSpec: clonotypeAxisSpec,
+		sequenceAxisSpec: sequenceAxisSpec,
 		mainEntries: mainEntries,
 		linkerGroups: linkerGroups,
 		orderedLabels: orderedLabels,

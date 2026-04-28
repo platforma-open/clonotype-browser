@@ -5,14 +5,14 @@ import type {
   InferOutputsType,
   PColumn,
   PColumnDataUniversal,
-  PObjectId,
   PlRef,
+  PObjectId,
   SUniversalPColumnId,
 } from "@platforma-sdk/model";
 import {
   BlockModelV3,
-  ColumnCollectionBuilder,
   collectCtxColumnSnapshotProviders,
+  ColumnCollectionBuilder,
   convertFilterSpecsToExpressionSpecs,
   createPlDataTableSheet,
   createPlDataTableV3,
@@ -29,6 +29,7 @@ import {
   Annotation,
   getTrace,
   isAbundanceColumn,
+  isSampleCountColumn,
   PAxisName,
   PColumnName,
   readAnnotation,
@@ -63,17 +64,17 @@ function buildFilterUiColumns(
       axesToBeFixed:
         axesSpec.length > anchorAxesSpec.length
           ? axesSpec.slice(anchorAxesSpec.length).map((axis, j) => {
-              const labelSpec = labelSpecs.find(
-                (s) => s.axesSpec[0].name === axis.name,
-              );
-              return {
-                idx: anchorAxesSpec.length + j,
-                label:
-                  readAnnotation(labelSpec, Annotation.Label) ??
-                  readAnnotation(axis, Annotation.Label) ??
-                  axis.name,
-              };
-            })
+            const labelSpec = labelSpecs.find(
+              (s) => s.axesSpec[0].name === axis.name,
+            );
+            return {
+              idx: anchorAxesSpec.length + j,
+              label:
+                readAnnotation(labelSpec, Annotation.Label) ??
+                readAnnotation(axis, Annotation.Label) ??
+                axis.name,
+            };
+          })
           : undefined,
     };
   });
@@ -159,6 +160,11 @@ const inputAnchorSpecs = [
   },
   {
     axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ScClonotypeKey }],
+    annotations: { [Annotation.IsAnchor]: "true" },
+  },
+  {
+    // @TODO: PAxisName.VariantKey is not yet exposed in the SDK — string literal until it lands.
+    axes: [{ name: PAxisName.SampleId }, { name: "pl7.app/variantKey" }],
     annotations: { [Annotation.IsAnchor]: "true" },
   },
 ];
@@ -288,7 +294,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
         visibility: [
           {
             match: (spec) =>
-              isAbundanceColumn(spec) && spec.name !== PColumnName.SampleCount,
+              isAbundanceColumn(spec) && !isSampleCountColumn(spec),
             visibility: "optional",
           },
         ],
@@ -396,10 +402,30 @@ export const platforma = BlockModelV3.create(blockDataModel)
       : [],
   )
 
+  .output("modality", (ctx) => {
+    const spec = ctx.data.inputAnchor
+      ? ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor)
+      : undefined;
+    if (!spec) return undefined;
+    for (const ax of spec.axesSpec) {
+      if (ax.name === "pl7.app/variantKey") return "peptide";
+      if (ax.name === "pl7.app/vdj/clonotypeKey" || ax.name === "pl7.app/vdj/scClonotypeKey") return "antibody_tcr";
+      // clustered abundances
+      for (const key of Object.keys(ax.domain ?? {})) {
+        if (key.startsWith("pl7.app/peptide/")) return "peptide";
+        if (key.startsWith("pl7.app/vdj/")) return "antibody_tcr";
+      }
+    }
+    // Fallback when the input is resolved but unrecognized. The early
+    // `if (!spec) return undefined` above lets the retentive flag preserve the
+    // last-known modality during transient unavailability (re-runs, loading).
+    return "antibody_tcr";
+  }, { retentive: true })
+
   .title((ctx) => {
     try {
       if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
-        return `Clonotype Annotation - ${ctx.data.annotationSpecUi.title}`;
+        return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
       }
       const { inputAnchor } = ctx.data;
       if (inputAnchor) {
@@ -407,12 +433,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
           refsWithEnrichments: true,
         });
         const label = options.find((o) => plRefsEqual(o.ref, inputAnchor))?.label;
-        if (label) return `Clonotype Browser - ${label}`;
+        if (label) return `Sequence Browser - ${label}`;
       }
     } catch {
       // render context may not be fully initialized yet
     }
-    return "Clonotype Browser";
+    return "Sequence Browser";
   })
 
   .done();
