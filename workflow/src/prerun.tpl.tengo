@@ -1,32 +1,24 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
-smart := import("@platforma-sdk/workflow-tengo:smart")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
-exportAll := import(":export-all")
 linkers := import(":linkers")
 
 wf.prepare(func(args) {
 	result := {}
 	if len(args.annotationSpec.steps) > 0 {
 		result.columnBundle = annotationsStats.createStatsBundle(args.inputAnchor)
-	}
-	if len(args.annotationSpec.steps) > 0 || args.runExportAll {
 		result.linkerBundle = linkers.discover(args.inputAnchor)
 	}
 	return result
 })
 
 wf.body(func(args) {
-	outputs := {
-		tsvZip: smart.createNullResource()
-	}
+	outputs := {}
 	exports := {}
 
 	linkerInfos := is_undefined(args.linkerBundle) ? undefined : linkers.extract(args.linkerBundle)
-
-	annotationsPf := undefined
 
 	if len(args.annotationSpec.steps) > 0 {
 		linkerIds := is_undefined(linkerInfos) ? [] : linkers.buildIds(linkerInfos)
@@ -40,8 +32,7 @@ wf.body(func(args) {
 			linkerIds: linkerIds
 		})
 
-		annotationsPf = computedAnnotations.annotationsPf
-		outputs["annotationsPf"] = pFrames.exportFrame(annotationsPf)
+		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
 
 		computedStats := annotationsStats.computeClonotypeAnnotationsStats({
 			annotations: computedAnnotations.annotationsColumn,
@@ -50,16 +41,6 @@ wf.body(func(args) {
 
 		outputs["sampleStatsPf"] = pFrames.exportFrame(computedStats.sampleStatsPf)
 		outputs["annotationStatsPf"] = pFrames.exportFrame(computedStats.annotationStatsPf)
-	}
-
-	if args.runExportAll {
-		exportResult := exportAll.render({
-			inputAnchor: args.inputAnchor,
-			linkerInfos: linkerInfos,
-			annotationsPf: annotationsPf,
-			exportHiddenKeys: args.exportHiddenKeys
-		})
-		outputs["tsvZip"] = exportResult.output("tsvZip")
 	}
 
 	return {
