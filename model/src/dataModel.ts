@@ -14,7 +14,6 @@ export const blockDataModel = new DataModelBuilder()
   .from<BlockDataV1>("Ver_2026_04_07")
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
     inputAnchor: args.inputAnchor,
-    runExportAll: args.runExportAll ?? false,
     settingsOpen: uiState?.settingsOpen ?? true,
     overlapTableState: uiState?.overlapTable?.tableState ?? createPlDataTableStateV2(),
     sampleTableState: uiState?.sampleTable?.tableState ?? createPlDataTableStateV2(),
@@ -26,7 +25,6 @@ export const blockDataModel = new DataModelBuilder()
     sampleTableState: prev.sampleTableState ?? createPlDataTableStateV2(),
   }))
   .init(() => ({
-    runExportAll: false,
     settingsOpen: true,
     overlapTableState: createPlDataTableStateV2(),
     sampleTableState: createPlDataTableStateV2(),

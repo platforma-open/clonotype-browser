@@ -17,12 +17,13 @@ const tableSettings = usePlDataTableSettingsV2({
   <PlBlockPage>
     <template #title> Overlap Clonotypes Browser </template>
     <template #append>
-      <BlockActions show-export />
+      <BlockActions />
     </template>
     <PlAgDataTableV2
       v-model="app.model.data.overlapTableState"
       v-model:selection="app.selectedColumns"
       :settings="tableSettings"
+      show-export-button
     />
   </PlBlockPage>
   <SettingsModal />

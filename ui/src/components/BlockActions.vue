@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { PlBtnGhost } from "@platforma-sdk/ui-vue";
 import { useApp } from "../app";
-import ExportBtn from "./ExportBtn.vue";
 
 withDefaults(
   defineProps<{
-    showExport?: boolean;
     showSettings?: boolean;
     showAnnotations?: boolean;
   }>(),
   {
-    showExport: false,
     showSettings: true,
     showAnnotations: true,
   },
@@ -28,7 +25,6 @@ function openSettings() {
 </script>
 
 <template>
-  <ExportBtn v-if="showExport" />
   <PlBtnGhost v-if="showAnnotations" icon="annotate" @click.stop="openAnnotations">
     Annotations
   </PlBtnGhost>

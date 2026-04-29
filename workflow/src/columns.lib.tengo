@@ -47,22 +47,6 @@ mainFractionSelector := {
 	}
 }
 
-// --- Export inputs (consumed by the export branch in prerun) ---
-
-perSampleSelector := {
-	axes: [{ anchor: mainAnchorName, idx: 0 }, { anchor: mainAnchorName, idx: 1 }]
-}
-
-perClonotypeSelector := {
-	axes: [{ anchor: mainAnchorName, idx: 1 }]
-}
-
-sampleLabelsSelector := {
-	name: "pl7.app/label",
-	domainAnchor: mainAnchorName,
-	axes: [{ anchor: mainAnchorName, idx: 0 }]
-}
-
 // --- Annotation compute inputs (passed as additionalColumns to the SDK) ---
 
 // Per-clonotype label column — used as the reference label in annotation expressions.
@@ -209,9 +193,6 @@ export ll.toStrict({
 
 	mainCountSelector: mainCountSelector,
 	mainFractionSelector: mainFractionSelector,
-	perSampleSelector: perSampleSelector,
-	perClonotypeSelector: perClonotypeSelector,
-	sampleLabelsSelector: sampleLabelsSelector,
 	referenceLabelSelector: referenceLabelSelector,
 
 	sampleAnnotationsCountSpec: sampleAnnotationsCountSpec,
