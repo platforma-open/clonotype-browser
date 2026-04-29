@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-3.ui
 
+## 1.3.0
+
+### Minor Changes
+
+- 6a42056: update sdk and replace workflow export to pframedriver export
+
+### Patch Changes
+
+- Updated dependencies [6a42056]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
