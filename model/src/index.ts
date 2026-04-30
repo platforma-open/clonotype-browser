@@ -422,7 +422,6 @@ function toTableColumnVariant(variant: ColumnVariant, isPrimary: boolean) {
     path: variant.path.map((p) => ({
       type: "linker" as const,
       column: p.linker.id,
-      qualifications: p.qualifications,
     })),
     columnQualifications: variant.qualifications.forHit,
     queriesQualifications: variant.qualifications.forQueries,
