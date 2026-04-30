@@ -16,7 +16,7 @@ const tableSettings = usePlDataTableSettingsV2({
 
 <template>
   <PlBlockPage>
-    <template #title> Sample Clonotypes Browser </template>
+    <template #title> Sample Sequence Browser </template>
     <template #append>
       <BlockActions />
     </template>
