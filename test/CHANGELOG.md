@@ -1,5 +1,19 @@
 # @platforma-open/milaboratories.clonotype-browser-3.test
 
+## 2.0.0
+
+### Major Changes
+
+- 6523b2c: Support peptides
+- a2ec81f: Support peptides
+
+### Patch Changes
+
+- Updated dependencies [6523b2c]
+- Updated dependencies [a2ec81f]
+- Updated dependencies [bccd98a]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@2.0.0
+
 ## 1.1.0
 
 ### Minor Changes

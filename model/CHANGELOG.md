@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 2.0.0
+
+### Major Changes
+
+- 6523b2c: Support peptides
+- a2ec81f: Support peptides
+
+### Minor Changes
+
+- bccd98a: show table with partial data
+
 ## 1.3.0
 
 ### Minor Changes

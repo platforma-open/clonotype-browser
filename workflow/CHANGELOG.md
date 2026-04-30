@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 2.0.0
+
+### Major Changes
+
+- 6523b2c: Support peptides
+- a2ec81f: Support peptides
+
 ## 1.2.0
 
 ### Minor Changes
