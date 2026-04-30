@@ -219,7 +219,6 @@ blockTest(
         title: 'My Annotation',
         steps: [],
       } satisfies AnnotationSpec,
-      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState2 = (await awaitStableState(
@@ -270,7 +269,6 @@ blockTest(
     await project.setBlockArgs(annotationBlockId, {
       inputAnchor: outputs5.inputOptions[0].ref,
       annotationSpec,
-      runExportAll: false,
     } satisfies BlockArgs);
 
     const annotationStableState3 = (await awaitStableState(

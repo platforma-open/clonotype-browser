@@ -25,6 +25,7 @@ const tableSettings = usePlDataTableSettingsV2({
       ref="tableInstance"
       v-model="app.model.data.sampleTableState"
       :settings="tableSettings"
+      show-export-button
     />
   </PlBlockPage>
   <SettingsModal />
