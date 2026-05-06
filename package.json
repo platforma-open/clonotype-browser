@@ -28,8 +28,9 @@
       "@milaboratories/uikit": "file:../platforma/lib/ui/uikit/package.tgz",
       "@platforma-sdk/ui-vue": "file:../platforma/sdk/ui-vue/package.tgz",
       "@platforma-sdk/model": "file:../platforma/sdk/model/package.tgz",
+      "@milaboratories/helpers": "file:../platforma/lib/util/helpers/package.tgz",
       "@platforma-sdk/workflow-tengo": "file:../platforma/sdk/workflow-tengo/package.tgz",
-      "@milaboratories/pl-model-common": "file::../platforma/lib/model/common/package.tgz"
+      "@milaboratories/pl-model-common": "file:../platforma/lib/model/common/package.tgz"
     }
   }
 }
