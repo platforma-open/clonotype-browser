@@ -171,6 +171,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
       columns: [...splitSnapshots, ...nonSplitDirect, ...linked],
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
+      labelsOptions: {
+        formatters: { linker: () => undefined },
+      },
       displayOptions: {
         visibility: [
           {
@@ -201,6 +204,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
             { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
           ],
         },
+      },
+      labelsOptions: {
+        formatters: { linker: () => undefined },
       },
       tableState: ctx.data.sampleTableState,
     });
