@@ -142,9 +142,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
     const splitInputs: ColumnSnapshot<PObjectId>[] = [];
 
     for (const v of variants) {
-      if (v.path.length === 0 && isAbundanceToSplit(v.column.spec)) {
+      if ((v.path?.length ?? 0) === 0 && isAbundanceToSplit(v.column.spec)) {
         splitInputs.push(v.column);
-      } else if (v.path.length === 0) {
+      } else if ((v.path?.length ?? 0) === 0) {
         nonSplitDirect.push(toTableColumnVariant(v, false));
       } else {
         linked.push(toTableColumnVariant(v, false));
@@ -156,14 +156,11 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
     const splitSnapshots = splitColumns.map((col) => ({
       column: {
-        id: col.id as unknown as DiscoveredPColumnId,
+        id: col.id,
         spec: col.spec,
         data: col.data,
         dataStatus: col.dataStatus,
       },
-      path: [],
-      qualifications: { forHit: [], forQueries: {} },
-      originalId: col.id,
       isPrimary: true,
     }));
 
@@ -326,7 +323,7 @@ function buildFilterUiColumns(
   const distinctLabels = deriveDistinctLabels(
     variants.map((v) => ({
       spec: v.column.spec,
-      linkersPath: v.path.map((step) => ({ spec: step.linker.spec })),
+      linkersPath: v.path?.map((step) => ({ spec: step.linker.spec })),
     })),
     { includeNativeLabel: true },
   );
@@ -411,7 +408,7 @@ function findOverlapMatches<A, U>(
   // Linked multi-axis columns (e.g. per-sample abundance on clusterId) bring
   // extra dimensions into the join and belong in the sample table instead.
   const filtered = matches.filter(
-    (m) => m.path.length === 0 || m.column.spec.axesSpec.length === 1,
+    (m) => (m.path?.length ?? 0) === 0 || m.column.spec.axesSpec.length === 1,
   );
   return { variants: filtered, anchorSpec };
 }
@@ -419,22 +416,13 @@ function findOverlapMatches<A, U>(
 function toTableColumnVariant(variant: ColumnVariant, isPrimary: boolean) {
   const id = createDiscoveredPColumnId({
     column: variant.column.id,
-    path: variant.path.map((p) => ({
-      type: "linker" as const,
-      column: p.linker.id,
-    })),
-    columnQualifications: variant.qualifications.forHit,
-    queriesQualifications: variant.qualifications.forQueries,
+    path: variant.path?.map((p) => ({ type: "linker" as const, column: p.linker.id })),
+    columnQualifications: variant.qualifications?.forHit,
+    queriesQualifications: variant.qualifications?.forQueries,
   });
   return {
-    column: {
-      id,
-      spec: variant.column.spec,
-      data: variant.column.data,
-      dataStatus: variant.column.dataStatus,
-    },
-    path: variant.path,
-    qualifications: variant.qualifications,
+    ...variant,
+    column: { ...variant.column, id },
     originalId: variant.column.id,
     isPrimary,
   };
