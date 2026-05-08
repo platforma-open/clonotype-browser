@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-3.ui
 
+## 2.0.1
+
+### Patch Changes
+
+- d298e28: dont show column header linker postfix
+- Updated dependencies [d298e28]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

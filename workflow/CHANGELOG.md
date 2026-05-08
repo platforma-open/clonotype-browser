@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 2.0.1
+
+### Patch Changes
+
+- d298e28: dont show column header linker postfix
+
 ## 2.0.0
 
 ### Major Changes
