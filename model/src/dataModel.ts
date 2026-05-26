@@ -1,7 +1,10 @@
 import {
+  createGlobalPObjectId,
   createPlDataTableStateV2,
   DataModelBuilder,
+  type ColumnUniversalId,
   type PlDataTableStateV2,
+  type PlRef,
 } from "@platforma-sdk/model";
 import type { BlockData, LegacyBlockArgs, LegacyUiState } from "./types";
 
@@ -10,10 +13,19 @@ type BlockDataV1 = Omit<BlockData, "sampleTableState"> & {
   sampleTableState?: PlDataTableStateV2;
 };
 
+/**
+ * Legacy `inputAnchor` was a `PlRef`. The new `BlockData` carries a
+ * `ColumnUniversalId` (canonical stringified id). For result-pool leaves the
+ * conversion is `createGlobalPObjectId` of the ref's `(blockId, name)`.
+ */
+function plRefToUniversalId(ref: PlRef | undefined): ColumnUniversalId | undefined {
+  return ref ? createGlobalPObjectId(ref.blockId, ref.name) : undefined;
+}
+
 export const blockDataModel = new DataModelBuilder()
   .from<BlockDataV1>("Ver_2026_04_07")
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
-    inputAnchor: args.inputAnchor,
+    inputAnchor: plRefToUniversalId(args.inputAnchor),
     settingsOpen: uiState?.settingsOpen ?? true,
     overlapTableState: uiState?.overlapTable?.tableState ?? createPlDataTableStateV2(),
     sampleTableState: uiState?.sampleTable?.tableState ?? createPlDataTableStateV2(),
