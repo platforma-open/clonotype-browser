@@ -17,7 +17,7 @@ import {
   deriveAxisValuesLabels,
   deriveDistinctLabels,
   expandByPartition,
-  getColumnOptions,
+  deriveColumnOptions,
   getLeafColumnData,
   getUniquePartitionKeys, isLeafColumn, isPlRef, TreeNodeAccessor
 } from "@platforma-sdk/model";
@@ -72,7 +72,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
   })
 
   .output("inputOptions", () =>
-    getColumnOptions(
+    deriveColumnOptions(
       ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }),
     ),
   )
@@ -275,22 +275,19 @@ export const platforma = BlockModelV3.create(blockDataModel)
   }, { retentive: true })
 
   .title((ctx) => {
-    try {
-      if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
-        return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
-      }
-      const { inputAnchor } = ctx.data;
-      if (inputAnchor) {
-        const options = getColumnOptions(
-          ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }),
-          { includeNativeLabel: true },
-        );
-        const label = options.find((o) => o.id === inputAnchor)?.label;
-        if (label) return `Sequence Browser - ${label}`;
-      }
-    } catch {
-      // render context may not be fully initialized yet
+    if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
+      return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
     }
+    
+    const { inputAnchor } = ctx.data;
+    
+    if (inputAnchor) {
+      const columns = ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }).getColumns();
+      const labels = deriveDistinctLabels(columns.map(v => v.getSpec()),{ includeNativeLabel: true })
+      const label = labels[columns.findIndex(c => c.id === inputAnchor)];
+      if (label) return `Sequence Browser - ${label}`;
+    }
+    
     return "Sequence Browser";
   })
 
