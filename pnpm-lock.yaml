@@ -867,7 +867,7 @@ packages:
     resolution: {integrity: sha512-oec/O8ltsDkP+tbaLXuWZUHg7vW3/e60R4gMLvKF5f9wqXSU/CDe08zG4bUpxEW8xjYQzTyZBOC2iN6cTwNxEA==}
 
   '@milaboratories/columns-collection-driver@file:../platforma_1/lib/model/columns-collection-driver/package.tgz':
-    resolution: {integrity: sha512-RhhbOilzXLEOZ4pr6fAladLLJ3Hobso28+z4iinMnPFNZgQ7/NNmUf8xVF+xBGdsNwxeLPBP96Zz2eHemxY71A==, tarball: file:../platforma_1/lib/model/columns-collection-driver/package.tgz}
+    resolution: {integrity: sha512-pfCC+gRQHQEHPNGz26YK3IXZ7iJ/EmE062+g4uT/Zy9OZyuHOtx8yz5JtMSFQHpwhsaS1FV20pY1aHUqWDhw8w==, tarball: file:../platforma_1/lib/model/columns-collection-driver/package.tgz}
     version: 0.1.0
 
   '@milaboratories/computable@2.9.4':
@@ -946,7 +946,7 @@ packages:
     resolution: {integrity: sha512-fY0FobfDtE+ZN6D6yrPgNo/28pwjQt/KeYeJTcfFVcDAEv8kltxfb7hhE36nl7Af27msodvZVtEmDNqWP/xKuQ==}
 
   '@milaboratories/pl-model-common@file:../platforma_1/lib/model/common/package.tgz':
-    resolution: {integrity: sha512-a/7qJxtGdtO00nNrULXm9ePsoli7pSYD+qiuyUSOP9f4w2jn/x8Iii2z3tAXBvruR/ckj7c4GT/TKYz2tXApEA==, tarball: file:../platforma_1/lib/model/common/package.tgz}
+    resolution: {integrity: sha512-JLj1oTkf3VdN6TqrKnai5SgZeF5YqTZx0710cfIXwFgSsiRAQgqPCLI/vgqWYBBwzkZu/ZTBsILBK4dec8TlgA==, tarball: file:../platforma_1/lib/model/common/package.tgz}
     version: 1.42.0
 
   '@milaboratories/pl-model-middle-layer@1.18.5':
@@ -991,7 +991,7 @@ packages:
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/uikit@file:../platforma_1/lib/ui/uikit/package.tgz':
-    resolution: {integrity: sha512-PpJgmUlGPr0Lovjjt/F3fVe1xTRqQ6tpQbfscV29DlzAOWtAHD8DBXmycODiicl+oq85k9E7ldVH3sQ6x2eY8g==, tarball: file:../platforma_1/lib/ui/uikit/package.tgz}
+    resolution: {integrity: sha512-xQu6mp8JW9L3CM86FnrM6BLqvPLKl6gKA0PnVDtN5qMk5taWBA5PG+bZfp+F+m5rkWY+F7QF0vuhol8zjBWEtw==, tarball: file:../platforma_1/lib/ui/uikit/package.tgz}
     version: 2.14.11
 
   '@napi-rs/wasm-runtime@1.1.3':
@@ -1291,7 +1291,7 @@ packages:
     hasBin: true
 
   '@platforma-sdk/model@file:../platforma_1/sdk/model/package.tgz':
-    resolution: {integrity: sha512-yG1FXHis7a1akOpzsG5cJqy3uE7WhIiTquOvrEE8soLCDf9O4blSLM87COm4vqFPIbsPXFDlcNLkBp+cC0X4Mw==, tarball: file:../platforma_1/sdk/model/package.tgz}
+    resolution: {integrity: sha512-cVDkSRBI3obRCcjf0cHmxXA9T+1fCWLAl41pBkT3GcL+5nhrn2W5+tl8NJqD04Hx+pDJw7IF4irKTW23FMWykg==, tarball: file:../platforma_1/sdk/model/package.tgz}
     version: 1.77.4
 
   '@platforma-sdk/tengo-builder@3.0.0':
@@ -1303,11 +1303,11 @@ packages:
     resolution: {integrity: sha512-MEYH648sAYkMc0jMX9EVzaEhAhNf+37XRMIov+8S6myBVOH3YE297dB8DO77bFVZPcID0HTo44uJpAf6e1BvuQ==}
 
   '@platforma-sdk/ui-vue@file:../platforma_1/sdk/ui-vue/package.tgz':
-    resolution: {integrity: sha512-+UahRj3eYoJT7EZ9GtuAGRaOkrTKxS4W9Cyt2lOdoWtGkIJsnniXf5AYobPJ3mNTJd0aQLnRY/ilvdBdOhULUg==, tarball: file:../platforma_1/sdk/ui-vue/package.tgz}
+    resolution: {integrity: sha512-Wu8sQIorHW1oGqoJlhQHd22Zxaw9m/PSA1Q1aBI8vDO3zTk4ZOP0LcS8T409Lv9HWv63MfOiZxMOydH/TmS+3g==, tarball: file:../platforma_1/sdk/ui-vue/package.tgz}
     version: 1.77.4
 
   '@platforma-sdk/workflow-tengo@file:../platforma_1/sdk/workflow-tengo/package.tgz':
-    resolution: {integrity: sha512-/oP64hXfTO1bBUkdSG8VbfKYq06gg5QfiAYlJuRF0gL5yJTMbuZUiGaS11QI/rfHSKhRnDA04j2Qh6/gH9D99w==, tarball: file:../platforma_1/sdk/workflow-tengo/package.tgz}
+    resolution: {integrity: sha512-mgHI8DZsHpdwNKbE7wXGnyWkpB9t9SmisknFnqVsdWEWVJbNT71LCYD86cnbg9HhRgH2Gbw4k37ivd0yU4Jyeg==, tarball: file:../platforma_1/sdk/workflow-tengo/package.tgz}
     version: 5.25.0
 
   '@protobuf-ts/grpc-transport@2.11.1':

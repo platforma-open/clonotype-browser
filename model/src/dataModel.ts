@@ -6,11 +6,24 @@ import {
   type PlDataTableStateV2,
   type PlRef,
 } from "@platforma-sdk/model";
-import type { BlockData, LegacyBlockArgs, LegacyUiState } from "./types";
+import type { AnnotationSpecUi, BlockData, LegacyBlockArgs, LegacyUiState } from "./types";
 
-/** V1 schema: sampleTableState could be absent for early Ver_2026_04_07 data. */
-type BlockDataV1 = Omit<BlockData, "sampleTableState"> & {
+/**
+ * Stored shape at Ver_2026_04_07. `inputAnchor` was a `PlRef` and
+ * `sampleTableState` could be absent for early data of this version.
+ */
+type StoredV1 = {
+  inputAnchor?: PlRef;
+  settingsOpen: boolean;
+  overlapTableState: PlDataTableStateV2;
   sampleTableState?: PlDataTableStateV2;
+  statsTableState: PlDataTableStateV2;
+  annotationSpecUi: AnnotationSpecUi;
+};
+
+/** Stored shape at Ver_2026_04_14: same as V1 but `sampleTableState` is required. */
+type StoredV2 = Omit<StoredV1, "sampleTableState"> & {
+  sampleTableState: PlDataTableStateV2;
 };
 
 /**
@@ -23,18 +36,22 @@ function plRefToUniversalId(ref: PlRef | undefined): ColumnUniversalId | undefin
 }
 
 export const blockDataModel = new DataModelBuilder()
-  .from<BlockDataV1>("Ver_2026_04_07")
+  .from<StoredV1>("Ver_2026_04_07")
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
-    inputAnchor: plRefToUniversalId(args.inputAnchor),
+    inputAnchor: args.inputAnchor,
     settingsOpen: uiState?.settingsOpen ?? true,
     overlapTableState: uiState?.overlapTable?.tableState ?? createPlDataTableStateV2(),
     sampleTableState: uiState?.sampleTable?.tableState ?? createPlDataTableStateV2(),
     statsTableState: uiState?.statsTable?.tableState ?? createPlDataTableStateV2(),
     annotationSpecUi: uiState?.annotationSpec ?? { title: "", steps: [] },
   }))
-  .migrate<BlockData>("Ver_2026_04_14", (prev) => ({
+  .migrate<StoredV2>("Ver_2026_04_14", (prev) => ({
     ...prev,
     sampleTableState: prev.sampleTableState ?? createPlDataTableStateV2(),
+  }))
+  .migrate<BlockData>("Ver_2026_05_28", (prev) => ({
+    ...prev,
+    inputAnchor: plRefToUniversalId(prev.inputAnchor),
   }))
   .init(() => ({
     settingsOpen: true,
