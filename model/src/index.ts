@@ -1,13 +1,11 @@
 import type {
-  AxesSpec,
-  ColumnLazy,
-  ColumnRecipe,
+  AxesSpec, ColumnRecipe,
   ColumnUniversalId,
   InferOutputsType,
   PColumnSpec,
   PlRef,
   PObjectId,
-  RelaxedColumnSelector,
+  RelaxedColumnSelector
 } from "@platforma-sdk/model";
 import {
   BlockModelV3,
@@ -20,8 +18,8 @@ import {
   deriveDistinctLabels,
   expandByPartition,
   getColumnOptions,
-  getUniquePartitionKeys,
-  isColumnLazy, isPlRef, TreeNodeAccessor
+  getLeafColumnData,
+  getUniquePartitionKeys, isLeafColumn, isPlRef, TreeNodeAccessor
 } from "@platforma-sdk/model";
 import {
   Annotation,
@@ -76,7 +74,6 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .output("inputOptions", () =>
     getColumnOptions(
       ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }),
-      { includeNativeLabel: true },
     ),
   )
 
@@ -127,12 +124,12 @@ export const platforma = BlockModelV3.create(blockDataModel)
       isAbundanceColumn(spec) && spec.axesSpec.length > 1;
 
     // Leaves go to primary; wrapped (linker-reachable) recipes become secondary.
-    const splitInputs: ColumnLazy[] = [];
-    const directLeaves: ColumnLazy[] = [];
+    const splitInputs: ColumnRecipe[] = [];
+    const directLeaves: ColumnRecipe[] = [];
     const wrappedRecipes: ColumnRecipe[] = [];
 
     for (const c of columns) {
-      if (isColumnLazy(c)) {
+      if (isLeafColumn(c)) {
         if (isAbundanceToSplit(c.getSpec())) {
           splitInputs.push(c);
         } else {
@@ -196,8 +193,8 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .output("sampleTableSheets", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
     const anchor = Column(ctx.data.inputAnchor);
-    if (!isColumnLazy(anchor)) return undefined;
-    const data = anchor.getData();
+    if (!anchor) return undefined;
+    const data = getLeafColumnData(anchor);
     if (!(data instanceof TreeNodeAccessor)) return undefined;
     const samples = getUniquePartitionKeys(data)?.[0];
     if (!samples) return undefined;
@@ -226,7 +223,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
     // sampleStats is keyed on [sampleId, annotationKey] — split by sampleId so
     // each sample becomes its own annotation-keyed column set that joins with
     // annotationStats on annotationKey.
-    const sampleInputs = sampleRecipes.filter(isColumnLazy);
+    const sampleInputs = sampleRecipes.filter(isLeafColumn);
     if (sampleInputs.length !== sampleRecipes.length) return undefined;
 
     const splitSampleRecipes = expandByPartition(sampleInputs, [{ idx: 0 }], {
@@ -378,14 +375,8 @@ function findOverlapMatches(
 
   // Linked multi-axis columns (e.g. per-sample abundance on clusterId) bring
   // extra dimensions into the join and belong in the sample table instead.
-  // This part can't be expressed as a single selector (it depends on whether
-  // the recipe is a leaf vs wrapped + the linker chain length), so post-filter
-  // at the recipe level. The collection is rebuilt as a `{ columns, isFinal }`
-  // source so downstream `.filter` calls still run host-side.
   const survivors = collection.getColumns().filter((c) => {
-    if (isColumnLazy(c)) return true;
-    // Wrapped (linker-reachable) → keep only when the column has exactly one axis.
-    return c.getSpec().axesSpec.length === 1;
+    return isLeafColumn(c) || c.getSpec().axesSpec.length === 1;
   });
   collection = ColumnsCollection([{ columns: survivors, isFinal: collection.isFinal() }]);
 
