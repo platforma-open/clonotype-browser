@@ -19,7 +19,8 @@ import {
   expandByPartition,
   deriveColumnOptions,
   getLeafColumnData,
-  getUniquePartitionKeys, isLeafColumn, isPlRef, TreeNodeAccessor
+  getUniquePartitionKeys, isLeafColumn, isPlRef, TreeNodeAccessor,
+  parseJsonSafely
 } from "@platforma-sdk/model";
 import {
   Annotation,
@@ -278,16 +279,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
     if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
       return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
     }
-    
-    const { inputAnchor } = ctx.data;
-    
-    if (inputAnchor) {
-      const columns = ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }).getColumns();
-      const labels = deriveDistinctLabels(columns.map(v => v.getSpec()),{ includeNativeLabel: true })
-      const label = labels[columns.findIndex(c => c.id === inputAnchor)];
-      if (label) return `Sequence Browser - ${label}`;
-    }
-    
+
     return "Sequence Browser";
   })
 
@@ -403,13 +395,6 @@ function hasCompiledSteps(ui: BlockData["annotationSpecUi"]): boolean {
  * it back to recover the original `PlRef`.
  */
 function universalIdToPlRef(id: ColumnUniversalId): PlRef | undefined {
-  try {
-    const parsed = JSON.parse(id);
-    if (isPlRef(parsed)) {
-      return parsed;
-    }
-  } catch {
-    // wrapped (filtered/discovered/overrided) ids — no underlying single ref.
-  }
-  return undefined;
+  const parsed = parseJsonSafely(id);
+  return isPlRef(parsed) ? parsed : undefined;
 }
