@@ -9,15 +9,15 @@ catalog:
   "@milaboratories/ts-builder": 1.5.0
   "@milaboratories/ts-configs": 1.2.3
   "@milaboratories/build-configs": 2.0.0
-  "@milaboratories/pl-model-common": 1.45.0
-  "@platforma-sdk/workflow-tengo": 6.3.1
-  "@platforma-sdk/model": 1.78.6
-  "@platforma-sdk/ui-vue": 1.78.6
-  "@platforma-sdk/tengo-builder": 4.0.5
-  "@platforma-sdk/package-builder": 3.12.0
-  "@platforma-sdk/block-tools": 2.10.6
+  "@milaboratories/pl-model-common": 1.46.1
+  "@platforma-sdk/workflow-tengo": 6.6.0
+  "@platforma-sdk/model": 1.79.6
+  "@platforma-sdk/ui-vue": 1.79.6
+  "@platforma-sdk/tengo-builder": 4.0.8
+  "@platforma-sdk/package-builder": 3.13.0
+  "@platforma-sdk/block-tools": 2.10.16
 
-  "@platforma-sdk/test": 1.78.6
+  "@platforma-sdk/test": 1.79.6
   "@milaboratories/helpers": 1.14.2
 
   "@platforma-open/milaboratories.runenv-python-3": ^1.7.7

@@ -55,6 +55,13 @@ const inputAnchorSpecs = [
     axes: [{ name: PAxisName.SampleId }, { name: "pl7.app/variantKey" }],
     annotations: { [Annotation.IsAnchor]: "true" },
   },
+  {
+    // Centroid dataset from clonotype-clustering: one "clonotype" per cluster, abundance anchor
+    // on a dedicated axis "pl7.app/clustering/centroidId" (values = real clusterId). modality()
+    // below resolves to "peptide" via the axis's pl7.app/peptide/* domain.
+    axes: [{ name: PAxisName.SampleId }, { name: "pl7.app/clustering/centroidId" }],
+    annotations: { [Annotation.IsAnchor]: "true" },
+  },
 ];
 
 export const platforma = BlockModelV3.create(blockDataModel)
