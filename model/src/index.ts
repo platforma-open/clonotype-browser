@@ -86,11 +86,13 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .output("annotationsIsComputing", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return false;
     if (!hasCompiledSteps(ctx.data.annotationSpecUi)) return false;
-    return ctx.prerun?.resolve({
-      field: "annotationsPf",
-      assertFieldType: "Input",
-      allowPermanentAbsence: true,
-    }) === undefined;
+    return (
+      ctx.prerun?.resolve({
+        field: "annotationsPf",
+        assertFieldType: "Input",
+        allowPermanentAbsence: true,
+      }) === undefined
+    );
   })
 
   .output("overlapColumns", (ctx) => {
@@ -171,8 +173,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       displayOptions: {
         visibility: [
           {
-            match: (spec: PColumnSpec) =>
-              isAbundanceColumn(spec) && !isSampleCountColumn(spec),
+            match: (spec: PColumnSpec) => isAbundanceColumn(spec) && !isSampleCountColumn(spec),
             visibility: "optional",
           },
         ],
@@ -272,25 +273,30 @@ export const platforma = BlockModelV3.create(blockDataModel)
       : [],
   )
 
-  .output("modality", (ctx) => {
-    const spec = ctx.data.inputAnchor
-      ? ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor)
-      : undefined;
-    if (!spec) return undefined;
-    for (const ax of spec.axesSpec) {
-      if (ax.name === "pl7.app/variantKey") return "peptide";
-      if (ax.name === "pl7.app/vdj/clonotypeKey" || ax.name === "pl7.app/vdj/scClonotypeKey") return "antibody_tcr";
-      // clustered abundances
-      for (const key of Object.keys(ax.domain ?? {})) {
-        if (key.startsWith("pl7.app/peptide/")) return "peptide";
-        if (key.startsWith("pl7.app/vdj/")) return "antibody_tcr";
+  .output(
+    "modality",
+    (ctx) => {
+      const spec = ctx.data.inputAnchor
+        ? ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor)
+        : undefined;
+      if (!spec) return undefined;
+      for (const ax of spec.axesSpec) {
+        if (ax.name === "pl7.app/variantKey") return "peptide";
+        if (ax.name === "pl7.app/vdj/clonotypeKey" || ax.name === "pl7.app/vdj/scClonotypeKey")
+          return "antibody_tcr";
+        // clustered abundances
+        for (const key of Object.keys(ax.domain ?? {})) {
+          if (key.startsWith("pl7.app/peptide/")) return "peptide";
+          if (key.startsWith("pl7.app/vdj/")) return "antibody_tcr";
+        }
       }
-    }
-    // Fallback when the input is resolved but unrecognized. The early
-    // `if (!spec) return undefined` above lets the retentive flag preserve the
-    // last-known modality during transient unavailability (re-runs, loading).
-    return "antibody_tcr";
-  }, { retentive: true })
+      // Fallback when the input is resolved but unrecognized. The early
+      // `if (!spec) return undefined` above lets the retentive flag preserve the
+      // last-known modality during transient unavailability (re-runs, loading).
+      return "antibody_tcr";
+    },
+    { retentive: true },
+  )
 
   .title((ctx) => {
     try {
@@ -316,10 +322,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
 export type Platforma = typeof platforma;
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 
-function buildFilterUiColumns(
-  variants: readonly ColumnVariant[],
-  anchorAxesSpec: AxesSpec,
-) {
+function buildFilterUiColumns(variants: readonly ColumnVariant[], anchorAxesSpec: AxesSpec) {
   const distinctLabels = deriveDistinctLabels(
     variants.map((v) => ({
       spec: v.column.spec,
@@ -327,9 +330,7 @@ function buildFilterUiColumns(
     })),
     { includeNativeLabel: true },
   );
-  const labelSpecs = variants
-    .map((v) => v.column.spec)
-    .filter((s) => s.name === PColumnName.Label);
+  const labelSpecs = variants.map((v) => v.column.spec).filter((s) => s.name === PColumnName.Label);
   const ret = variants.map((m, i) => {
     const spec = m.column.spec;
     const axesSpec = spec.axesSpec;
@@ -340,17 +341,15 @@ function buildFilterUiColumns(
       axesToBeFixed:
         axesSpec.length > anchorAxesSpec.length
           ? axesSpec.slice(anchorAxesSpec.length).map((axis, j) => {
-            const labelSpec = labelSpecs.find(
-              (s) => s.axesSpec[0].name === axis.name,
-            );
-            return {
-              idx: anchorAxesSpec.length + j,
-              label:
-                readAnnotation(labelSpec, Annotation.Label) ??
-                readAnnotation(axis, Annotation.Label) ??
-                axis.name,
-            };
-          })
+              const labelSpec = labelSpecs.find((s) => s.axesSpec[0].name === axis.name);
+              return {
+                idx: anchorAxesSpec.length + j,
+                label:
+                  readAnnotation(labelSpec, Annotation.Label) ??
+                  readAnnotation(axis, Annotation.Label) ??
+                  axis.name,
+              };
+            })
           : undefined,
     };
   });

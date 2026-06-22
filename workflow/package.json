@@ -2,10 +2,12 @@
   "name": "@platforma-open/milaboratories.clonotype-browser-3.workflow",
   "version": "2.0.3",
   "description": "Tengo-based template",
+  "type": "module",
   "scripts": {
-    "build": "shx rm -rf dist && pl-tengo check && pl-tengo build",
-    "format": "/usr/bin/env emacs --script ./format.el",
-    "do-pack": "shx rm -f *.tgz && pnpm pack && shx mv *.tgz package.tgz"
+    "build": "shx rm -rf dist && pl-tengo build",
+    "format": "/usr/bin/env emacs --script ./format.el || echo 'No emacs.'",
+    "do-pack": "shx rm -f *.tgz && pnpm pack && shx mv *.tgz package.tgz",
+    "check": "pl-tengo check"
   },
   "dependencies": {
     "@platforma-open/milaboratories.software-binary-collection.software-7zip": "catalog:",
@@ -14,8 +16,7 @@
   "devDependencies": {
     "@platforma-sdk/tengo-builder": "catalog:",
     "@platforma-sdk/test": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:",
-    "shx": "catalog:"
+    "shx": "catalog:",
+    "typescript": "catalog:"
   }
 }

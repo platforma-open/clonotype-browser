@@ -13,3 +13,5 @@ vite.config.*.timestamp-*
 ui/tsconfig.app.tsbuildinfo
 ui/tsconfig.node.tsbuildinfo
 test-dry-run.json
+software/**/*.tgz
+.vscode/sftp.json

@@ -31,10 +31,7 @@ export const PColumnName = {
  * Sample-count column names accepted from upstream. MiXCR-side blocks emit
  * `pl7.app/vdj/sampleCount`; peptide-extraction emits `pl7.app/sampleCount`.
  */
-const SAMPLE_COUNT_NAMES = [
-  "pl7.app/vdj/sampleCount",
-  "pl7.app/sampleCount",
-] as const;
+const SAMPLE_COUNT_NAMES = ["pl7.app/vdj/sampleCount", "pl7.app/sampleCount"] as const;
 
 const ANNOTATION_EXTENSIONS = {
   /** Marks a column as an abundance measurement (counts or fractions). */

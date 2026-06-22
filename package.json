@@ -5,32 +5,29 @@
     "type-check": "turbo run type-check",
     "linter:check": "turbo run linter:check",
     "formatter:check": "turbo run formatter:check",
-    "check": "turbo run type-check linter:check formatter:check",
-    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
+    "check": "turbo run check",
+    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1",
     "test:dry-run": "env PL_PKG_DEV=local turbo run test --dry-run=json",
     "mark-stable": "turbo run mark-stable",
     "do-pack": "turbo run do-pack",
     "watch": "turbo watch build",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "update-sdk": "block-tools update-deps"
+    "update-sdk": "block-tools structure refresh --update-deps-only",
+    "fmt": "turbo run fmt",
+    "upgrade-sdk": "block-tools structure refresh --update-deps-only && pnpm i && block-tools structure refresh && pnpm i && pnpm fmt"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
+    "@milaboratories/ts-builder": "catalog:",
     "@platforma-sdk/block-tools": "catalog:",
+    "shx": "catalog:",
     "turbo": "catalog:",
-    "typescript": "catalog:",
-    "shx": "catalog:"
+    "typescript": "catalog:"
   },
-  "packageManager": "pnpm@9.14.4",
-  "//pnpm": {
-    "overrides": {
-      "@milaboratories/uikit": "file:../platforma/lib/ui/uikit/package.tgz",
-      "@platforma-sdk/ui-vue": "file:../platforma/sdk/ui-vue/package.tgz",
-      "@platforma-sdk/model": "file:../platforma/sdk/model/package.tgz",
-      "@milaboratories/helpers": "file:../platforma/lib/util/helpers/package.tgz",
-      "@platforma-sdk/workflow-tengo": "file:../platforma/sdk/workflow-tengo/package.tgz",
-      "@milaboratories/pl-model-common": "file:../platforma/lib/model/common/package.tgz"
-    }
-  }
+  "peerDependencies": {
+    "oxfmt": "*",
+    "oxlint": "*"
+  },
+  "packageManager": "pnpm@9.12.0"
 }
