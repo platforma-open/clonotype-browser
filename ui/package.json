@@ -32,7 +32,10 @@
     "@milaboratories/ts-configs": "catalog:",
     "@types/lodash": "catalog:",
     "lodash": "catalog:",
-    "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@types/node": "*",
+    "typescript": "*"
   }
 }

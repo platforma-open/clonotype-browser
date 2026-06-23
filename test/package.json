@@ -5,8 +5,12 @@
   "description": "Block tests",
   "keywords": [],
   "files": [],
+  "type": "module",
   "scripts": {
-    "//test": "NODE_ENV=production vitest"
+    "//test": "NODE_ENV=production vitest",
+    "fmt": "ts-builder format",
+    "check": "ts-builder check --target block-test",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@platforma-open/milaboratories.clonotype-browser-3.model": "workspace:*",
@@ -18,8 +22,12 @@
     "this-block": "workspace:@platforma-open/milaboratories.clonotype-browser-3@*"
   },
   "devDependencies": {
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:",
     "@platforma-sdk/test": "catalog:",
-    "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "*"
   }
 }

@@ -24,14 +24,15 @@ jobs:
     with:
       app-name: 'Block: Clonotype Browser 3'
       app-name-slug: 'block-clonotype-browser-3'
-      # pl-docker-tag: '1.34.2'
       node-version: '20.x'
       build-script-name: 'build'
       pnpm-recursive-build: false
+
       test: true
       test-script-name: 'test'
       pnpm-recursive-tests: false
       team-id: 'ciplopen'
+
       publish-to-public: 'true'
       package-path: 'block'
       create-tag: 'true'
@@ -55,7 +56,9 @@ jobs:
 
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }},
           "AWS_CI_TURBOREPO_S3_BUCKET": ${{ toJSON(secrets.AWS_CI_TURBOREPO_S3_BUCKET) }},
-          "PL_REGISTRY_PLATFORMA_OPEN_UPLOAD_URL": ${{ toJSON(secrets.PL_REGISTRY_PLOPEN_UPLOAD_URL) }} }
+          "PL_REGISTRY_PLATFORMA_OPEN_UPLOAD_URL": ${{ toJSON(secrets.PL_REGISTRY_PLOPEN_UPLOAD_URL) }},
+          "QUAY_USERNAME": ${{ toJSON(secrets.QUAY_USERNAME) }},
+          "QUAY_ROBOT_TOKEN": ${{ toJSON(secrets.QUAY_ROBOT_TOKEN) }} }
 
       SLACK_CHANNEL: ${{ secrets.SLACK_BLOCKS_CI_CHANNEL }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
