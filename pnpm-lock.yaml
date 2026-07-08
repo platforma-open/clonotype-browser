@@ -169,9 +169,6 @@ importers:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
         version: 2.11.10(@types/node@24.5.2)
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.4(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.4)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
 
   test:
     dependencies:
@@ -267,9 +264,6 @@ importers:
       lodash:
         specifier: 'catalog:'
         version: 4.17.21
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.4(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.4)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
 
   workflow:
     dependencies:
