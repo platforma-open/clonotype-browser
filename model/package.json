@@ -1,6 +1,7 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-3.model",
   "version": "2.0.4",
+  "private": true,
   "description": "Block model",
   "type": "module",
   "main": "dist/index.cjs",
@@ -34,8 +35,7 @@
   "devDependencies": {
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
-    "@platforma-sdk/block-tools": "catalog:",
-    "vitest": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:"
   },
   "peerDependencies": {
     "@types/node": "*",

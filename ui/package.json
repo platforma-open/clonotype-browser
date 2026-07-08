@@ -1,6 +1,7 @@
 {
   "name": "@platforma-open/milaboratories.clonotype-browser-3.ui",
   "version": "2.0.4",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "ts-builder serve --target block-ui",
@@ -31,8 +32,7 @@
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
     "@types/lodash": "catalog:",
-    "lodash": "catalog:",
-    "vitest": "catalog:"
+    "lodash": "catalog:"
   },
   "peerDependencies": {
     "@types/node": "*",
