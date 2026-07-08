@@ -32,7 +32,8 @@
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
     "@types/lodash": "catalog:",
-    "lodash": "catalog:"
+    "lodash": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@types/node": "*",
