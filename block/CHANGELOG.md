@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 2.0.5
+
+### Patch Changes
+
+- f54d8fe: SDK Upgrade, fix page title
+
 ## 2.0.4
 
 ### Patch Changes
