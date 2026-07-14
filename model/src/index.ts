@@ -173,7 +173,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
     if (ctx.data.inputAnchor === undefined) return undefined;
     return createPlDataTableV3(ctx, {
       columns: {
-        anchors: { main: ctx.data.inputAnchor as unknown as PObjectId },
+        anchors: { main: ctx.data.inputAnchor as PObjectId },
         selector: {
           mode: "enrichment",
           exclude: [
