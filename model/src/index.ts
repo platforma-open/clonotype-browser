@@ -1,47 +1,39 @@
 import type {
   AxesSpec,
-  ColumnSnapshot,
-  ColumnVariant,
-  DiscoveredPColumnId,
+  ColumnRecipe,
+  ColumnUniversalId,
   InferOutputsType,
-  PColumn,
-  PColumnDataUniversal,
   PColumnSpec,
   PlRef,
   PObjectId,
-  SUniversalPColumnId,
+  RelaxedColumnSelector,
 } from "@platforma-sdk/model";
 import {
   BlockModelV3,
-  collectCtxColumnSnapshotProviders,
-  ColumnCollectionBuilder,
+  Column,
+  ColumnsCollection,
   convertFilterSpecsToExpressionSpecs,
-  createDiscoveredPColumnId,
   createPlDataTableSheet,
   createPlDataTableV3,
+  deriveAxisValuesLabels,
   deriveDistinctLabels,
   expandByPartition,
+  deriveColumnOptions,
+  getLeafColumnData,
   getUniquePartitionKeys,
-  OutputColumnProvider,
-  plRefsEqual,
-  type RenderCtxBase,
+  isLeafColumn,
+  isPlRef,
+  TreeNodeAccessor,
+  parseJsonSafely,
 } from "@platforma-sdk/model";
-import {
-  Annotation,
-  getTrace,
-  isAbundanceColumn,
-  isSampleCountColumn,
-  PAxisName,
-  PColumnName,
-  readAnnotation,
-} from "./columns";
+import { Annotation, isAbundanceColumn, PAxisName, PColumnName, readAnnotation } from "./columns";
 import { blockDataModel } from "./dataModel";
 import type { BlockArgs, BlockData } from "./types";
 
 export { blockDataModel } from "./dataModel";
 export * from "./types";
 
-const inputAnchorSpecs = [
+const inputAnchorSelectors: RelaxedColumnSelector[] = [
   {
     axes: [{ name: PAxisName.SampleId }, { name: PAxisName.VDJ.ClonotypeKey }],
     annotations: { [Annotation.IsAnchor]: "true" },
@@ -79,8 +71,10 @@ export const platforma = BlockModelV3.create(blockDataModel)
     };
   })
 
-  .output("inputOptions", (ctx) =>
-    ctx.resultPool.getOptions(inputAnchorSpecs, { refsWithEnrichments: true }),
+  .output("inputOptions", () =>
+    deriveColumnOptions(
+      ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }),
+    ),
   )
 
   .output("annotationsIsComputing", (ctx) => {
@@ -97,30 +91,23 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .output("overlapColumns", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
-    const result = findOverlapMatches(ctx, ctx.data.inputAnchor);
+    const result = findOverlapMatches(ctx.data.inputAnchor);
     if (!result) return undefined;
 
     // Annotation results must not appear as filter inputs for their own definition.
-    const variants = result.variants.filter(
-      (m) => m.column.spec.name !== PColumnName.AnnotationResult,
-    );
-
-    const entries = variants.map((m) => ({
-      id: m.column.id,
-      spec: m.column.spec,
-      data: m.column.data?.get(),
-    })) as PColumn<PColumnDataUniversal>[];
-    if (entries.length === 0) return undefined;
+    const variants = result.collection
+      .filter({ exclude: { name: { type: "exact", value: PColumnName.AnnotationResult } } })
+      .getColumns();
+    if (variants.length === 0) return undefined;
 
     return {
-      pFrame: ctx.createPFrame(entries),
+      pFrame: ctx.createPFrame(variants.map((c) => c.id)),
       columns: buildFilterUiColumns(variants, result.anchorSpec.axesSpec),
     };
   })
 
   .outputWithStatus("overlapTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
-
     // Include prerun annotations once ready — addSource silently drops unresolved
     // accessors, so passing them earlier only churns the table descriptor.
     const annotation = ctx.prerun?.resolve({
@@ -128,52 +115,53 @@ export const platforma = BlockModelV3.create(blockDataModel)
       assertFieldType: "Input",
       allowPermanentAbsence: true,
     });
-    const extraSources = annotation?.getIsReadyOrError() ? [annotation] : [];
-    const result = findOverlapMatches(ctx, ctx.data.inputAnchor, extraSources);
+    const extraSources = annotation?.getIsReadyOrError() ? [annotation] : undefined;
+    const result = findOverlapMatches(ctx.data.inputAnchor, extraSources);
     if (!result) return undefined;
 
-    const { variants } = result;
+    const columns = result.collection.getColumns();
 
     // Direct multi-axis abundance columns split by sampleId (axis 0).
     const isAbundanceToSplit = (spec: PColumnSpec) =>
       isAbundanceColumn(spec) && spec.axesSpec.length > 1;
 
-    // Variants from non-split direct paths and from linked paths.
-    const nonSplitDirect: ReturnType<typeof toTableColumnVariant>[] = [];
-    const linked: ReturnType<typeof toTableColumnVariant>[] = [];
-    const splitInputs: ColumnSnapshot<PObjectId>[] = [];
+    // Leaves go to primary; wrapped (linker-reachable) recipes become secondary.
+    const splitInputs: ColumnRecipe[] = [];
+    const directLeaves: ColumnRecipe[] = [];
+    const wrappedRecipes: ColumnRecipe[] = [];
 
-    for (const v of variants) {
-      if ((v.path?.length ?? 0) === 0 && isAbundanceToSplit(v.column.spec)) {
-        splitInputs.push(v.column);
-      } else if ((v.path?.length ?? 0) === 0) {
-        nonSplitDirect.push(toTableColumnVariant(v, false));
+    for (const c of columns) {
+      if (isLeafColumn(c)) {
+        if (isAbundanceToSplit(c.getSpec())) {
+          splitInputs.push(c);
+        } else {
+          directLeaves.push(c);
+        }
       } else {
-        linked.push(toTableColumnVariant(v, false));
+        wrappedRecipes.push(c);
       }
     }
 
-    const splitColumns = splitByPartition(ctx, splitInputs, 0);
-    if (!splitColumns) return undefined;
-
-    const splitSnapshots = splitColumns.map((col) => ({
-      column: {
-        id: col.id,
-        spec: col.spec,
-        data: col.data,
-        dataStatus: col.dataStatus,
-      },
-      isPrimary: true,
-    }));
+    const splitRecipes = expandByPartition(splitInputs, [{ idx: 0 }], {
+      axisValuesLabels: deriveAxisValuesLabels(),
+    });
+    if (!splitRecipes) return undefined;
 
     return createPlDataTableV3(ctx, {
-      columns: [...splitSnapshots, ...nonSplitDirect, ...linked],
+      primaryColumns: [...splitRecipes, ...directLeaves],
+      columns: wrappedRecipes,
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
       displayOptions: {
         visibility: [
+          // Sample-count columns stay default — explicit match first wins.
           {
-            match: (spec: PColumnSpec) => isAbundanceColumn(spec) && !isSampleCountColumn(spec),
+            match: { name: "^(pl7\\.app/vdj/sampleCount|pl7\\.app/sampleCount)$" },
+            visibility: "default",
+          },
+          // Other abundance columns drop to optional.
+          {
+            match: { annotations: { [Annotation.IsAbundance]: "true" } },
             visibility: "optional",
           },
         ],
@@ -185,7 +173,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
     if (ctx.data.inputAnchor === undefined) return undefined;
     return createPlDataTableV3(ctx, {
       columns: {
-        anchors: { main: ctx.data.inputAnchor },
+        anchors: { main: ctx.data.inputAnchor as unknown as PObjectId },
         selector: {
           mode: "enrichment",
           exclude: [
@@ -206,11 +194,13 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .output("sampleTableSheets", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
-    const anchor = ctx.resultPool.getPColumnByRef(ctx.data.inputAnchor);
+    const anchor = Column(ctx.data.inputAnchor);
     if (!anchor) return undefined;
-    const samples = getUniquePartitionKeys(anchor.data)?.[0];
+    const data = getLeafColumnData(anchor);
+    if (!(data instanceof TreeNodeAccessor)) return undefined;
+    const samples = getUniquePartitionKeys(data)?.[0];
     if (!samples) return undefined;
-    return [createPlDataTableSheet(ctx, anchor.spec.axesSpec[0], samples)];
+    return [createPlDataTableSheet(ctx, anchor.getSpec().axesSpec[0], samples)];
   })
 
   .outputWithStatus("statsTable", (ctx) => {
@@ -229,30 +219,23 @@ export const platforma = BlockModelV3.create(blockDataModel)
       return undefined;
     }
 
-    // sampleStats is keyed on [sampleId, annotationKey] — split by sampleId
-    // so each sample becomes its own annotation-keyed column set that joins
-    // with annotationStats on annotationKey.
-    const annotationSnapshots = new OutputColumnProvider(annotationStatsPf).getAllColumns();
-    const splitSampleSnapshots = splitByPartition(
-      ctx,
-      new OutputColumnProvider(sampleStatsPf).getAllColumns(),
-      0,
-    );
-    if (splitSampleSnapshots === undefined) return undefined;
+    const annotationRecipes = ColumnsCollection([annotationStatsPf]).getColumns();
+    const sampleRecipes = ColumnsCollection([sampleStatsPf]).getColumns();
+
+    // sampleStats is keyed on [sampleId, annotationKey] — split by sampleId so
+    // each sample becomes its own annotation-keyed column set that joins with
+    // annotationStats on annotationKey.
+    const sampleInputs = sampleRecipes.filter(isLeafColumn);
+    if (sampleInputs.length !== sampleRecipes.length) return undefined;
+
+    const splitSampleRecipes = expandByPartition(sampleInputs, [{ idx: 0 }], {
+      axisValuesLabels: deriveAxisValuesLabels(),
+    });
+    if (splitSampleRecipes === undefined) return undefined;
 
     return createPlDataTableV3(ctx, {
-      columns: [...annotationSnapshots, ...splitSampleSnapshots].map((s) => ({
-        column: {
-          id: s.id as unknown as DiscoveredPColumnId,
-          spec: s.spec,
-          data: s.data,
-          dataStatus: s.dataStatus,
-        },
-        path: [],
-        qualifications: { forHit: [], forQueries: {} },
-        originalId: s.id,
-        isPrimary: true,
-      })),
+      primaryColumns: [...annotationRecipes, ...splitSampleRecipes],
+      columns: [],
       tableState: ctx.data.statsTableState,
     });
   })
@@ -267,18 +250,16 @@ export const platforma = BlockModelV3.create(blockDataModel)
     ];
   })
 
-  .enriches((args) =>
-    args.inputAnchor !== undefined && args.annotationSpec.steps.length > 0
-      ? [args.inputAnchor]
-      : [],
-  )
+  .enriches((args) => {
+    if (args.inputAnchor === undefined || args.annotationSpec.steps.length === 0) return [];
+    const ref = universalIdToPlRef(args.inputAnchor);
+    return ref ? [ref] : [];
+  })
 
   .output(
     "modality",
     (ctx) => {
-      const spec = ctx.data.inputAnchor
-        ? ctx.resultPool.getPColumnSpecByRef(ctx.data.inputAnchor)
-        : undefined;
+      const spec = ctx.data.inputAnchor ? Column(ctx.data.inputAnchor)?.getSpec() : undefined;
       if (!spec) return undefined;
       for (const ax of spec.axesSpec) {
         if (ax.name === "pl7.app/variantKey") return "peptide";
@@ -299,21 +280,10 @@ export const platforma = BlockModelV3.create(blockDataModel)
   )
 
   .title((ctx) => {
-    try {
-      if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
-        return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
-      }
-      const { inputAnchor } = ctx.data;
-      if (inputAnchor) {
-        const options = ctx.resultPool.getOptions(inputAnchorSpecs, {
-          refsWithEnrichments: true,
-        });
-        const label = options.find((o) => plRefsEqual(o.ref, inputAnchor))?.label;
-        if (label) return `Sequence Browser - ${label}`;
-      }
-    } catch {
-      // render context may not be fully initialized yet
+    if (hasCompiledSteps(ctx.data.annotationSpecUi)) {
+      return `Sequence Annotation - ${ctx.data.annotationSpecUi.title}`;
     }
+
     return "Sequence Browser";
   })
 
@@ -322,20 +292,19 @@ export const platforma = BlockModelV3.create(blockDataModel)
 export type Platforma = typeof platforma;
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 
-function buildFilterUiColumns(variants: readonly ColumnVariant[], anchorAxesSpec: AxesSpec) {
-  const distinctLabels = deriveDistinctLabels(
-    variants.map((v) => ({
-      spec: v.column.spec,
-      linkersPath: v.path?.map((step) => ({ spec: step.linker.spec })),
-    })),
-    { includeNativeLabel: true },
-  );
-  const labelSpecs = variants.map((v) => v.column.spec).filter((s) => s.name === PColumnName.Label);
-  const ret = variants.map((m, i) => {
-    const spec = m.column.spec;
+function buildFilterUiColumns(variants: readonly ColumnRecipe[], anchorAxesSpec: AxesSpec) {
+  // Each variant pays one host round-trip; cache locally to keep the rest of
+  // this function spec-access free.
+  const specs = variants.map((c) => c.getSpec());
+
+  const distinctLabels = deriveDistinctLabels(specs, { includeNativeLabel: true });
+  const labelSpecs = specs.filter((s) => s.name === PColumnName.Label);
+
+  const ret = variants.map((v, i) => {
+    const spec = specs[i];
     const axesSpec = spec.axesSpec;
     return {
-      id: m.column.id as SUniversalPColumnId,
+      id: v.id,
       spec,
       label: distinctLabels[i] ?? readAnnotation(spec, Annotation.Label) ?? "",
       axesToBeFixed:
@@ -357,74 +326,45 @@ function buildFilterUiColumns(variants: readonly ColumnVariant[], anchorAxesSpec
   return ret;
 }
 
-function splitByPartition<A, U>(
-  ctx: RenderCtxBase<A, U>,
-  snapshots: ColumnSnapshot<PObjectId>[],
-  splitAxisIdx: number,
-) {
-  const { items, complete } = expandByPartition(snapshots, [{ idx: splitAxisIdx }], {
-    axisLabels: (axisId) => ctx.resultPool.findLabels(axisId),
-  });
-  if (!complete || items.length === 0) return undefined;
-
-  const splitAxisName = snapshots[0].spec.axesSpec[splitAxisIdx].name;
-  return items.map((col) => {
-    const splitValue = getTrace(col.spec)[0]?.label ?? "";
-    return {
-      ...col,
-      id: `${col.id}#${splitValue}` as PObjectId,
-      spec: { ...col.spec, domain: { ...col.spec.domain, [splitAxisName]: splitValue } },
-    };
-  });
-}
-
-// Extra sources are added before ctx sources so prerun annotations participate.
-function findOverlapMatches<A, U>(
-  ctx: RenderCtxBase<A, U>,
-  inputAnchor: PlRef,
-  extraSources?: Parameters<ColumnCollectionBuilder["addSource"]>[0][],
-) {
-  const anchorSpec = ctx.resultPool.getPColumnSpecByRef(inputAnchor);
+/**
+ * Build the overlap discovery collection and resolve the anchor spec.
+ * Returns `{ collection, anchorSpec }` — the collection holds discovery
+ * survivors (still as host-side state, no specs fetched); per-output filters
+ * (e.g. dropping `AnnotationResult` for `overlapColumns`) refine it further.
+ */
+function findOverlapMatches(inputAnchor: ColumnUniversalId, extraSources?: TreeNodeAccessor[]) {
+  const anchorSpec = Column(inputAnchor)?.getSpec();
   if (!anchorSpec) return undefined;
 
-  const builder = new ColumnCollectionBuilder(ctx.getService("pframeSpec"));
-  if (extraSources) for (const src of extraSources) builder.addSource(src);
-  builder.addSources(collectCtxColumnSnapshotProviders(ctx));
+  // Default ctx triplet (outputs + prerun + result pool) plus any caller-
+  // supplied subtree (e.g. the prerun annotation accessor).
+  const sources: (TreeNodeAccessor | "current_block" | "result_pool")[] = [
+    "current_block",
+    "result_pool",
+  ];
+  if (extraSources) sources.unshift(...extraSources);
 
-  const collection = builder.build({ anchors: { main: anchorSpec } });
-  if (!collection) return undefined;
-
-  const matches = collection.findColumnVariants({
+  let collection = ColumnsCollection(sources).discover({
+    anchors: { main: anchorSpec },
     mode: "enrichment",
     exclude: [
-      { name: PColumnName.SequenceAnnotation },
-      { annotations: { [Annotation.IsSubset]: "true" } },
-      { axes: [{ name: anchorSpec.axesSpec[0].name }], partialAxesMatch: false },
+      { name: [{ type: "exact", value: PColumnName.SequenceAnnotation }] },
+      { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
+      {
+        axes: [{ name: [{ type: "exact", value: anchorSpec.axesSpec[0].name }] }],
+        partialAxesMatch: false,
+      },
     ],
   });
-  collection.dispose();
 
   // Linked multi-axis columns (e.g. per-sample abundance on clusterId) bring
   // extra dimensions into the join and belong in the sample table instead.
-  const filtered = matches.filter(
-    (m) => (m.path?.length ?? 0) === 0 || m.column.spec.axesSpec.length === 1,
-  );
-  return { variants: filtered, anchorSpec };
-}
-
-function toTableColumnVariant(variant: ColumnVariant, isPrimary: boolean) {
-  const id = createDiscoveredPColumnId({
-    column: variant.column.id,
-    path: variant.path?.map((p) => ({ type: "linker" as const, column: p.linker.id })),
-    columnQualifications: variant.qualifications?.forHit,
-    queriesQualifications: variant.qualifications?.forQueries,
+  const survivors = collection.getColumns().filter((c) => {
+    return isLeafColumn(c) || c.getSpec().axesSpec.length === 1;
   });
-  return {
-    ...variant,
-    column: { ...variant.column, id },
-    originalId: variant.column.id,
-    isPrimary,
-  };
+  collection = ColumnsCollection([{ columns: survivors, isFinal: collection.isFinal() }]);
+
+  return { collection, anchorSpec };
 }
 
 function compileAnnotationSpec(ui: BlockData["annotationSpecUi"]): BlockArgs["annotationSpec"] {
@@ -441,4 +381,15 @@ function hasCompiledSteps(ui: BlockData["annotationSpecUi"]): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * `enriches` expects `PlRef[]`. Our `inputAnchor` is now a `ColumnUniversalId`
+ * — for result-pool leaves that is `createGlobalPObjectId(blockId, name)`,
+ * which is exactly the canonical JSON of `{ __isRef, blockId, name }`. Parse
+ * it back to recover the original `PlRef`.
+ */
+function universalIdToPlRef(id: ColumnUniversalId): PlRef | undefined {
+  const parsed = parseJsonSafely(id);
+  return isPlRef(parsed) ? parsed : undefined;
 }
