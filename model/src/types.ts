@@ -21,9 +21,14 @@ export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: "and" | "or
 export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };
 export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
 
-/** Args passed to the workflow — the output shape of `.args(...)`. */
+/**
+ * Args passed to the workflow — the output shape of `.args(...)`.
+ * `inputAnchor` is a `PlRef` (not the UI-facing `ColumnUniversalId`): the
+ * workflow resolves the anchor by reference (blockId + name) via the bundle
+ * builder, which requires a ref map, not an opaque universal id string.
+ */
 export type BlockArgs = {
-  inputAnchor?: ColumnUniversalId;
+  inputAnchor?: PlRef;
   annotationSpec: AnnotationSpec;
 };
 

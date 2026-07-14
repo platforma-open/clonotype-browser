@@ -53,20 +53,24 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .args<BlockArgs>((data) => {
     if (data.inputAnchor === undefined) throw new Error("No input anchor");
+    const inputAnchor = universalIdToPlRef(data.inputAnchor);
+    if (!inputAnchor) throw new Error("Input anchor is not a result-pool reference");
     const annotationSpec = compileAnnotationSpec(data.annotationSpecUi);
     if (annotationSpec.steps.length === 0) throw new Error("No annotation steps");
     return {
-      inputAnchor: data.inputAnchor,
+      inputAnchor,
       annotationSpec,
     };
   })
 
   .prerunArgs((data) => {
     if (data.inputAnchor === undefined) return undefined;
+    const inputAnchor = universalIdToPlRef(data.inputAnchor);
+    if (!inputAnchor) return undefined;
     const annotationSpec = compileAnnotationSpec(data.annotationSpecUi);
     if (annotationSpec.steps.length === 0) return undefined;
     return {
-      inputAnchor: data.inputAnchor,
+      inputAnchor,
       annotationSpec,
     };
   })
@@ -100,9 +104,24 @@ export const platforma = BlockModelV3.create(blockDataModel)
       .getColumns();
     if (variants.length === 0) return undefined;
 
+    // Split multi-axis abundance columns per sample (axis 0) — same as
+    // `overlapTable` — so the filter offers per-sample "Number Of Reads /
+    // <sample>" entries instead of a single collapsed column.
+    const specs = variants.map((c) => c.getSpec());
+    const isSplittable = (c: ColumnRecipe, i: number) =>
+      isLeafColumn(c) && isAbundanceColumn(specs[i]) && specs[i].axesSpec.length > 1;
+    const splitInputs = variants.filter(isSplittable);
+    const rest = variants.filter((c, i) => !isSplittable(c, i));
+
+    const splitRecipes = expandByPartition(splitInputs, [{ idx: 0 }], {
+      axisValuesLabels: deriveAxisValuesLabels(),
+    });
+    if (!splitRecipes) return undefined;
+    const columns = [...splitRecipes, ...rest];
+
     return {
-      pFrame: ctx.createPFrame(variants.map((c) => c.id)),
-      columns: buildFilterUiColumns(variants, result.anchorSpec.axesSpec),
+      pFrame: ctx.createPFrame(columns.map((c) => c.id)),
+      columns: buildFilterUiColumns(columns, result.anchorSpec.axesSpec),
     };
   })
 
@@ -252,8 +271,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .enriches((args) => {
     if (args.inputAnchor === undefined || args.annotationSpec.steps.length === 0) return [];
-    const ref = universalIdToPlRef(args.inputAnchor);
-    return ref ? [ref] : [];
+    return [args.inputAnchor];
   })
 
   .output(
