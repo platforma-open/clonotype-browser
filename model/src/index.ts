@@ -104,24 +104,9 @@ export const platforma = BlockModelV3.create(blockDataModel)
       .getColumns();
     if (variants.length === 0) return undefined;
 
-    // Split multi-axis abundance columns per sample (axis 0) — same as
-    // `overlapTable` — so the filter offers per-sample "Number Of Reads /
-    // <sample>" entries instead of a single collapsed column.
-    const specs = variants.map((c) => c.getSpec());
-    const isSplittable = (c: ColumnRecipe, i: number) =>
-      isLeafColumn(c) && isAbundanceColumn(specs[i]) && specs[i].axesSpec.length > 1;
-    const splitInputs = variants.filter(isSplittable);
-    const rest = variants.filter((c, i) => !isSplittable(c, i));
-
-    const splitRecipes = expandByPartition(splitInputs, [{ idx: 0 }], {
-      axisValuesLabels: deriveAxisValuesLabels(),
-    });
-    if (!splitRecipes) return undefined;
-    const columns = [...splitRecipes, ...rest];
-
     return {
-      pFrame: ctx.createPFrame(columns.map((c) => c.id)),
-      columns: buildFilterUiColumns(columns, result.anchorSpec.axesSpec),
+      pFrame: ctx.createPFrame(variants.map((c) => c.id)),
+      columns: buildFilterUiColumns(variants, result.anchorSpec.axesSpec),
     };
   })
 
