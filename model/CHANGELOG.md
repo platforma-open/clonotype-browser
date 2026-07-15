@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 2.0.6
+
+### Patch Changes
+
+- 2bb6a30: Migration to the new SDK versions. Restore the released annotation filter behavior: per-sample abundance columns are offered as single entries without a sample picker or per-sample split.
+
 ## 2.0.5
 
 ### Patch Changes
