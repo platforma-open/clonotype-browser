@@ -28,8 +28,8 @@ catalogs:
       specifier: ^1.2.3
       version: 1.2.3
     '@platforma-sdk/block-tools':
-      specifier: 2.12.6
-      version: 2.12.6
+      specifier: 2.12.7
+      version: 2.12.7
     '@platforma-sdk/model':
       specifier: 1.80.2
       version: 1.80.2
@@ -37,8 +37,8 @@ catalogs:
       specifier: 4.0.18
       version: 4.0.18
     '@platforma-sdk/test':
-      specifier: 1.80.3
-      version: 1.80.3
+      specifier: 1.80.5
+      version: 1.80.5
     '@platforma-sdk/ui-vue':
       specifier: 1.80.4
       version: 1.80.4
@@ -98,7 +98,7 @@ importers:
         version: 1.6.0(@types/node@24.5.2)(rollup@4.46.2)(sass-embedded@1.89.2)(vue@3.5.25(typescript@5.6.3))(yaml@2.8.1)
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.12.6(@types/node@24.5.2)
+        version: 2.12.7(@types/node@24.5.2)
       shx:
         specifier: 'catalog:'
         version: 0.4.0
@@ -128,7 +128,7 @@ importers:
         version: link:../workflow
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.12.6(@types/node@24.5.2)
+        version: 2.12.7(@types/node@24.5.2)
       '@platforma-sdk/model':
         specifier: 'catalog:'
         version: 1.80.2
@@ -168,7 +168,7 @@ importers:
         version: 1.3.0
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.12.6(@types/node@24.5.2)
+        version: 2.12.7(@types/node@24.5.2)
 
   test:
     dependencies:
@@ -205,7 +205,7 @@ importers:
         version: 1.3.0
       '@platforma-sdk/test':
         specifier: 'catalog:'
-        version: 1.80.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
+        version: 1.80.5(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
       vitest:
         specifier: 'catalog:'
         version: 4.1.4(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.4)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
@@ -279,7 +279,7 @@ importers:
         version: 4.0.18
       '@platforma-sdk/test':
         specifier: 'catalog:'
-        version: 1.80.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
+        version: 1.80.5(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))
       shx:
         specifier: 'catalog:'
         version: 0.4.0
@@ -978,8 +978,8 @@ packages:
   '@milaboratories/pl-http@1.2.4':
     resolution: {integrity: sha512-QKmhx+WEvJCV9dUy/SBdQk/ApaJ5ewBFgm/b+XPlS10SusAdqUUTGvK5+hq8YSuUMXlHb/dk++UtI5YlDuDl2Q==}
 
-  '@milaboratories/pl-middle-layer@1.66.3':
-    resolution: {integrity: sha512-6nkpOyjWXPsHxDpOOFDDpicCSLP4XwgdfN3xVKtbkMUrIPUEpplmje3xe1JA3fR2I22zBBpyEj2r6pI/Jg9Ajg==}
+  '@milaboratories/pl-middle-layer@1.66.4':
+    resolution: {integrity: sha512-rFyxoWpFNjA5FPU6A5Usf0FyDx+XzFSsDqsPRf3NVuxrk6No6cNGZVUerdpXZJ6qCEsJwdgMBRECyBI5MV5bRw==}
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/pl-model-backend@1.4.16':
@@ -1453,8 +1453,8 @@ packages:
   '@platforma-open/milaboratories.software-small-binaries@2.1.1':
     resolution: {integrity: sha512-KN1PR7YgUUfx1dxh/TtcoWpSZbOXbRxXzQuJ505qHuXuE0spYwC7bXnvJsEYbEwRcPMa0foTrjBnPNORE4yr+Q==}
 
-  '@platforma-sdk/block-tools@2.12.6':
-    resolution: {integrity: sha512-MtsYTCNhCCA9drSihSh5uXUY2/qCNai/ekOX2pw2gtzjHPXPqnin1Wzri0z/2N1wOShXodRItBUglALNJFWUsQ==}
+  '@platforma-sdk/block-tools@2.12.7':
+    resolution: {integrity: sha512-a13K0hcXYf+sgx+07QFjIu2uTeTH5lhHHI1o563kvs9Z5vssU9jn7HFgXgSe6TMjDntERJcGHiGm8nUd4t3FiA==}
     hasBin: true
 
   '@platforma-sdk/blocks-deps-updater@2.2.0':
@@ -1475,8 +1475,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@platforma-sdk/test@1.80.3':
-    resolution: {integrity: sha512-q0hETSlBMsEM53/6Xs29lAar+XJrrwZS6mmau1LSfDfy9OHdGfZ7YEpYDyRzfITlKOV1Z0WqLC0s21gtLQAMIA==}
+  '@platforma-sdk/test@1.80.5':
+    resolution: {integrity: sha512-z3tBrNWIg0+OfUOKpiZWCFflSW17J/Tv7DRWK99IzaaS0+MrIhC6oEFJGXnDlbynhnhSp3E+a4HiwEe+SG/rCg==}
 
   '@platforma-sdk/ui-vue@1.80.4':
     resolution: {integrity: sha512-DQbuO3fAJ3CQxiJkXMiNuo1Qyd/C92AatOZX90ElLFohXiP3XbJNXNjrIxypzsUc850dKkqbPjKd0JTzD12E9w==}
@@ -5835,7 +5835,7 @@ snapshots:
     dependencies:
       undici: 7.16.0
 
-  '@milaboratories/pl-middle-layer@1.66.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)':
+  '@milaboratories/pl-middle-layer@1.66.4(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)':
     dependencies:
       '@milaboratories/columns-collection-driver': 0.2.1
       '@milaboratories/computable': 2.9.7
@@ -5855,7 +5855,7 @@ snapshots:
       '@milaboratories/pl-tree': 1.13.1
       '@milaboratories/resolve-helper': 1.1.3
       '@milaboratories/ts-helpers': 1.8.5
-      '@platforma-sdk/block-tools': 2.12.6(@types/node@24.5.2)
+      '@platforma-sdk/block-tools': 2.12.7(@types/node@24.5.2)
       '@platforma-sdk/model': 1.80.2
       '@platforma-sdk/workflow-tengo': 6.7.2
       canonicalize: 2.1.0
@@ -6514,7 +6514,7 @@ snapshots:
       '@platforma-open/milaboratories.software-small-binaries.mnz-client': 1.6.5
       '@platforma-open/milaboratories.software-small-binaries.table-converter': 1.3.5
 
-  '@platforma-sdk/block-tools@2.12.6(@types/node@24.5.2)':
+  '@platforma-sdk/block-tools@2.12.7(@types/node@24.5.2)':
     dependencies:
       '@aws-sdk/client-ecr-public': 3.859.0
       '@aws-sdk/client-s3': 3.859.0
@@ -6589,11 +6589,11 @@ snapshots:
       commander: 15.0.0
       winston: 3.17.0
 
-  '@platforma-sdk/test@1.80.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))':
+  '@platforma-sdk/test@1.80.5(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.8(@types/node@24.5.2)(sass-embedded@1.89.2)(yaml@2.8.1))':
     dependencies:
       '@milaboratories/computable': 2.9.7
       '@milaboratories/pl-client': 3.14.2
-      '@milaboratories/pl-middle-layer': 1.66.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)
+      '@milaboratories/pl-middle-layer': 1.66.4(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)
       '@milaboratories/pl-tree': 1.13.1
       '@platforma-sdk/model': 1.80.2
       '@vitest/coverage-istanbul': 4.1.4(vitest@4.1.4)
