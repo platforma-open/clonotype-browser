@@ -1,6 +1,7 @@
 import type {
   AnnotationSpec as _AnnotationSpec,
   AnnotationSpecUi as _AnnotationSpecUi,
+  ColumnUniversalId,
   FilterSpec as _FilterSpec,
   FilterSpecLeaf,
   FilterSpecUi as _FilterSpecUI,
@@ -20,7 +21,12 @@ export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: "and" | "or
 export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };
 export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
 
-/** Args passed to the workflow — the output shape of `.args(...)`. */
+/**
+ * Args passed to the workflow — the output shape of `.args(...)`.
+ * `inputAnchor` is a `PlRef` (not the UI-facing `ColumnUniversalId`): the
+ * workflow resolves the anchor by reference (blockId + name) via the bundle
+ * builder, which requires a ref map, not an opaque universal id string.
+ */
 export type BlockArgs = {
   inputAnchor?: PlRef;
   annotationSpec: AnnotationSpec;
@@ -28,7 +34,7 @@ export type BlockArgs = {
 
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
-  inputAnchor?: PlRef;
+  inputAnchor?: ColumnUniversalId;
   settingsOpen: boolean;
   overlapTableState: PlDataTableStateV2;
   sampleTableState: PlDataTableStateV2;
