@@ -6,6 +6,7 @@ import {
   type PlDataTableStateV2,
   type PlRef,
 } from "@platforma-sdk/model";
+import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 import type { AnnotationSpecUi, BlockData, LegacyBlockArgs, LegacyUiState } from "./types";
 
 /**
@@ -35,7 +36,7 @@ function plRefToUniversalId(ref: PlRef | undefined): ColumnUniversalId | undefin
   return ref ? createGlobalPObjectId(ref.blockId, ref.name) : undefined;
 }
 
-export const blockDataModel = new DataModelBuilder()
+export const blockDataModel = new DataModelBuilder({ kind })
   .from<StoredV1>("Ver_2026_04_07")
   .upgradeLegacy<LegacyBlockArgs, LegacyUiState>(({ args, uiState }) => ({
     inputAnchor: args.inputAnchor,
@@ -53,10 +54,14 @@ export const blockDataModel = new DataModelBuilder()
     ...prev,
     inputAnchor: plRefToUniversalId(prev.inputAnchor),
   }))
-  .init(() => ({
+  // Both init params are stored exactly as they arrive. `params` is absent for a
+  // block created from the UI, so each keeps its empty default — a fresh browser
+  // with nothing picked and nothing annotated.
+  .init(({ params }) => ({
+    inputAnchor: params?.inputAnchor,
     settingsOpen: true,
     overlapTableState: createPlDataTableStateV2(),
     sampleTableState: createPlDataTableStateV2(),
     statsTableState: createPlDataTableStateV2(),
-    annotationSpecUi: { title: "", steps: [] },
+    annotationSpecUi: params?.annotationSpecUi ?? { title: "", steps: [] },
   }));

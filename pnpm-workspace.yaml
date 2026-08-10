@@ -1,5 +1,6 @@
 packages:
   - block
+  - kind
   - model
   - test
   - ui
@@ -16,6 +17,7 @@ catalog:
   "@platforma-sdk/tengo-builder": 4.0.20
   "@platforma-sdk/package-builder": 3.14.2
   "@platforma-sdk/block-tools": 2.12.9
+  "@platforma-sdk/block-kind": 1.0.0
 
   "@platforma-sdk/test": 1.80.10
   "@milaboratories/helpers": 1.14.5
@@ -28,6 +30,7 @@ catalog:
   "vue": 3.5.24
 
   "canonicalize": ~2.1.0
+  "es-toolkit": ^1.39.10
   "lodash": ^4.17.17
   "@types/lodash": ^4.17.20
 

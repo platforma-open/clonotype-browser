@@ -1,24 +1,23 @@
 import type {
   AnnotationSpec as _AnnotationSpec,
-  AnnotationSpecUi as _AnnotationSpecUi,
   ColumnUniversalId,
-  FilterSpec as _FilterSpec,
-  FilterSpecLeaf,
-  FilterSpecUi as _FilterSpecUI,
   PlDataTableStateV2,
   PlRef,
 } from "@platforma-sdk/model";
+import type { AnnotationSpecUi } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 
-export type FilterSpec = _FilterSpec<
-  FilterSpecLeaf,
-  { id: number; name?: string; isExpanded?: boolean }
->;
+/**
+ * The annotation shapes are the block's init-params contract, so they are defined
+ * in the kind and re-exported here — the model depends on the kind, never the
+ * reverse, and one definition keeps the contract and the stored state identical.
+ */
+export type {
+  AnnotationSpecUi,
+  FilterSpec,
+  FilterSpecUI,
+} from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 
-export type FilterSpecUI = _FilterSpecUI<Extract<FilterSpec, { type: "and" | "or" }>> & {
-  id: number;
-};
-
-export type AnnotationSpecUi = _AnnotationSpecUi<FilterSpecUI> & { defaultValue?: string };
+/** The compiled form the workflow consumes — filters lowered to expressions. */
 export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
 
 /**

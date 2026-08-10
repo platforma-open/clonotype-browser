@@ -26,11 +26,13 @@ import {
   TreeNodeAccessor,
   parseJsonSafely,
 } from "@platforma-sdk/model";
+import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 import { Annotation, isAbundanceColumn, PAxisName, PColumnName, readAnnotation } from "./columns";
 import { blockDataModel } from "./dataModel";
 import type { BlockArgs, BlockData } from "./types";
 
 export { blockDataModel } from "./dataModel";
+
 export * from "./types";
 
 const inputAnchorSelectors: RelaxedColumnSelector[] = [
@@ -49,7 +51,15 @@ const inputAnchorSelectors: RelaxedColumnSelector[] = [
   },
 ];
 
-export const platforma = BlockModelV3.create(blockDataModel)
+export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind })
+
+  // The inverse of `init`: the two fields a template supplies, handed back exactly
+  // as they sit in live state. Both carry column ids, whose block ids the SDK
+  // rewrites on the way out and resolves again on the way in.
+  .templateParams((data) => ({
+    inputAnchor: data.inputAnchor,
+    annotationSpecUi: data.annotationSpecUi,
+  }))
 
   .args<BlockArgs>((data) => {
     if (data.inputAnchor === undefined) throw new Error("No input anchor");
