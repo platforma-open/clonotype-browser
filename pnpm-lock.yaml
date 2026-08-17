@@ -718,8 +718,17 @@ packages:
     resolution: {integrity: sha512-GsFaMXCkMqkKIvwCQjCrwH+GHbPKBjhwo/8ZuUkWHqbI73Kky9I+pQltrlT0+MWpedCoosda53lgjYfyEPgxBg==}
     engines: {node: '>=12.10.0'}
 
+  '@grpc/grpc-js@1.14.4':
+    resolution: {integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==}
+    engines: {node: '>=12.10.0'}
+
   '@grpc/proto-loader@0.7.13':
     resolution: {integrity: sha512-AiXO/bfe9bmxBjxxtYxFAXGZvMaN5s8kO+jBHAJCON8rJoB5YS/D6X7ZNc6XQkuHNmyl4CYaMI1fJ/Gn27RGGw==}
+    engines: {node: '>=6'}
+    hasBin: true
+
+  '@grpc/proto-loader@0.8.1':
+    resolution: {integrity: sha512-wtF6h+DY6M3YaDBPAmvuuA6jV8Sif9MjtOI5euKFWRgCDl5PeDpPsHR9u2l6St5ceY8AZgoNDww5+HvEsXFsGg==}
     engines: {node: '>=6'}
     hasBin: true
 
@@ -938,7 +947,7 @@ packages:
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/helpers@file:../../core/platforma/lib/util/helpers/package.tgz':
-    resolution: {integrity: sha512-0TMJ2SZjxtKx4uTfdLy2JEN+ARLNMDkmMHmuZsDUTB4ki5QXQyha/PpUSc3BlUKjiYtyvg1cHpBoJYJr4v1nzg==, tarball: file:../../core/platforma/lib/util/helpers/package.tgz}
+    resolution: {integrity: sha512-OOSprQlcyquHtMJmGeOEvcQ4bCREFIrypAmgGf3Laf91fM8rG1UZ7fphz6R/AjJ8tr2pOkpsPOrPhM2gCmai0Q==, tarball: file:../../core/platforma/lib/util/helpers/package.tgz}
     version: 1.14.5
     engines: {node: '>=22'}
 
@@ -948,6 +957,14 @@ packages:
 
   '@milaboratories/pf-spec-driver@1.4.24':
     resolution: {integrity: sha512-ZGDodKhtw8gMIFUU2tFB8SmMmmFX13ywIemJApHQZsDBFNwmXdCQaj2jweKzJkOu+nZMrAi2gTE2dWd1CcfYSg==}
+
+  '@milaboratories/pf-spec-driver@1.5.0':
+    resolution: {integrity: sha512-XWXrKCyCwcqS8EcukuyDqvMq0D6qt61zrkb3qGpWKyy0SVQNzXC2JL0ThCM2uGI7QQelgV0aagcg8xU5pGKWPw==}
+
+  '@milaboratories/pf-spec@1.0.0':
+    resolution: {integrity: sha512-JIOhJdDHcKDItjlxOT4wVmnjejoazM69qK5ylu+g5q65RIcH/R5MF2OGiu9nV7QbLEXszll+EVnvx6jYhuE44w==}
+    peerDependencies:
+      '@bytecodealliance/preview2-shim': ^0.20.1
 
   '@milaboratories/pframes-rs-node@1.1.56':
     resolution: {integrity: sha512-H6qltcR+HHb2kAy0U0zP90rqmv/MZGGkdXIyf89FUZTpoHOlXG4Ahxq7wXp9vviUczci4cLl2L0Q+dL2XGcsUA==}
@@ -969,6 +986,10 @@ packages:
 
   '@milaboratories/pl-client@3.14.4':
     resolution: {integrity: sha512-LljKMbKa8zl2lNFkg3VthMx9E6308B5vSH7dtWnlVz20ZU1GF7steToGv5gWs1lwUtm4GRU7kmmsMzU9a7l2yg==}
+    engines: {node: '>=22.19.0'}
+
+  '@milaboratories/pl-client@3.14.5':
+    resolution: {integrity: sha512-/n7Hjr43WYNkyrgPQ4FL0rQ5FthNS009WvVOBggnMSqCnp6xDHhv4DjLKlmlmdvQSzgI+SeoAjAn7TkOKpaoaA==}
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/pl-config@1.8.5':
@@ -1002,8 +1023,11 @@ packages:
   '@milaboratories/pl-model-backend@1.4.18':
     resolution: {integrity: sha512-cDSreI5DV25v9JmiRDMdp8c2+ZxJgeIjnybsuToVbBwDHoANFqB+2Nsxos5jzU2nxCx5kt2KYJw9/tweuSC4xQ==}
 
+  '@milaboratories/pl-model-backend@1.4.19':
+    resolution: {integrity: sha512-288BUlxQtpsd8CNpOGBqGTM1xMFX4JOuNzw5A4hxB+3sq+P2+JU0kNv6PbqIAiTwXeTZ7zsiqN4Gw/aYMSop6Q==}
+
   '@milaboratories/pl-model-common@file:../../core/platforma/lib/model/common/package.tgz':
-    resolution: {integrity: sha512-TYcGSs168gXXFlb6eJOBWCiPAdC8h6d16lY/Ld1QKTZuVejV+jQwJz6l2oWPgmvJ4gkUfV1NyKVmSonqfsrnTA==, tarball: file:../../core/platforma/lib/model/common/package.tgz}
+    resolution: {integrity: sha512-/OUqb0HlYO68xLCb2Og3kzIuwkxtSH4F18R1/8NYWOjmOMaJk+CXRDAs9/NFLpDS0WqqKBbxf3N7stnjsAZDnQ==, tarball: file:../../core/platforma/lib/model/common/package.tgz}
     version: 1.47.3
 
   '@milaboratories/pl-model-middle-layer@1.30.15':
@@ -1011,6 +1035,9 @@ packages:
 
   '@milaboratories/pl-model-middle-layer@1.30.7':
     resolution: {integrity: sha512-rs9x3Ron4ujR/UOdEgB8WUB1SvZ8ZAScT1Av/e4or+iiQ/CzhmK9nqtYamHVwKV+JgwIFbXQwxGvIHDVz955dQ==}
+
+  '@milaboratories/pl-model-middle-layer@1.31.0':
+    resolution: {integrity: sha512-D1vyGABBtCYyp2IhKd9eMoZtKUj1wUYpIzz4Xz5k+bfJWGEF8GmZGiOvO4oOvrsEsXlG4NyO249MnBKmHFcppQ==}
 
   '@milaboratories/pl-tree@1.13.3':
     resolution: {integrity: sha512-39QT6opCX4ejjT0UI7dq4HMEs/NBXEI2nQyyaHbJBLKGKr6DKhUAUd0mLqeIjsEdH0B4eo3bKMlgry5PaPSlpQ==}
@@ -1031,21 +1058,21 @@ packages:
     hasBin: true
 
   '@milaboratories/ts-builder@file:../../core/platforma/tools/ts-builder/package.tgz':
-    resolution: {integrity: sha512-0MWRL1d8Ck3z/QMvK0QnWNjL4K5x3tWlyjSJroks98iGSyL4uTqZYsSwE17shBHqhSIsTkyn/rGOnQlB25qAyA==, tarball: file:../../core/platforma/tools/ts-builder/package.tgz}
-    version: 1.6.1
+    resolution: {integrity: sha512-RHkfb5+K2ohXSiKwY+cC6iMXSY0OQdUws4uNbdCHE/hWPYv8s3h70VvBgxXzmLkEt3FMbyt3HSCHlMb2Y+HhLQ==, tarball: file:../../core/platforma/tools/ts-builder/package.tgz}
+    version: 1.6.2
     hasBin: true
 
   '@milaboratories/ts-configs@file:../../core/platforma/tools/ts-configs/package.tgz':
-    resolution: {integrity: sha512-uBjHIX2FqJ4KKvKNI3HOqJMk6vGJPT0MR7FQYChVArsI/2Ax0BI8/ST2qLfNBqmxwA3oiSDK1R2Mpd/4xJNzAQ==, tarball: file:../../core/platforma/tools/ts-configs/package.tgz}
-    version: 1.3.1
+    resolution: {integrity: sha512-Xy1GIT805U0/97eWt8lPYvkmyJcQYzBqTkLrMcF7x48hZSKzBIjn/ykVUCNjKgSM2S3t+crWzeXDmsJyPwzGNw==, tarball: file:../../core/platforma/tools/ts-configs/package.tgz}
+    version: 1.4.0
 
   '@milaboratories/ts-helpers@1.8.6':
     resolution: {integrity: sha512-ef01tARUl+0Urt3x8HHAByrhYHg4Rnn7WiFyJ+joZFZl1T1pUKTgfB7Zxc8Cn06HIl4i6H7s5OSymjZePIGqfQ==}
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/uikit@file:../../core/platforma/lib/ui/uikit/package.tgz':
-    resolution: {integrity: sha512-mm57Dw/LgoZC7JTgHt5fqPXRRCUVwRZYmQ7kaJq+78XXSI61Li00dvWzJIhFh1pYMCzZ+1NHmw0SkWAHAv88Qg==, tarball: file:../../core/platforma/lib/ui/uikit/package.tgz}
-    version: 2.15.18
+    resolution: {integrity: sha512-AkJiFM31tJTD6pqERGRr3+GAjgsf/hkFLXejEkyVT9DgsgsL89LvNT/Hr3glzkHL7pECHeoWNVqyeuAaXi7pJg==, tarball: file:../../core/platforma/lib/ui/uikit/package.tgz}
+    version: 2.15.22
 
   '@napi-rs/wasm-runtime@1.1.6':
     resolution: {integrity: sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==}
@@ -1412,12 +1439,12 @@ packages:
     resolution: {integrity: sha512-KN1PR7YgUUfx1dxh/TtcoWpSZbOXbRxXzQuJ505qHuXuE0spYwC7bXnvJsEYbEwRcPMa0foTrjBnPNORE4yr+Q==}
 
   '@platforma-sdk/block-kind@file:../../core/platforma/sdk/block-kind/package.tgz':
-    resolution: {integrity: sha512-Jl1S27/kDjTycmSb9wgEPfesYGvGIzpQvk56njU3SKlXHIZ6cZMupsSCt5Le99vre96aLtbMeG1KAlD8ZBYCIw==, tarball: file:../../core/platforma/sdk/block-kind/package.tgz}
+    resolution: {integrity: sha512-iALLquDVq4fPfsQJcqsqL/N9DtauVCLvjp0OwN/kySsZk9cDd6daBBX2kEARdStVblcPSnVycU7OV2upS1qsUA==, tarball: file:../../core/platforma/sdk/block-kind/package.tgz}
     version: 1.0.0
 
   '@platforma-sdk/block-tools@file:../../core/platforma/tools/block-tools/package.tgz':
-    resolution: {integrity: sha512-Hb0DFnmFOXc/q/1XkQKwNVqGcPL5m4SVKvGvK9KN9bDq6osQDtGRSkJTC7F7Hti2Tz/SP/3rLBnuAjX3LVSm8A==, tarball: file:../../core/platforma/tools/block-tools/package.tgz}
-    version: 2.12.9
+    resolution: {integrity: sha512-/S3ppeqbwbL+z4RIlMhy0f1vcUCi73s8ipEzpaTwajgoR9I+B/nzSOqEbKceGD+XtaiLIuzSp9dfj0p/ze3IIw==, tarball: file:../../core/platforma/tools/block-tools/package.tgz}
+    version: 2.12.12
     hasBin: true
 
   '@platforma-sdk/blocks-deps-updater@2.2.0':
@@ -1425,8 +1452,8 @@ packages:
     hasBin: true
 
   '@platforma-sdk/model@file:../../core/platforma/sdk/model/package.tgz':
-    resolution: {integrity: sha512-a+dBSe0HSum8AFOt8JQsp0ADYTIUuO6OBpMA5FvMQ/bb1r8pK2lHwRRDWAsbQDqbrWWE2YoGei2T0VmbNQm+TA==, tarball: file:../../core/platforma/sdk/model/package.tgz}
-    version: 1.80.10
+    resolution: {integrity: sha512-vKVHFN2JAZLlPV3KNEE1ygbG/zby0DtfCwl6xh9GN42bnkxXbbtBYj138ufFXI+UCTXRKzcFSRLB+hbPJuWjHQ==, tarball: file:../../core/platforma/sdk/model/package.tgz}
+    version: 1.81.0
 
   '@platforma-sdk/package-builder-lib@1.2.1':
     resolution: {integrity: sha512-H6weitj7JxbiJSlteEFLafTJ+tfty6iv/imf3ysy8oCS8AZIRJk2VMW3M/aAc+xVkQeX7oVIwMwFMYrJIoFsAg==}
@@ -1440,11 +1467,11 @@ packages:
     resolution: {integrity: sha512-ty8hq9rJvkZOSA7R3PaECPbBCNMTyMm7O7rlRmgTWoET6bUNWSQl2CzYa7ENkSRGzeI40aNssyfgpS9m/ERNsg==}
 
   '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz':
-    resolution: {integrity: sha512-1We9J4q8j/mPeL0a0mswJ81VVz+sBXMMZ60x7AyRYoLn1k0z+Nai/okHqPfgBJwhh2Fc8dX4jgkpyCZxwPoxlQ==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
-    version: 1.80.10
+    resolution: {integrity: sha512-lA9mHlSz4wsSrdQb4sJLD/v1UWTfVKZBKBhXa85keDuaKW4lwFXT7FSR7J1jy/UKboXw7aj7QUTa5AwkeOYB0Q==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
+    version: 1.81.0
 
   '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
-    resolution: {integrity: sha512-/cqv025yIdlnLlqcvegvhuuVpXtajAL1Kx5XA7dXZwlT5uxc9071L0fmJ6gB8Ms4j6l0PnodW8D4p2NTpKIqlQ==, tarball: file:../../core/platforma/sdk/workflow-tengo/package.tgz}
+    resolution: {integrity: sha512-U3mW4N7nWqmT0Mjo1bImg/lH4zJDwXn0M+22JaAqewiXMpcCgvQY442FMcptHVLr5XaB8phL3AB162jtxNrNQA==, tarball: file:../../core/platforma/sdk/workflow-tengo/package.tgz}
     version: 6.8.2
 
   '@protobuf-ts/grpc-transport@2.11.1':
@@ -1475,11 +1502,20 @@ packages:
   '@protobufjs/codegen@2.0.4':
     resolution: {integrity: sha512-YyFaikqM5sH0ziFZCN3xDC7zeGaB/d0IUb9CATugHWbd1FRFwWwt4ld4OYMPWu5a3Xe01mGAULCdqhMlPl29Jg==}
 
+  '@protobufjs/codegen@2.0.5':
+    resolution: {integrity: sha512-zgXFLzW3Ap33e6d0Wlj4MGIm6Ce8O89n/apUaGNB/jx+hw+ruWEp7EwGUshdLKVRCxZW12fp9r40E1mQrf/34g==}
+
   '@protobufjs/eventemitter@1.1.0':
     resolution: {integrity: sha512-j9ednRT81vYJ9OfVuXG6ERSTdEL1xVsNgqpkxMsbIabzSo3goCjDIveeGv5d03om39ML71RdmrGNjG5SReBP/Q==}
 
+  '@protobufjs/eventemitter@1.1.1':
+    resolution: {integrity: sha512-vW1GmwMZNnL+gMRaovlh9yZX74kc+TTU3FObkkurpMaRtBfLP3ldjS9KQWlwZgraRE0+dheEEoAxdzcJQ8eXZg==}
+
   '@protobufjs/fetch@1.1.0':
     resolution: {integrity: sha512-lljVXpqXebpsijW71PZaCYeIcE5on1w5DlQy5WH6GLbFryLUrBD4932W/E2BSpfRJWseIL4v/KPgBFxDOIdKpQ==}
+
+  '@protobufjs/fetch@1.1.1':
+    resolution: {integrity: sha512-GpptLrs57adMSuHi3VNj0mAF8dwh36LMaYF6XyJ6JMWlVsc+t42tm1HSEDmOs3A8fC9yyeisgLhsTVQokOZ0zw==}
 
   '@protobufjs/float@1.0.2':
     resolution: {integrity: sha512-Ddb+kVXlXst9d+R9PfTIxh1EdNkgoRe5tOX6t01f1lYWOvJnSPDBlG241QLzcyPdoNTsblLUdujGSE4RzrTZGQ==}
@@ -1495,6 +1531,9 @@ packages:
 
   '@protobufjs/utf8@1.1.0':
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
+
+  '@protobufjs/utf8@1.1.2':
+    resolution: {integrity: sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug==}
 
   '@rolldown/binding-android-arm64@1.0.0-rc.15':
     resolution: {integrity: sha512-YYe6aWruPZDtHNpwu7+qAHEMbQ/yRl6atqb/AhznLTnD3UY99Q1jE7ihLSahNWkF4EqRPVC4SiR4O0UkLK02tA==}
@@ -3619,6 +3658,10 @@ packages:
     resolution: {integrity: sha512-mRUWCc3KUU4w1jU8sGxICXH/gNS94DvI1gxqDvBzhj1JpcsimQkYiOJfwsPUykUI5ZaspFbSgmBLER8IrQ3tqw==}
     engines: {node: '>=12.0.0'}
 
+  protobufjs@7.6.5:
+    resolution: {integrity: sha512-/FPD0nUc9jH6rfFjji9IBqOz4pcSE3CsT1m7Ep6Mdb0LxSUMj8hgl6GomOvZzpNpAqqGaXA0P3VSrZLFzIhQrw==}
+    engines: {node: '>=12.0.0'}
+
   pump@3.0.2:
     resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
 
@@ -5376,11 +5419,23 @@ snapshots:
       '@grpc/proto-loader': 0.7.13
       '@js-sdsl/ordered-map': 4.4.2
 
+  '@grpc/grpc-js@1.14.4':
+    dependencies:
+      '@grpc/proto-loader': 0.8.1
+      '@js-sdsl/ordered-map': 4.4.2
+
   '@grpc/proto-loader@0.7.13':
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.2
       protobufjs: 7.4.0
+      yargs: 17.7.2
+
+  '@grpc/proto-loader@0.8.1':
+    dependencies:
+      lodash.camelcase: 4.3.0
+      long: 5.3.2
+      protobufjs: 7.6.5
       yargs: 17.7.2
 
   '@inquirer/ansi@1.0.2': {}
@@ -5667,6 +5722,21 @@ snapshots:
     transitivePeerDependencies:
       - '@bytecodealliance/preview2-shim'
 
+  '@milaboratories/pf-spec-driver@1.5.0(@bytecodealliance/preview2-shim@0.17.8)':
+    dependencies:
+      '@milaboratories/helpers': file:../../core/platforma/lib/util/helpers/package.tgz
+      '@milaboratories/pf-spec': 1.0.0(@bytecodealliance/preview2-shim@0.17.8)
+      '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
+      '@noble/hashes': 2.0.1
+    transitivePeerDependencies:
+      - '@bytecodealliance/preview2-shim'
+
+  '@milaboratories/pf-spec@1.0.0(@bytecodealliance/preview2-shim@0.17.8)':
+    dependencies:
+      '@bytecodealliance/preview2-shim': 0.17.8
+      '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
+      '@milaboratories/pl-model-middle-layer': 1.31.0
+
   '@milaboratories/pframes-rs-node@1.1.56':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3
@@ -5703,6 +5773,24 @@ snapshots:
       '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
       '@milaboratories/ts-helpers': 1.8.6
       '@protobuf-ts/grpc-transport': 2.11.1(@grpc/grpc-js@1.13.4)
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
+      canonicalize: 2.1.0
+      denque: 2.1.0
+      long: 5.3.2
+      lru-cache: 11.2.2
+      openapi-fetch: 0.15.0
+      undici: 7.16.0
+      utility-types: 3.11.0
+      yaml: 2.8.1
+
+  '@milaboratories/pl-client@3.14.5':
+    dependencies:
+      '@grpc/grpc-js': 1.14.4
+      '@milaboratories/pl-http': 1.2.4
+      '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
+      '@milaboratories/ts-helpers': 1.8.6
+      '@protobuf-ts/grpc-transport': 2.11.1(@grpc/grpc-js@1.14.4)
       '@protobuf-ts/runtime': 2.11.1
       '@protobuf-ts/runtime-rpc': 2.11.1
       canonicalize: 2.1.0
@@ -5829,6 +5917,12 @@ snapshots:
       canonicalize: 2.1.0
       zod: 3.25.76
 
+  '@milaboratories/pl-model-backend@1.4.19':
+    dependencies:
+      '@milaboratories/pl-client': 3.14.5
+      canonicalize: 2.1.0
+      zod: 3.25.76
+
   '@milaboratories/pl-model-common@file:../../core/platforma/lib/model/common/package.tgz':
     dependencies:
       '@milaboratories/helpers': file:../../core/platforma/lib/util/helpers/package.tgz
@@ -5846,6 +5940,14 @@ snapshots:
       zod: 3.25.76
 
   '@milaboratories/pl-model-middle-layer@1.30.7':
+    dependencies:
+      '@milaboratories/helpers': file:../../core/platforma/lib/util/helpers/package.tgz
+      '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
+      es-toolkit: 1.41.0
+      utility-types: 3.11.0
+      zod: 3.25.76
+
+  '@milaboratories/pl-model-middle-layer@1.31.0':
     dependencies:
       '@milaboratories/helpers': file:../../core/platforma/lib/util/helpers/package.tgz
       '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
@@ -6401,9 +6503,9 @@ snapshots:
       '@aws-sdk/client-s3': 3.859.0
       '@inquirer/prompts': 7.10.1(@types/node@24.5.2)
       '@milaboratories/pl-http': 1.2.4
-      '@milaboratories/pl-model-backend': 1.4.18
+      '@milaboratories/pl-model-backend': 1.4.19
       '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
-      '@milaboratories/pl-model-middle-layer': 1.30.15
+      '@milaboratories/pl-model-middle-layer': 1.31.0
       '@milaboratories/resolve-helper': 1.1.3
       '@milaboratories/ts-helpers': 1.8.6
       '@platforma-sdk/blocks-deps-updater': 2.2.0
@@ -6429,7 +6531,7 @@ snapshots:
       '@milaboratories/helpers': file:../../core/platforma/lib/util/helpers/package.tgz
       '@milaboratories/pl-error-like': 1.12.10
       '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
-      '@milaboratories/pl-model-middle-layer': 1.30.15
+      '@milaboratories/pl-model-middle-layer': 1.31.0
       '@milaboratories/ptabler-expression-js': 1.2.37
       canonicalize: 2.1.0
       es-toolkit: 1.41.0
@@ -6491,7 +6593,7 @@ snapshots:
   '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz(@bytecodealliance/preview2-shim@0.17.8)(typescript@5.9.3)':
     dependencies:
       '@milaboratories/columns-collection-driver': 0.2.3
-      '@milaboratories/pf-spec-driver': 1.4.24(@bytecodealliance/preview2-shim@0.17.8)
+      '@milaboratories/pf-spec-driver': 1.5.0(@bytecodealliance/preview2-shim@0.17.8)
       '@milaboratories/pl-model-common': file:../../core/platforma/lib/model/common/package.tgz
       '@milaboratories/uikit': file:../../core/platforma/lib/ui/uikit/package.tgz(typescript@5.9.3)
       '@platforma-sdk/model': file:../../core/platforma/sdk/model/package.tgz
@@ -6539,6 +6641,12 @@ snapshots:
       '@protobuf-ts/runtime': 2.11.1
       '@protobuf-ts/runtime-rpc': 2.11.1
 
+  '@protobuf-ts/grpc-transport@2.11.1(@grpc/grpc-js@1.14.4)':
+    dependencies:
+      '@grpc/grpc-js': 1.14.4
+      '@protobuf-ts/runtime': 2.11.1
+      '@protobuf-ts/runtime-rpc': 2.11.1
+
   '@protobuf-ts/plugin@2.11.1':
     dependencies:
       '@bufbuild/protobuf': 2.5.2
@@ -6564,12 +6672,20 @@ snapshots:
 
   '@protobufjs/codegen@2.0.4': {}
 
+  '@protobufjs/codegen@2.0.5': {}
+
   '@protobufjs/eventemitter@1.1.0': {}
+
+  '@protobufjs/eventemitter@1.1.1': {}
 
   '@protobufjs/fetch@1.1.0':
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/inquire': 1.1.0
+
+  '@protobufjs/fetch@1.1.1':
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
 
   '@protobufjs/float@1.0.2': {}
 
@@ -6580,6 +6696,8 @@ snapshots:
   '@protobufjs/pool@1.1.0': {}
 
   '@protobufjs/utf8@1.1.0': {}
+
+  '@protobufjs/utf8@1.1.2': {}
 
   '@rolldown/binding-android-arm64@1.0.0-rc.15':
     optional: true
@@ -8728,6 +8846,20 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
+      '@types/node': 24.5.2
+      long: 5.3.2
+
+  protobufjs@7.6.5:
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
+      '@protobufjs/base64': 1.1.2
+      '@protobufjs/codegen': 2.0.5
+      '@protobufjs/eventemitter': 1.1.1
+      '@protobufjs/fetch': 1.1.1
+      '@protobufjs/float': 1.0.2
+      '@protobufjs/path': 1.1.2
+      '@protobufjs/pool': 1.1.0
+      '@protobufjs/utf8': 1.1.2
       '@types/node': 24.5.2
       long: 5.3.2
 

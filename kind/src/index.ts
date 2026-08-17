@@ -1,4 +1,4 @@
-import { defineBlockKind } from "@platforma-sdk/block-kind";
+import { assertParamsObject, defineBlockKind } from "@platforma-sdk/block-kind";
 import { invariant, isPlainObject } from "es-toolkit";
 import {
   isColumnUniversalId,
@@ -26,30 +26,41 @@ export type BlockParams = {
   annotationSpecUi?: AnnotationSpecUi;
 };
 
-function parseTemplateParams(value: unknown): BlockParams {
-  invariant(isPlainObject(value), "params must be an object");
-  for (const key of Object.keys(value)) {
-    invariant(key === "inputAnchor" || key === "annotationSpecUi", `unknown param "${key}"`);
-  }
+/**
+ * Both fields are optional, so a params object that sets neither is valid — a block
+ * seeded with nothing to browse and nothing annotated is a state the UI reaches too.
+ * Only the two declared fields are read; anything else in the object is dropped here
+ * rather than refused, so the returned value is the whole of what the block receives.
+ */
+function parseInitializationParams(value: unknown): BlockParams {
+  assertParamsObject(value);
 
-  if (value.inputAnchor !== undefined) {
-    invariant(isColumnUniversalId(value.inputAnchor), "inputAnchor is not a column id");
-  }
-  if (value.annotationSpecUi !== undefined) checkAnnotationSpec(value.annotationSpecUi);
+  const { inputAnchor, annotationSpecUi } = value;
 
-  return value as BlockParams;
+  if (inputAnchor !== undefined && !isColumnUniversalId(inputAnchor)) {
+    throw new Error("'inputAnchor' must be a column id.");
+  }
+  if (annotationSpecUi !== undefined) assertAnnotationSpec(annotationSpecUi);
+
+  return { inputAnchor, annotationSpecUi };
 }
 
-function checkAnnotationSpec(spec: unknown): void {
-  invariant(isPlainObject(spec), "annotationSpecUi must be an object");
-  invariant(typeof spec.title === "string", "annotationSpecUi.title must be a string");
-  invariant(Array.isArray(spec.steps), "annotationSpecUi.steps must be an array");
+/**
+ * The shape of an annotation script, checked only as far as the editor's own states go:
+ * a step carries a label and a filter from the moment it is added, both still empty
+ * until the user fills them in. Rejecting an empty label here would refuse a script
+ * the block itself can produce and export.
+ */
+function assertAnnotationSpec(spec: unknown): asserts spec is AnnotationSpecUi {
+  invariant(isPlainObject(spec), "'annotationSpecUi' must be an object.");
+  invariant(typeof spec.title === "string", "'annotationSpecUi.title' must be a string.");
+  invariant(Array.isArray(spec.steps), "'annotationSpecUi.steps' must be an array.");
 
   spec.steps.forEach((step: unknown, i: number) => {
-    invariant(isPlainObject(step), `annotationSpecUi step ${i} must be an object`);
-    invariant(typeof step.label === "string", `annotationSpecUi step ${i} has no label`);
-    invariant(isPlainObject(step.filter), `annotationSpecUi step ${i} has no filter`);
+    invariant(isPlainObject(step), `Annotation step ${i} must be an object.`);
+    invariant(typeof step.label === "string", `Annotation step ${i} must have a string label.`);
+    invariant(isPlainObject(step.filter), `Annotation step ${i} must have a filter object.`);
   });
 }
 
-export const kind = defineBlockKind<BlockParams>({ name, version, parseTemplateParams });
+export const kind = defineBlockKind<BlockParams>({ name, version, parseInitializationParams });
