@@ -54,6 +54,10 @@ function parseInitializationParams(value: unknown): BlockParams {
 function assertAnnotationSpec(spec: unknown): asserts spec is AnnotationSpecUi {
   invariant(isPlainObject(spec), "'annotationSpecUi' must be an object.");
   invariant(typeof spec.title === "string", "'annotationSpecUi.title' must be a string.");
+  invariant(
+    spec.defaultValue === undefined || typeof spec.defaultValue === "string",
+    "'annotationSpecUi.defaultValue' must be a string.",
+  );
   invariant(Array.isArray(spec.steps), "'annotationSpecUi.steps' must be an array.");
 
   spec.steps.forEach((step: unknown, i: number) => {
