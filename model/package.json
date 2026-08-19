@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@milaboratories/helpers": "catalog:",
+    "@platforma-open/milaboratories.clonotype-browser-3.kind": "workspace:*",
     "@platforma-sdk/model": "catalog:",
     "@types/lodash.omit": "^4.5.9",
     "lodash.omit": "^4.5.0"
