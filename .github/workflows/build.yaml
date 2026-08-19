@@ -4,40 +4,40 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
-      - 'main'
+      - "main"
   push:
     branches:
-      - 'main'
+      - "main"
   workflow_dispatch: {}
 jobs:
   init:
     runs-on: hz-ubuntu-dind
     steps:
-      - uses: milaboratory/github-ci/actions/context/init@MILAB-6707_changeset-coverage-gate
+      - uses: milaboratory/github-ci/actions/context/init@v4
         with:
           version-canonize: false
           branch-versioning: main
   run:
     needs:
       - init
-    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@MILAB-6707_changeset-coverage-gate
+    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
-      app-name: 'Block: Clonotype Browser 3'
-      app-name-slug: 'block-clonotype-browser-3'
-      node-version: '20.x'
+      app-name: "Block: Clonotype Browser 3"
+      app-name-slug: "block-clonotype-browser-3"
+      node-version: "20.x"
       gha-runner-label: hz-ubuntu-dind
-      build-script-name: 'build:dev-local'
-      build-before-publish-script-name: 'build:release'
+      build-script-name: "build:dev-local"
+      build-before-publish-script-name: "build:release"
       pnpm-recursive-build: false
 
       test: true
-      test-script-name: 'test'
+      test-script-name: "test"
       pnpm-recursive-tests: false
-      team-id: 'ciplopen'
+      team-id: "ciplopen"
 
-      publish-to-public: 'true'
-      package-path: 'block'
-      create-tag: 'true'
+      publish-to-public: "true"
+      package-path: "block"
+      create-tag: "true"
 
       # Require the published `block` package to be bumped by a changeset on
       # PRs (empty changeset or the `skip-changelog` label waives it). Needs
