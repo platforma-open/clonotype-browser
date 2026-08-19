@@ -13,14 +13,14 @@ jobs:
   init:
     runs-on: hz-ubuntu-dind
     steps:
-      - uses: milaboratory/github-ci/actions/context/init@v4
+      - uses: milaboratory/github-ci/actions/context/init@MILAB-6707_changeset-coverage-gate
         with:
           version-canonize: false
           branch-versioning: main
   run:
     needs:
       - init
-    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
+    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@MILAB-6707_changeset-coverage-gate
     with:
       app-name: 'Block: Clonotype Browser 3'
       app-name-slug: 'block-clonotype-browser-3'
@@ -41,7 +41,7 @@ jobs:
 
       # Require the published `block` package to be bumped by a changeset on
       # PRs (empty changeset or the `skip-changelog` label waives it). Needs
-      # the input to exist on the pinned `@v4` reusable workflow.
+      # the input to exist on the referenced `github-ci` branch.
       require-package-path-bump: true
 
       npmrc-config: |
