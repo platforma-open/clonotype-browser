@@ -18,15 +18,16 @@ import {
   deriveDistinctLabels,
   splitByAxes,
   deriveColumnOptions,
+  extractPObjectId,
   hasReachableData,
   getUniquePartitionKeys,
-  isLeafColumn,
+  hasSingleDataColumn,
   isPlRef,
   TreeNodeAccessor,
   parseJsonSafely,
 } from "@platforma-sdk/model";
 import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
-import { Annotation, isAbundanceColumn, PAxisName, PColumnName, readAnnotation } from "./columns";
+import { Annotation, PAxisName, PColumnName, readAnnotation } from "./columns";
 import { blockDataModel } from "./dataModel";
 import type { BlockArgs, BlockData } from "./types";
 
@@ -132,35 +133,36 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     const result = findOverlapMatches(ctx.data.inputAnchor, extraSources);
     if (!result) return undefined;
 
-    const columns = result.collection.getColumns();
+    // Only the anchor may define rows. It's the only column in the primary columns part.
+    const primaryColumns = anchorAsPrimary(ctx.data.inputAnchor, result.anchorSpec);
+    if (!primaryColumns) return undefined;
+    const secondaryColumns: ColumnRecipe[] = [];
 
-    // Direct multi-axis abundance columns split by sampleId (axis 0).
-    const isAbundanceToSplit = (spec: PColumnSpec) =>
-      isAbundanceColumn(spec) && spec.axesSpec.length > 1;
+    const anchorLeafId = extractPObjectId(ctx.data.inputAnchor);
 
-    // Leaves go to primary; wrapped (linker-reachable) recipes become secondary.
-    const splitInputs: ColumnRecipe[] = [];
-    const directLeaves: ColumnRecipe[] = [];
-    const wrappedRecipes: ColumnRecipe[] = [];
+    for (const c of result.collection.getColumns()) {
+      // The anchor comes back as a discovery hit too. Don't take any variants, as is or with qualifications.
+      if (extractPObjectId(c.id) === anchorLeafId) continue;
 
-    for (const c of columns) {
-      if (isLeafColumn(c)) {
-        if (isAbundanceToSplit(c.getSpec())) {
-          splitInputs.push(c);
-        } else {
-          directLeaves.push(c);
-        }
+      // Linker-reached: the chain maps the anchor's key onto the hit's axes, so
+      // it adds columns without adding rows.
+      if (!hasSingleDataColumn(c)) {
+        secondaryColumns.push(c);
+        // A normal single-axis column is fine as is.
+      } else if (c.getSpec().axesSpec.length === 1) {
+        secondaryColumns.push(c);
       } else {
-        wrappedRecipes.push(c);
+        // A multi-axis leaf drags its extra axes into the join, and
+        // `buildColumnsMeta` hides any axis the primary does not declare — so the
+        // resulting row multiplication would be invisible. Reduce it to the
+        // anchor's key by splitting axis 0 off, and drop it if that is not enough.
+        secondaryColumns.push(...splitToAnchorKey(c));
       }
     }
 
-    const splitRecipes = splitByAxes(splitInputs, [{ idx: 0 }]);
-    if (!splitRecipes) return undefined;
-
     return createPlDataTableV3(ctx, {
-      primaryColumns: [...splitRecipes, ...directLeaves],
-      columns: wrappedRecipes,
+      primaryColumns,
+      columns: secondaryColumns,
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
       displayOptions: {
@@ -182,6 +184,8 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
 
   .outputWithStatus("sampleTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
+    // @TODO MILAB-6852: replace table shape to outer join with anchor in
+    // primary, once the pframes-rs join fix ships.
     return createPlDataTableV3(ctx, {
       columns: {
         anchors: { main: ctx.data.inputAnchor as PObjectId },
@@ -237,7 +241,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     // sampleStats is keyed on [sampleId, annotationKey] — split by sampleId so
     // each sample becomes its own annotation-keyed column set that joins with
     // annotationStats on annotationKey.
-    const sampleInputs = sampleRecipes.filter(isLeafColumn);
+    const sampleInputs = sampleRecipes.filter(hasSingleDataColumn);
     if (sampleInputs.length !== sampleRecipes.length) return undefined;
 
     const splitSampleRecipes = splitByAxes(sampleInputs, [{ idx: 0 }]);
@@ -369,11 +373,57 @@ function findOverlapMatches(inputAnchor: ColumnUniversalId, extraSources?: TreeN
   // Linked multi-axis columns (e.g. per-sample abundance on clusterId) bring
   // extra dimensions into the join and belong in the sample table instead.
   const survivors = collection.getColumns().filter((c) => {
-    return isLeafColumn(c) || c.getSpec().axesSpec.length === 1;
+    return hasSingleDataColumn(c) || c.getSpec().axesSpec.length === 1;
   });
   collection = ColumnsCollection([{ columns: survivors, isFinal: collection.isFinal() }]);
 
   return { collection, anchorSpec };
+}
+
+/**
+ * The anchor as the Overlap table's primary columns — one per value of its
+ * axis 0 (sampleId), each keyed on the clonotype axis alone. Their full join is
+ * exactly the anchor's key set, which is the row set this table must have.
+ *
+ * `undefined` when the anchor is not resolvable yet, or when its data cannot be
+ * partitioned along axis 0. Both mean there is no legitimate row set to draw,
+ * and `outputWithStatus` reports that as not-ready rather than rendering a
+ * table whose rows come from somewhere else.
+ */
+function anchorAsPrimary(
+  inputAnchor: ColumnUniversalId,
+  anchorSpec: PColumnSpec,
+): ColumnRecipe[] | undefined {
+  const anchor = Column(inputAnchor);
+  if (!anchor) return undefined;
+  // Every anchor selector above declares [sampleId, <key>], but the split is
+  // only meaningful when there is a leading axis to remove.
+  if (anchorSpec.axesSpec.length <= 1) return [anchor];
+  try {
+    return splitByAxes([anchor], [{ idx: 0 }]);
+  } catch {
+    // Thrown when axis 0 is not a partition axis of the anchor's data.
+    return undefined;
+  }
+}
+
+/**
+ * One multi-axis leaf reduced to the anchor's key axis by splitting axis 0 off.
+ * Empty when that is impossible or insufficient: such a column would multiply
+ * rows through the join with no visible axis to explain it, and dropping it is
+ * the lesser cost.
+ */
+function splitToAnchorKey(column: ColumnRecipe): ColumnRecipe[] {
+  let split: ColumnRecipe[] | undefined;
+  try {
+    split = splitByAxes([column], [{ idx: 0 }]);
+  } catch {
+    return [];
+  }
+  // Unlike the anchor, a sibling that is not ready yet must not take the whole
+  // table down with it — it simply joins in on a later render.
+  if (!split) return [];
+  return split.filter((s) => s.getSpec().axesSpec.length === 1);
 }
 
 function compileAnnotationSpec(ui: BlockData["annotationSpecUi"]): BlockArgs["annotationSpec"] {
