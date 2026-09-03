@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.clonotype-browser-3.model
 
+## 2.1.1
+
+### Patch Changes
+
+- 5d64dcb: Sequence Browser: only the anchor defines rows in the Overlap table, so stale
+  clonotype keys from enrichment blocks that have not re-run can no longer add
+  all-blank rows
+
 ## 2.1.0
 
 ### Minor Changes
