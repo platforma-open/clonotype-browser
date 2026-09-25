@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 2.1.2
+
+### Patch Changes
+
+- 91107c1: Update SDK: PlAgDataTable no longer recreates its grid in an endless loop
+
 ## 2.1.1
 
 ### Patch Changes
