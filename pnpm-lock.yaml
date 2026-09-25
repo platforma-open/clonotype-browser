@@ -16,8 +16,8 @@ catalogs:
       specifier: 1.14.5
       version: 1.14.5
     '@milaboratories/pl-model-common':
-      specifier: 1.47.1
-      version: 1.47.1
+      specifier: 1.51.0
+      version: 1.51.0
     '@milaboratories/ts-builder':
       specifier: 1.7.2
       version: 1.7.2
@@ -254,7 +254,7 @@ importers:
     dependencies:
       '@milaboratories/pl-model-common':
         specifier: 'catalog:'
-        version: 1.47.1
+        version: 1.51.0
       '@platforma-open/milaboratories.clonotype-browser-3.model':
         specifier: workspace:*
         version: link:../model
@@ -938,10 +938,6 @@ packages:
     resolution: {integrity: sha512-zOkD4aWNbembwI+AsPTz7nmWC1VPA4rwGBc+Nd5jPpKVh7rCtZwQrlOP5mVqRVMKIAjb1nU8kzzCGfqNPqfJjA==}
     engines: {node: '>=22'}
 
-  '@milaboratories/helpers@1.14.4':
-    resolution: {integrity: sha512-0mS5GQAQYUab0qj1C6+IXafNJhL1ahnhPBmIkLq9VqJU8p9jNZ7KC5ln4/pl0tK47brdPljCLEiLg8IdSa6wFw==}
-    engines: {node: '>=22'}
-
   '@milaboratories/helpers@1.14.5':
     resolution: {integrity: sha512-Kiy0g7sEmFQxDwtnmTrdJ8XdUK0IDAB5ZnPCNEbK7lPGHIa+xG3kzfeR4y44QBdrYaK0NwG63D8Fc7dlv9KItg==}
     engines: {node: '>=22'}
@@ -1025,9 +1021,6 @@ packages:
 
   '@milaboratories/pl-model-common@1.46.2':
     resolution: {integrity: sha512-VEeauisApYScvCS8lnK3zpFJ520xuTAodKJmjR8ulHcMrWMyWMfHEdGb7j5OMD0mM/OwTgmQrrJ5eB7Xd+xoOQ==}
-
-  '@milaboratories/pl-model-common@1.47.1':
-    resolution: {integrity: sha512-5F9I8JvUPRJ2HEzz5MmTio6JFYnhYoMVHfToh2NyXyOyQgAF6jhOzZBOsrEig9NfCPZBRB7v6UjmIK43dG4o/g==}
 
   '@milaboratories/pl-model-common@1.48.0':
     resolution: {integrity: sha512-oCVrjFNmjQolb7YWnbSGHnp6GGVm1PhG1lnNABp9lqYjvA2ISjIPQLIo/vT2ca0mqwLrEvbuRqiqSFOg7sQ5tQ==}
@@ -5948,8 +5941,6 @@ snapshots:
 
   '@milaboratories/helpers@1.14.2': {}
 
-  '@milaboratories/helpers@1.14.4': {}
-
   '@milaboratories/helpers@1.14.5': {}
 
   '@milaboratories/pf-driver@1.9.5(@bytecodealliance/preview2-shim@0.17.8)':
@@ -6175,14 +6166,6 @@ snapshots:
       '@milaboratories/helpers': 1.14.2
       '@milaboratories/pl-error-like': 1.12.10
       canonicalize: 2.1.0
-      zod: 3.25.76
-
-  '@milaboratories/pl-model-common@1.47.1':
-    dependencies:
-      '@milaboratories/helpers': 1.14.4
-      '@milaboratories/pl-error-like': 1.12.10
-      canonicalize: 2.1.0
-      es-toolkit: 1.41.0
       zod: 3.25.76
 
   '@milaboratories/pl-model-common@1.48.0':
