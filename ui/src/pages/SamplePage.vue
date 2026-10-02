@@ -22,8 +22,8 @@ type SampleMode = "single" | "all";
 const sampleMode = ref<SampleMode>("single");
 
 const sampleModeOptions = [
-  { value: "single", label: "One sample" },
   { value: "all", label: "All samples" },
+  { value: "single", label: "One sample" },
 ] satisfies { value: SampleMode; label: string }[];
 
 const tableSettings = usePlDataTableSettingsV2({
@@ -47,7 +47,7 @@ const tableSettings = usePlDataTableSettingsV2({
       show-export-button
     >
       <template #before-sheets>
-        <PlBtnGroup v-model="sampleMode" :options="sampleModeOptions" compact />
+        <PlBtnGroup v-model="sampleMode" :options="sampleModeOptions" />
       </template>
     </PlAgDataTableV2>
   </PlBlockPage>
