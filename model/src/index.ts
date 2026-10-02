@@ -16,6 +16,7 @@ import {
   createPlDataTableSheet,
   createPlDataTableV3,
   deriveDistinctLabels,
+  discoverTableColumnSnaphots,
   splitByAxes,
   deriveColumnOptions,
   extractPObjectId,
@@ -186,23 +187,28 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     if (ctx.data.inputAnchor === undefined) return undefined;
     // @TODO MILAB-6852: replace table shape to outer join with anchor in
     // primary, once the pframes-rs join fix ships.
-    return createPlDataTableV3(ctx, {
-      columns: {
-        anchors: { main: ctx.data.inputAnchor as PObjectId },
-        selector: {
-          mode: "enrichment",
-          exclude: [
-            // Drop sampleId-only columns (Sample label, metadata) via
-            // partialAxesMatch: false — all column axes must match.
-            {
-              axes: [{ name: [{ type: "exact", value: PAxisName.SampleId }] }],
-              partialAxesMatch: false,
-            },
-            { name: [{ type: "exact", value: PColumnName.SequenceAnnotation }] },
-            { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
-          ],
-        },
+    const { primary, secondary } = discoverTableColumnSnaphots(ctx, {
+      anchors: { main: ctx.data.inputAnchor as PObjectId },
+      selector: {
+        mode: "enrichment",
+        exclude: [
+          // Drop sampleId-only columns (Sample label, metadata) via
+          // partialAxesMatch: false — all column axes must match.
+          {
+            axes: [{ name: [{ type: "exact", value: PAxisName.SampleId }] }],
+            partialAxesMatch: false,
+          },
+          { name: [{ type: "exact", value: PColumnName.SequenceAnnotation }] },
+          { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
+        ],
       },
+    });
+    // Given primary columns, the table adds a label column for every axis —
+    // the Sample label comes back here, shown when sampleId is a column
+    // rather than a sheet.
+    return createPlDataTableV3(ctx, {
+      primaryColumns: primary,
+      columns: secondary,
       tableState: ctx.data.sampleTableState,
     });
   })
