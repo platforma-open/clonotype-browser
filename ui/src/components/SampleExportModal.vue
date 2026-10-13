@@ -9,6 +9,7 @@ import {
   PlDialogModal,
   PlDropdownMulti,
 } from "@platforma-sdk/ui-vue";
+import { until } from "@vueuse/core";
 import { computed, shallowRef, watch } from "vue";
 import { useApp } from "../app";
 import { exportSampleTable } from "../sampleExport";
@@ -63,30 +64,26 @@ async function runExport() {
 }
 
 /** The export table once the model has rebuilt it for `selection`. */
-function exportTableFor(selection: SampleExportSelection): Promise<PlDataTableModel> {
-  return new Promise((resolve, reject) => {
-    const settle = (): boolean => {
-      const outputError = app.model.outputErrors.sampleExportTable;
-      if (outputError !== undefined) {
-        reject(outputError);
-        return true;
-      }
-      const output = app.model.outputs.sampleExportTable;
-      if (output === undefined || !output.ok) return false;
-      const { selection: built, table } = output.value;
-      if (!isSameSelection(built, selection) || table.visibleTableHandle === undefined)
-        return false;
-      resolve(table);
-      return true;
-    };
-    if (settle()) return;
-    const stop = watch(
-      () => [app.model.outputs.sampleExportTable, app.model.outputErrors.sampleExportTable],
-      () => {
-        if (settle()) stop();
-      },
-    );
-  });
+async function exportTableFor(selection: SampleExportSelection): Promise<PlDataTableModel> {
+  const built = await until(() => builtExportTable(selection)).not.toBeUndefined();
+  if (built instanceof Error) throw built;
+  return built;
+}
+
+/**
+ * The export table the model has built for `selection`, the error it failed
+ * with, or `undefined` while it is not there yet. Reads every field it compares,
+ * so a watcher re-runs when any of them changes.
+ */
+function builtExportTable(selection: SampleExportSelection): undefined | Error | PlDataTableModel {
+  const outputError = app.model.outputErrors.sampleExportTable;
+  if (outputError !== undefined) return outputError;
+  const output = app.model.outputs.sampleExportTable;
+  if (output === undefined || !output.ok) return undefined;
+  const { selection: built, table } = output.value;
+  if (!isSameSelection(built, selection) || table.visibleTableHandle === undefined)
+    return undefined;
+  return table;
 }
 
 function isSameSelection(a: SampleExportSelection, b: SampleExportSelection): boolean {
