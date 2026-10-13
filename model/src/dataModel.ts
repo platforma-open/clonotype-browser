@@ -27,6 +27,9 @@ type StoredV2 = Omit<StoredV1, "sampleTableState"> & {
   sampleTableState: PlDataTableStateV2;
 };
 
+/** Stored shape at Ver_2026_05_28: `BlockData` before the By sample export selection. */
+type StoredV3 = Omit<BlockData, "sampleExport">;
+
 /**
  * Legacy `inputAnchor` was a `PlRef`. The new `BlockData` carries a
  * `ColumnUniversalId` (canonical stringified id). For result-pool leaves the
@@ -50,9 +53,13 @@ export const blockDataModel = new DataModelBuilder({ kind })
     ...prev,
     sampleTableState: prev.sampleTableState ?? createPlDataTableStateV2(),
   }))
-  .migrate<BlockData>("Ver_2026_05_28", (prev) => ({
+  .migrate<StoredV3>("Ver_2026_05_28", (prev) => ({
     ...prev,
     inputAnchor: plRefToUniversalId(prev.inputAnchor),
+  }))
+  .migrate<BlockData>("Ver_2026_10_13", (prev) => ({
+    ...prev,
+    sampleExport: { type: "samples", sampleIds: [] },
   }))
   // Both init params are stored exactly as they arrive. `params` is absent for a
   // block created from the UI, so each keeps its empty default — a fresh browser
@@ -64,4 +71,5 @@ export const blockDataModel = new DataModelBuilder({ kind })
     sampleTableState: createPlDataTableStateV2(),
     statsTableState: createPlDataTableStateV2(),
     annotationSpecUi: params?.annotationSpecUi ?? { title: "", steps: [] },
+    sampleExport: { type: "samples", sampleIds: [] },
   }));
