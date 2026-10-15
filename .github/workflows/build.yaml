@@ -4,10 +4,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
-      - "main"
+      - 'main'
   push:
     branches:
-      - "main"
+      - 'main'
   workflow_dispatch: {}
 jobs:
   init:
@@ -22,26 +22,26 @@ jobs:
       - init
     uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
-      app-name: "Block: Clonotype Browser 3"
-      app-name-slug: "block-clonotype-browser-3"
-      node-version: "22.x"
+      app-name: 'Block: Clonotype Browser 3'
+      app-name-slug: 'block-clonotype-browser-3'
+      node-version: '22.x'
       gha-runner-label: hz-ubuntu-dind
-      build-script-name: "build:dev-local"
-      build-before-publish-script-name: "build:release"
+      build-script-name: 'build:dev-local'
+      build-before-publish-script-name: 'build:release'
       pnpm-recursive-build: false
 
       test: true
-      test-script-name: "test"
+      test-script-name: 'test'
       pnpm-recursive-tests: false
-      team-id: "ciplopen"
+      team-id: 'ciplopen'
 
-      publish-to-public: "true"
-      package-path: "block"
-      create-tag: "true"
+      publish-to-public: 'true'
+      package-path: 'block'
+      create-tag: 'true'
 
       # Require the published `block` package to be bumped by a changeset on
       # PRs (empty changeset or the `skip-changelog` label waives it). Needs
-      # the input to exist on the referenced `github-ci` branch.
+      # the input to exist on the pinned `@v4` reusable workflow.
       require-package-path-bump: true
 
       npmrc-config: |
