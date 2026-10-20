@@ -1,9 +1,15 @@
 import type {
   AxesSpec,
+  AxisId,
   ColumnRecipe,
   ColumnUniversalId,
+  createPlDataTableOptionsV3,
+  FilterSpecNode,
   InferOutputsType,
   PColumnSpec,
+  PlDataTableFilters,
+  PlDataTableFilterSpecLeaf,
+  PlDataTableStateV2,
   PlRef,
   PObjectId,
   RelaxedColumnSelector,
@@ -16,20 +22,24 @@ import {
   createPlDataTableSheet,
   createPlDataTableV3,
   deriveDistinctLabels,
+  discoverTableColumnSnaphots,
   splitByAxes,
   deriveColumnOptions,
   extractPObjectId,
+  getAxisId,
   hasReachableData,
   getUniquePartitionKeys,
   hasSingleDataColumn,
   isPlRef,
+  matchAxisId,
   TreeNodeAccessor,
   parseJsonSafely,
+  upgradePlDataTableStateV2,
 } from "@platforma-sdk/model";
 import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 import { Annotation, PAxisName, PColumnName, readAnnotation } from "./columns";
 import { blockDataModel } from "./dataModel";
-import type { BlockArgs, BlockData } from "./types";
+import type { BlockArgs, BlockData, SampleExportSelection } from "./types";
 
 export { blockDataModel } from "./dataModel";
 
@@ -187,24 +197,32 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     // @TODO MILAB-6852: replace table shape to outer join with anchor in
     // primary, once the pframes-rs join fix ships.
     return createPlDataTableV3(ctx, {
-      columns: {
-        anchors: { main: ctx.data.inputAnchor as PObjectId },
-        selector: {
-          mode: "enrichment",
-          exclude: [
-            // Drop sampleId-only columns (Sample label, metadata) via
-            // partialAxesMatch: false — all column axes must match.
-            {
-              axes: [{ name: [{ type: "exact", value: PAxisName.SampleId }] }],
-              partialAxesMatch: false,
-            },
-            { name: [{ type: "exact", value: PColumnName.SequenceAnnotation }] },
-            { annotations: { [Annotation.IsSubset]: [{ type: "exact", value: "true" }] } },
-          ],
-        },
-      },
+      columns: sampleTableColumns(ctx.data.inputAnchor),
       tableState: ctx.data.sampleTableState,
     });
+  })
+
+  // The By sample table across the samples picked for export: the sample sheet
+  // gives way to a filter on the selection, the user's filters, hidden columns
+  // and sorting stay. Given primary columns, the table adds a label column for
+  // every axis, so each exported row names its sample.
+  .outputWithStatus("sampleExportTable", (ctx) => {
+    if (ctx.data.inputAnchor === undefined) return undefined;
+    const selection = ctx.data.sampleExport;
+    if (selection.type === "samples" && selection.sampleIds.length === 0) return undefined;
+    const sampleAxis = Column(ctx.data.inputAnchor)?.getSpec().axesSpec[0];
+    if (!sampleAxis) return undefined;
+    const { primary, secondary } = discoverTableColumnSnaphots(
+      ctx,
+      sampleTableColumns(ctx.data.inputAnchor),
+    );
+    const table = createPlDataTableV3(ctx, {
+      primaryColumns: primary,
+      columns: secondary,
+      ...sampleExportFilters(ctx.data.sampleTableState, getAxisId(sampleAxis), selection),
+    });
+    if (!table) return undefined;
+    return { selection, table };
   })
 
   .output("sampleTableSheets", (ctx) => {
@@ -378,6 +396,84 @@ function findOverlapMatches(inputAnchor: ColumnUniversalId, extraSources?: TreeN
   collection = ColumnsCollection([{ columns: survivors, isFinal: collection.isFinal() }]);
 
   return { collection, anchorSpec };
+}
+
+/** Columns of the By sample table: everything keyed on the anchor's axes. */
+function sampleTableColumns(inputAnchor: ColumnUniversalId) {
+  return {
+    anchors: { main: inputAnchor as PObjectId },
+    selector: {
+      mode: "enrichment" as const,
+      exclude: [
+        // Drop sampleId-only columns (Sample label, metadata) via
+        // partialAxesMatch: false — all column axes must match.
+        {
+          axes: [{ name: [{ type: "exact" as const, value: PAxisName.SampleId }] }],
+          partialAxesMatch: false,
+        },
+        { name: [{ type: "exact" as const, value: PColumnName.SequenceAnnotation }] },
+        { annotations: { [Annotation.IsSubset]: [{ type: "exact" as const, value: "true" }] } },
+      ],
+    },
+  };
+}
+
+/**
+ * Table state and filters of the export table. The By sample table shows one
+ * sample through a sheet, which reaches the table state as a top-level equality
+ * filter on the sample axis; that filter is replaced by the export selection.
+ */
+function sampleExportFilters(
+  tableState: PlDataTableStateV2,
+  sampleAxis: AxisId,
+  selection: SampleExportSelection,
+): Pick<createPlDataTableOptionsV3, "tableState" | "filters"> {
+  const selectionFilter: PlDataTableFilterSpecLeaf | undefined =
+    selection.type === "all"
+      ? undefined
+      : { type: "inSet", column: { type: "axis", id: sampleAxis }, value: selection.sampleIds };
+  const state = upgradePlDataTableStateV2(tableState);
+  const params = state.pTableParams;
+  // The table has never been shown, so there is no user state to keep.
+  if (params.sourceId === null) {
+    return { filters: selectionFilter ? { type: "and", filters: [selectionFilter] } : undefined };
+  }
+  const userFilters = dropSampleSheetFilter(params.filters, sampleAxis);
+  return {
+    tableState: {
+      ...state,
+      pTableParams: { ...params, filters: andFilter(userFilters, selectionFilter) },
+    },
+  };
+}
+
+function dropSampleSheetFilter(
+  filters: null | PlDataTableFilters,
+  sampleAxis: AxisId,
+): null | PlDataTableFilters {
+  if (filters === null || isSampleSheetFilter(filters, sampleAxis)) return null;
+  if (filters.type !== "and") return filters;
+  const kept = filters.filters.filter((f) => !isSampleSheetFilter(f, sampleAxis));
+  return kept.length === 0 ? null : { type: "and", filters: kept };
+}
+
+function isSampleSheetFilter(
+  node: FilterSpecNode<PlDataTableFilterSpecLeaf>,
+  sampleAxis: AxisId,
+): boolean {
+  return (
+    (node.type === "patternEquals" || node.type === "equal") &&
+    node.column.type === "axis" &&
+    matchAxisId(sampleAxis, node.column.id)
+  );
+}
+
+function andFilter(
+  filters: null | PlDataTableFilters,
+  leaf: undefined | PlDataTableFilterSpecLeaf,
+): null | PlDataTableFilters {
+  if (leaf === undefined) return filters;
+  return { type: "and", filters: filters === null ? [leaf] : [filters, leaf] };
 }
 
 /**

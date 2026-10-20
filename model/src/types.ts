@@ -31,6 +31,9 @@ export type BlockArgs = {
   annotationSpec: AnnotationSpec;
 };
 
+/** Samples the By sample export writes into one file: all of them, or a chosen set. */
+export type SampleExportSelection = { type: "all" } | { type: "samples"; sampleIds: string[] };
+
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: ColumnUniversalId;
@@ -39,6 +42,7 @@ export type BlockData = {
   sampleTableState: PlDataTableStateV2;
   statsTableState: PlDataTableStateV2;
   annotationSpecUi: AnnotationSpecUi;
+  sampleExport: SampleExportSelection;
 };
 
 /**
