@@ -43,7 +43,11 @@ export async function exportSampleTable(
     defaultFileName: `samples_${formatTimestamp(new Date())}.csv`,
     filters,
   });
-  if (canceled || path === undefined || !hasFilterExtension(path, filters)) return;
+  if (canceled || path === undefined) return;
+  if (!hasFilterExtension(path, filters)) {
+    const extensions = filters.flatMap((f) => f.extensions.map((ext) => "." + ext));
+    throw new Error(`The file name must end in ${extensions.join(", ")}`);
+  }
 
   const columns = displayedColumns(specs, table.columnsMeta);
   await services.pframe.exportPTable(handle, {
@@ -118,7 +122,8 @@ function displayedColumns(
 }
 
 function hasFilterExtension(path: string, filters: FileFilter[]): boolean {
-  return filters.some(({ extensions }) => extensions.some((ext) => path.endsWith("." + ext)));
+  const lower = path.toLowerCase();
+  return filters.some(({ extensions }) => extensions.some((ext) => lower.endsWith("." + ext)));
 }
 
 function formatTimestamp(d: Date): string {
