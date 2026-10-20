@@ -1519,10 +1519,6 @@ packages:
   '@platforma-sdk/model@1.85.2':
     resolution: {integrity: sha512-qhs7PbqEk3z9hGSpOoyyjsL3ToQ1vfZDNb1PmJ2aHGeYAg7MROcRXzM2F52HQHi3Kw5sSU9lIin5MzP8VrLA7Q==}
 
-  '@platforma-sdk/model@file:../clonotype-browser-label-fix/.local-sdk/model-1.84.1-labelfix-7092.tgz':
-    resolution: {integrity: sha512-RMAidbJiXTapTjx/v/QyBlzIcCODVg1tYzRx2eJz9RyTV6IOTIotgK/l9p6T3ecu5JHiqGcKx6XUjvwznhcbxg==, tarball: file:../clonotype-browser-label-fix/.local-sdk/model-1.84.1-labelfix-7092.tgz}
-    version: 1.84.1
-
   '@platforma-sdk/package-builder-lib@1.4.1':
     resolution: {integrity: sha512-n85dVGndxqkbNodoNJLUHBPnPquOSo3jcjY4Beq892UpMW/1u7IxkOnMR4DygcOXrjXP9zDt/MbV6LB1f9kmtg==}
 
@@ -6699,7 +6695,7 @@ snapshots:
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2.model@1.20.0':
     dependencies:
-      '@platforma-sdk/model': file:../clonotype-browser-label-fix/.local-sdk/model-1.84.1-labelfix-7092.tgz
+      '@platforma-sdk/model': 1.85.2
       zod: 3.23.8
 
   '@platforma-open/milaboratories.mixcr-clonotyping-2.ui@1.19.0(@bytecodealliance/preview2-shim@0.17.8)(typescript@5.9.3)':
@@ -6926,20 +6922,6 @@ snapshots:
       '@milaboratories/pl-model-common': 1.53.0
       '@milaboratories/pl-model-middle-layer': 1.34.3
       '@milaboratories/ptabler-expression-js': 1.2.43
-      canonicalize: 2.1.0
-      es-toolkit: 1.41.0
-      fast-json-patch: 3.1.1
-      lru-cache: 11.2.2
-      utility-types: 3.11.0
-      zod: 3.25.76
-
-  '@platforma-sdk/model@file:../clonotype-browser-label-fix/.local-sdk/model-1.84.1-labelfix-7092.tgz':
-    dependencies:
-      '@milaboratories/helpers': 1.14.5
-      '@milaboratories/pl-error-like': 1.12.10
-      '@milaboratories/pl-model-common': 1.51.0
-      '@milaboratories/pl-model-middle-layer': 1.33.0
-      '@milaboratories/ptabler-expression-js': 1.2.41
       canonicalize: 2.1.0
       es-toolkit: 1.41.0
       fast-json-patch: 3.1.1
