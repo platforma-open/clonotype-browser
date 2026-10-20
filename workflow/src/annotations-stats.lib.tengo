@@ -19,11 +19,14 @@ getMainFraction := func(bundle) {
 	return bundle.getColumn(mainFractionKey)
 }
 
-createStatsBundle := func(inputAnchor) {
+createStatsBundle := func(inputAnchor, inputFilter) {
 	bundle := wf.createPBundleBuilder()
 	bundle.addAnchor(columns.mainAnchorName, inputAnchor)
 	bundle.addSingle(columns.mainFractionSelector, mainFractionKey)
 	bundle.addSingle(columns.mainCountSelector, mainCountKey)
+	if !is_undefined(inputFilter) {
+		bundle.addRef(inputFilter)
+	}
 	return bundle.build()
 }
 
@@ -61,6 +64,11 @@ ANNOTATION_STATS_FRAME := "annotation_stats"
 computeAnnotationsStats := func(inputs) {
 	annotations := inputs.annotations
 	columnBundle := inputs.columnBundle
+	// Optional subset: the stats count only its clonotypes, matching what the tables show
+	subset := is_undefined(inputs.inputFilter) ? undefined : columnBundle.getColumn(inputs.inputFilter)
+	inSubset := func(frame) {
+		return is_undefined(subset) ? frame : pt.p.inner(frame, pt.p.column("subsetFilter", subset))
+	}
 	mainCount := getMainCount(columnBundle)
 	mainFraction := getMainFraction(columnBundle)
 	anchorAxesSpec := getMainAnchor(columnBundle).spec.axesSpec
@@ -73,11 +81,11 @@ computeAnnotationsStats := func(inputs) {
 	ptWf := pt.workflow()
 
 	// === By-sample stats ===
-	ptWf.frame(pt.p.full(
+	ptWf.frame(inSubset(pt.p.full(
 		pt.p.column(MAIN_COUNT_HEADER, mainCount),
 		pt.p.column(MAIN_FRACTION_HEADER, mainFraction),
 		pt.p.column(annotations.column, annotations)
-	)).
+	))).
 		select(
 			pt.sc.axis(sampleAxisSpec).alias(SAMPLE_KEY_HEADER),
 			pt.sc.axis(sequenceAxisSpec).alias(SEQUENCE_KEY_HEADER),
@@ -120,7 +128,7 @@ computeAnnotationsStats := func(inputs) {
 
 	// === By-annotation stats ===
 	// Project the clonotype axis as a column so it can be counted.
-	ptWf.frame(pt.p.column(annotations.column, annotations)).
+	ptWf.frame(inSubset(pt.p.column(annotations.column, annotations))).
 		select(
 			pt.sc.axis(sequenceAxisSpec).alias(SEQUENCE_KEY_HEADER),
 			pt.col(annotations.column)

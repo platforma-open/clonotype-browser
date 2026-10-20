@@ -4,6 +4,7 @@ import type {
   ColumnRecipe,
   ColumnUniversalId,
   createPlDataTableOptionsV3,
+  DatasetOption,
   FilterSpecNode,
   InferOutputsType,
   PColumnSpec,
@@ -12,11 +13,14 @@ import type {
   PlDataTableStateV2,
   PlRef,
   PObjectId,
+  PObjectSpec,
   RelaxedColumnSelector,
 } from "@platforma-sdk/model";
 import {
   BlockModelV3,
+  buildDatasetOptions,
   Column,
+  createGlobalPObjectId,
   ColumnsCollection,
   convertFilterSpecsToExpressionSpecs,
   createPlDataTableSheet,
@@ -30,8 +34,10 @@ import {
   hasReachableData,
   getUniquePartitionKeys,
   hasSingleDataColumn,
+  isPColumnSpec,
   isPlRef,
   matchAxisId,
+  plRefsEqual,
   TreeNodeAccessor,
   parseJsonSafely,
   upgradePlDataTableStateV2,
@@ -61,6 +67,20 @@ const inputAnchorSelectors: RelaxedColumnSelector[] = [
   },
 ];
 
+// Key axes of the datasets this block browses.
+const DATASET_KEY_AXES: ReadonlySet<string> = new Set([
+  PAxisName.VDJ.ClonotypeKey,
+  PAxisName.VDJ.ScClonotypeKey,
+  "pl7.app/variantKey",
+]);
+
+const isDataset = (spec: PObjectSpec): boolean =>
+  isPColumnSpec(spec) &&
+  spec.annotations?.[Annotation.IsAnchor] === "true" &&
+  spec.axesSpec.length === 2 &&
+  spec.axesSpec[0].name === PAxisName.SampleId &&
+  DATASET_KEY_AXES.has(spec.axesSpec[1].name);
+
 export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind })
 
   // The inverse of `init`: the two fields a template supplies, handed back exactly
@@ -68,6 +88,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
   // rewrites on the way out and resolves again on the way in.
   .templateParams((data) => ({
     inputAnchor: data.inputAnchor,
+    filterRef: data.filterRef,
     annotationSpecUi: data.annotationSpecUi,
   }))
 
@@ -89,17 +110,40 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     if (!inputAnchor) return undefined;
     const annotationSpec = compileAnnotationSpec(data.annotationSpecUi);
     if (annotationSpec.steps.length === 0) return undefined;
+    // Only the prerun takes the subset (for the stats), so the main run and its exports stay on the full dataset
+    const inputFilter =
+      data.filterRef === undefined ? undefined : universalIdToPlRef(data.filterRef);
     return {
       inputAnchor,
       annotationSpec,
+      ...(inputFilter !== undefined && { inputFilter }),
     };
   })
 
-  .output("inputOptions", () =>
-    deriveColumnOptions(
+  // Each dataset carries its subset columns (e.g. Repertoire Labeling labels) as filters.
+  .output("datasetOptions", (ctx): DatasetOption[] => {
+    // Labels as before: buildDatasetOptions takes no label options for the datasets.
+    const labeled = deriveColumnOptions(
       ColumnsCollection(["result_pool"]).filter({ include: inputAnchorSelectors }),
-    ),
-  )
+    );
+    const options =
+      buildDatasetOptions(ctx, {
+        primary: isDataset,
+        // Only subsets keyed by the clonotype axis alone
+        filter: (spec) =>
+          isPColumnSpec(spec) &&
+          spec.axesSpec.length === 1 &&
+          DATASET_KEY_AXES.has(spec.axesSpec[0].name),
+        requireEnrichments: false,
+      }) ?? [];
+    return options.map((option) => {
+      const label = labeled.find((l) => {
+        const ref = universalIdToPlRef(l.id);
+        return ref !== undefined && plRefsEqual(ref, option.primary.ref, true);
+      })?.label;
+      return label === undefined ? option : { ...option, primary: { ...option.primary, label } };
+    });
+  })
 
   .output("annotationsIsComputing", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return false;
@@ -142,6 +186,8 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     const extraSources = annotation?.getIsReadyOrError() ? [annotation] : undefined;
     const result = findOverlapMatches(ctx.data.inputAnchor, extraSources);
     if (!result) return undefined;
+    const subset = subsetColumn(ctx.data.filterRef);
+    if (subset === null) return undefined;
 
     // Only the anchor may define rows. It's the only column in the primary columns part.
     const primaryColumns = anchorAsPrimary(ctx.data.inputAnchor, result.anchorSpec);
@@ -171,12 +217,15 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     }
 
     return createPlDataTableV3(ctx, {
-      primaryColumns,
-      columns: secondaryColumns,
+      // With a subset, its column alone defines the rows and the anchor's columns attach to them.
+      primaryColumns: subset ? [subset] : primaryColumns,
+      columns: subset ? [...primaryColumns, ...secondaryColumns] : secondaryColumns,
       primaryJoinType: "full",
       tableState: ctx.data.overlapTableState,
       displayOptions: {
         visibility: [
+          // The subset column only marks rows; every value in it is the same.
+          { match: { annotations: { [Annotation.IsSubset]: "true" } }, visibility: "hidden" },
           // Sample-count columns stay default — explicit match first wins.
           {
             match: { name: "^(pl7\\.app/vdj/sampleCount|pl7\\.app/sampleCount)$" },
@@ -194,11 +243,24 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
 
   .outputWithStatus("sampleTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
+    const subset = subsetColumn(ctx.data.filterRef);
+    if (subset === null) return undefined;
     // @TODO MILAB-6852: replace table shape to outer join with anchor in
     // primary, once the pframes-rs join fix ships.
+    if (subset === undefined) {
+      return createPlDataTableV3(ctx, {
+        columns: sampleTableColumns(ctx.data.inputAnchor),
+        tableState: ctx.data.sampleTableState,
+      });
+    }
+    const { primary, secondary } = discoverTableColumnSnaphots(
+      ctx,
+      sampleTableColumns(ctx.data.inputAnchor),
+    );
     return createPlDataTableV3(ctx, {
-      columns: sampleTableColumns(ctx.data.inputAnchor),
-      tableState: ctx.data.sampleTableState,
+      primaryColumns: primary,
+      columns: [...secondary, subset],
+      ...withSubsetFilter(ctx.data.sampleTableState, subset),
     });
   })
 
@@ -212,14 +274,16 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     if (selection.type === "samples" && selection.sampleIds.length === 0) return undefined;
     const sampleAxis = Column(ctx.data.inputAnchor)?.getSpec().axesSpec[0];
     if (!sampleAxis) return undefined;
+    const subset = subsetColumn(ctx.data.filterRef);
+    if (subset === null) return undefined;
     const { primary, secondary } = discoverTableColumnSnaphots(
       ctx,
       sampleTableColumns(ctx.data.inputAnchor),
     );
     const table = createPlDataTableV3(ctx, {
       primaryColumns: primary,
-      columns: secondary,
-      ...sampleExportFilters(ctx.data.sampleTableState, getAxisId(sampleAxis), selection),
+      columns: subset ? [...secondary, subset] : secondary,
+      ...sampleExportFilters(ctx.data.sampleTableState, getAxisId(sampleAxis), selection, subset),
     });
     if (!table) return undefined;
     return { selection, table };
@@ -427,23 +491,61 @@ function sampleExportFilters(
   tableState: PlDataTableStateV2,
   sampleAxis: AxisId,
   selection: SampleExportSelection,
+  subset?: ColumnRecipe,
 ): Pick<createPlDataTableOptionsV3, "tableState" | "filters"> {
   const selectionFilter: PlDataTableFilterSpecLeaf | undefined =
     selection.type === "all"
       ? undefined
       : { type: "inSet", column: { type: "axis", id: sampleAxis }, value: selection.sampleIds };
+  const subsetFilter = subset === undefined ? undefined : inSubset(subset);
   const state = upgradePlDataTableStateV2(tableState);
   const params = state.pTableParams;
   // The table has never been shown, so there is no user state to keep.
   if (params.sourceId === null) {
-    return { filters: selectionFilter ? { type: "and", filters: [selectionFilter] } : undefined };
+    const leaves = [selectionFilter, subsetFilter].filter((f) => f !== undefined);
+    return { filters: leaves.length > 0 ? { type: "and", filters: leaves } : undefined };
   }
   const userFilters = dropSampleSheetFilter(params.filters, sampleAxis);
   return {
     tableState: {
       ...state,
-      pTableParams: { ...params, filters: andFilter(userFilters, selectionFilter) },
+      pTableParams: {
+        ...params,
+        filters: andFilter(andFilter(userFilters, selectionFilter), subsetFilter),
+      },
     },
+  };
+}
+
+/**
+ * The subset column picked with the dataset. `undefined` with no subset, `null` while a picked one
+ * does not resolve: a view then shows nothing rather than the full dataset.
+ */
+function subsetColumn(filterRef: ColumnUniversalId | undefined): ColumnRecipe | null | undefined {
+  if (filterRef === undefined) return undefined;
+  return Column(filterRef) ?? null;
+}
+
+/** Keeps the rows whose clonotype is in the subset. */
+function inSubset(subset: ColumnRecipe): PlDataTableFilterSpecLeaf {
+  return { type: "isNotNA", column: { type: "column", id: subset.id } };
+}
+
+/**
+ * The table filters with the subset added on every render, so they follow a change of subset.
+ * A stale subset filter left in stored state names a column the table lacks, and is dropped.
+ */
+function withSubsetFilter(
+  tableState: PlDataTableStateV2,
+  subset: ColumnRecipe,
+): Pick<createPlDataTableOptionsV3, "tableState" | "filters"> {
+  const leaf = inSubset(subset);
+  const state = upgradePlDataTableStateV2(tableState);
+  const params = state.pTableParams;
+  // Before the table is first shown there is no user state; the filter goes in as a default.
+  if (params.sourceId === null) return { filters: { type: "and", filters: [leaf] } };
+  return {
+    tableState: { ...state, pTableParams: { ...params, filters: andFilter(params.filters, leaf) } },
   };
 }
 
@@ -544,7 +646,12 @@ function hasCompiledSteps(ui: BlockData["annotationSpecUi"]): boolean {
  * which is exactly the canonical JSON of `{ __isRef, blockId, name }`. Parse
  * it back to recover the original `PlRef`.
  */
-function universalIdToPlRef(id: ColumnUniversalId): PlRef | undefined {
+export function universalIdToPlRef(id: ColumnUniversalId): PlRef | undefined {
   const parsed = parseJsonSafely(id);
   return isPlRef(parsed) ? parsed : undefined;
+}
+
+/** The inverse of {@link universalIdToPlRef} for a result-pool column. */
+export function plRefToUniversalId(ref: PlRef): ColumnUniversalId {
+  return createGlobalPObjectId(ref.blockId, ref.name);
 }

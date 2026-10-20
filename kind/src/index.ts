@@ -23,26 +23,31 @@ export type AnnotationSpecUi = SdkAnnotationSpecUi<FilterSpecUI> & { defaultValu
 
 export type BlockParams = {
   inputAnchor?: ColumnUniversalId;
+  // A subset column of the dataset; the views show only its clonotypes.
+  filterRef?: ColumnUniversalId;
   annotationSpecUi?: AnnotationSpecUi;
 };
 
 /**
- * Both fields are optional, so a params object that sets neither is valid — a block
+ * Every field is optional, so a params object that sets none is valid — a block
  * seeded with nothing to browse and nothing annotated is a state the UI reaches too.
- * Only the two declared fields are read; anything else in the object is dropped here
+ * Only the declared fields are read; anything else in the object is dropped here
  * rather than refused, so the returned value is the whole of what the block receives.
  */
 function parseInitializationParams(value: unknown): BlockParams {
   assertParamsObject(value);
 
-  const { inputAnchor, annotationSpecUi } = value;
+  const { inputAnchor, filterRef, annotationSpecUi } = value;
 
   if (inputAnchor !== undefined && !isColumnUniversalId(inputAnchor)) {
     throw new Error("'inputAnchor' must be a column id.");
   }
+  if (filterRef !== undefined && !isColumnUniversalId(filterRef)) {
+    throw new Error("'filterRef' must be a column id.");
+  }
   if (annotationSpecUi !== undefined) assertAnnotationSpec(annotationSpecUi);
 
-  return { inputAnchor, annotationSpecUi };
+  return { inputAnchor, filterRef, annotationSpecUi };
 }
 
 /**

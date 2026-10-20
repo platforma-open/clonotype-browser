@@ -66,6 +66,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
   // with nothing picked and nothing annotated.
   .init(({ params }) => ({
     inputAnchor: params?.inputAnchor,
+    filterRef: params?.filterRef,
     settingsOpen: true,
     overlapTableState: createPlDataTableStateV2(),
     sampleTableState: createPlDataTableStateV2(),

@@ -28,6 +28,8 @@ export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
  */
 export type BlockArgs = {
   inputAnchor?: PlRef;
+  // Prerun only: the subset the stats are counted on. The main run and its exports ignore it.
+  inputFilter?: PlRef;
   annotationSpec: AnnotationSpec;
 };
 
@@ -37,6 +39,7 @@ export type SampleExportSelection = { type: "all" } | { type: "samples"; sampleI
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: ColumnUniversalId;
+  filterRef?: ColumnUniversalId;
   settingsOpen: boolean;
   overlapTableState: PlDataTableStateV2;
   sampleTableState: PlDataTableStateV2;
