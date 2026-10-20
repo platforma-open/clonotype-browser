@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.clonotype-browser-3.test
 
+## 2.0.11
+
+### Patch Changes
+
+- Updated dependencies [e19e738]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@2.2.0
+
 ## 2.0.10
 
 ### Patch Changes

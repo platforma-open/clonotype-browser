@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.clonotype-browser-3.ui
 
+## 2.1.0
+
+### Minor Changes
+
+- e19e738: By sample page: Export opens a dialog to pick the samples to export — the current sample, several, or all of them — into one file with a Sample column. The page's filters, hidden columns and sorting carry over.
+
+### Patch Changes
+
+- Updated dependencies [e19e738]
+  - @platforma-open/milaboratories.clonotype-browser-3.model@2.2.0
+
 ## 2.0.10
 
 ### Patch Changes
