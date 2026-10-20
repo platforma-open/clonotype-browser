@@ -1,5 +1,4 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
-json := import("json")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 annotations := import(":annotations")
@@ -32,11 +31,8 @@ wf.body(func(args) {
 			shouldComputeFilters: false,
 			linkerIds: linkerIds
 		}
-		// Only for a subset run, so a full-data run keeps exactly its previous inputs
-		if !is_undefined(args.inputFilter) {
-			annotationInputs.subset = args.columnBundle.getColumn(json.decode(args.inputFilter))
-			annotationInputs.subsetId = args.inputFilter
-		}
+		// Not cut to the subset: the views hide other rows and the stats join it, so changing the
+		// subset reuses these annotations and reruns only the stats.
 		computedAnnotations := annotations.computeClonotypeAnnotations(annotationInputs)
 
 		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
