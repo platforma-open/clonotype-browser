@@ -1,4 +1,5 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
+json := import("json")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 
 annotations := import(":annotations")
@@ -22,7 +23,7 @@ wf.body(func(args) {
 
 	if len(args.annotationSpec.steps) > 0 {
 		linkerIds := is_undefined(linkerInfos) ? [] : linkers.buildIds(linkerInfos)
-		computedAnnotations := annotations.computeClonotypeAnnotations({
+		annotationInputs := {
 			title: args.annotationSpec.title,
 			steps: args.annotationSpec.steps,
 			inputAnchor: args.inputAnchor,
@@ -30,7 +31,13 @@ wf.body(func(args) {
 			annotationAxesSpec: annotationsStats.getAnnotationAxesSpec(args.columnBundle),
 			shouldComputeFilters: false,
 			linkerIds: linkerIds
-		})
+		}
+		// Only for a subset run, so a full-data run keeps exactly its previous inputs
+		if !is_undefined(args.inputFilter) {
+			annotationInputs.subset = args.columnBundle.getColumn(json.decode(args.inputFilter))
+			annotationInputs.subsetId = args.inputFilter
+		}
+		computedAnnotations := annotations.computeClonotypeAnnotations(annotationInputs)
 
 		outputs["annotationsPf"] = pFrames.exportFrame(computedAnnotations.annotationsPf)
 

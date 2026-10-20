@@ -35,7 +35,7 @@ type StoredV3 = Omit<BlockData, "sampleExport">;
  * `ColumnUniversalId` (canonical stringified id). For result-pool leaves the
  * conversion is `createGlobalPObjectId` of the ref's `(blockId, name)`.
  */
-function plRefToUniversalId(ref: PlRef | undefined): ColumnUniversalId | undefined {
+export function plRefToUniversalId(ref: PlRef | undefined): ColumnUniversalId | undefined {
   return ref ? createGlobalPObjectId(ref.blockId, ref.name) : undefined;
 }
 
@@ -61,7 +61,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
     ...prev,
     sampleExport: { type: "samples", sampleIds: [] },
   }))
-  // Both init params are stored exactly as they arrive. `params` is absent for a
+  // The init params are stored exactly as they arrive. `params` is absent for a
   // block created from the UI, so each keeps its empty default — a fresh browser
   // with nothing picked and nothing annotated.
   .init(({ params }) => ({

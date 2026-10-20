@@ -28,8 +28,8 @@ export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
  */
 export type BlockArgs = {
   inputAnchor?: PlRef;
-  // Prerun only: the subset the stats are counted on. The main run and its exports ignore it.
-  inputFilter?: PlRef;
+  // The subset's column id: annotations, exports and stats cover only its clonotypes.
+  inputFilter?: string;
   annotationSpec: AnnotationSpec;
 };
 
