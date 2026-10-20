@@ -28,6 +28,8 @@ export type AnnotationSpec = _AnnotationSpec & { defaultValue?: string };
  */
 export type BlockArgs = {
   inputAnchor?: PlRef;
+  // The subset's column id: annotations, exports and stats cover only its clonotypes.
+  inputFilter?: string;
   annotationSpec: AnnotationSpec;
 };
 
@@ -37,6 +39,7 @@ export type SampleExportSelection = { type: "all" } | { type: "samples"; sampleI
 /** Unified V3 data model: block args plus UI state in one object. */
 export type BlockData = {
   inputAnchor?: ColumnUniversalId;
+  filterRef?: ColumnUniversalId;
   settingsOpen: boolean;
   overlapTableState: PlDataTableStateV2;
   sampleTableState: PlDataTableStateV2;
