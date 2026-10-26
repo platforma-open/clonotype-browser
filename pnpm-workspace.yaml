@@ -10,16 +10,16 @@ catalog:
   "@milaboratories/ts-builder": 1.7.2
   "@milaboratories/ts-configs": 1.4.0
   "@milaboratories/build-configs": 2.0.0
-  "@milaboratories/pl-model-common": 1.51.0
+  "@milaboratories/pl-model-common": 1.54.0
   "@platforma-sdk/workflow-tengo": 6.15.0
-  "@platforma-sdk/model": 1.84.19
-  "@platforma-sdk/ui-vue": 1.84.19
+  "@platforma-sdk/model": 1.86.0
+  "@platforma-sdk/ui-vue": 1.86.0
   "@platforma-sdk/tengo-builder": 4.1.11
   "@platforma-sdk/package-builder": 3.16.1
   "@platforma-sdk/block-tools": 2.16.13
   "@platforma-sdk/block-kind": 1.1.0
 
-  "@platforma-sdk/test": 1.84.19
+  "@platforma-sdk/test": 1.86.1
   "@milaboratories/helpers": 1.14.5
 
   "@platforma-open/milaboratories.runenv-python-3": ^1.7.7

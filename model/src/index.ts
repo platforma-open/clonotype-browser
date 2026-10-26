@@ -21,7 +21,7 @@ import {
   convertFilterSpecsToExpressionSpecs,
   createPlDataTableSheet,
   createPlDataTableV3,
-  deriveDistinctLabels,
+  deriveRecipeOptions,
   discoverTableColumnSnaphots,
   splitByAxes,
   deriveColumnOptions,
@@ -34,6 +34,7 @@ import {
   matchAxisId,
   TreeNodeAccessor,
   parseJsonSafely,
+  peerLinkedLast,
   upgradePlDataTableStateV2,
 } from "@platforma-sdk/model";
 import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
@@ -327,17 +328,20 @@ function buildFilterUiColumns(variants: readonly ColumnRecipe[], anchorAxesSpec:
   // Each variant pays one host round-trip; cache locally to keep the rest of
   // this function spec-access free.
   const specs = variants.map((c) => c.getSpec());
-
-  const distinctLabels = deriveDistinctLabels(specs, { includeNativeLabel: true });
+  const specById = new Map(variants.map((v, i) => [v.id, specs[i]]));
   const labelSpecs = specs.filter((s) => s.name === PColumnName.Label);
 
-  const ret = variants.map((v, i) => {
-    const spec = specs[i];
+  // Distinct labels, plus a link hint for columns that describe another clonotype.
+  const options = deriveRecipeOptions([...variants], { includeNativeLabel: true });
+
+  const ret = options.map(({ id, label, linkHint, recipe }) => {
+    const spec = specById.get(id) ?? recipe.getSpec();
     const axesSpec = spec.axesSpec;
     return {
-      id: v.id,
+      id,
       spec,
-      label: distinctLabels[i] ?? readAnnotation(spec, Annotation.Label) ?? "",
+      label: label || readAnnotation(spec, Annotation.Label) || "",
+      linkHint,
       axesToBeFixed:
         axesSpec.length > anchorAxesSpec.length
           ? axesSpec.slice(anchorAxesSpec.length).map((axis, j) => {
@@ -354,7 +358,7 @@ function buildFilterUiColumns(variants: readonly ColumnRecipe[], anchorAxesSpec:
     };
   });
   ret.sort((a, b) => a.label.localeCompare(b.label));
-  return ret;
+  return peerLinkedLast(ret, (c) => c.linkHint !== undefined);
 }
 
 /**
