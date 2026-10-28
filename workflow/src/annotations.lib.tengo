@@ -6,6 +6,8 @@ slices := import("@platforma-sdk/workflow-tengo:slices")
 pFrames := import("@platforma-sdk/workflow-tengo:pframes")
 canonical := import("@platforma-sdk/workflow-tengo:canonical")
 annotations := import("@platforma-sdk/workflow-tengo:annotations")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+pUtil := import("@platforma-sdk/workflow-tengo:pframes.util")
 
 columns := import(":columns")
 
@@ -14,6 +16,40 @@ convertToPFrame := func(...entities) {
 		acc.add(v.column, v.spec, v.data)
 		return acc
 	}, pFrames.pFrameBuilder()).build()
+}
+
+// Each column cut to the subset's clonotypes and stamped with the subset. A label depends only on its
+// own clonotype's values, so this equals computing on the subset alone.
+restrictToSubset := func(entries, subset, subsetId) {
+	ptWf := pt.workflow()
+	for i, e in entries {
+		axisSpec := e.spec.axesSpec[0]
+		domain := maps.clone(is_undefined(e.spec.domain) ? {} : e.spec.domain)
+		domain["pl7.app/inputSubset"] = subsetId
+		ptWf.frame(pt.p.inner(
+			pt.p.column("value", { spec: e.spec, data: e.data }),
+			pt.p.column("subsetFilter", subset)
+		)).
+			select(pt.sc.axis(axisSpec).alias("key"), pt.col("value")).
+			saveFrameDirect("cut" + string(i), {
+				axes: [{ column: "key", spec: axisSpec }],
+				columns: [{ column: "value", spec: {
+					kind: "PColumn",
+					name: e.spec.name,
+					valueType: e.spec.valueType,
+					domain: domain,
+					annotations: e.spec.annotations
+				} }],
+				partitionKeyLength: 0
+			})
+	}
+	result := ptWf.run()
+	out := []
+	for i, e in entries {
+		cut := pUtil.pFrameToColumnsMap(result.getFrameDirect("cut" + string(i)))["value"]
+		out = append(out, { column: e.column, spec: cut.spec, data: cut.data })
+	}
+	return out
 }
 
 computeClonotypeAnnotations := func(inputs) {
@@ -29,7 +65,7 @@ computeClonotypeAnnotations := func(inputs) {
 
 	additionalColumns := [canonical.encode(columns.referenceLabelSelector)] + linkerIds
 
-	result := annotations.computeAnnotations({
+	annotationArgs := {
 		title: title,
 		steps: steps,
 		anchorRef: inputAnchor,
@@ -37,7 +73,12 @@ computeClonotypeAnnotations := func(inputs) {
 		resultAxesSpec: annotationAxesSpec,
 		additionalColumns: additionalColumns,
 		shouldComputeFilters: shouldComputeFilters
-	})
+	}
+	// A subset run roots the trace in the subset (dataset -> the block that made it)
+	if !is_undefined(inputs.subset) {
+		annotationArgs.trace = inputs.subset.spec
+	}
+	result := annotations.computeAnnotations(annotationArgs)
 
 	// Expose the annotation column as a discrete filter so downstream blocks
 	// (e.g. TCR/antibody lead selection) render a multi-select dropdown.
@@ -52,11 +93,19 @@ computeClonotypeAnnotations := func(inputs) {
 		}
 	})
 
+	filtersColumns := result.annotationsFiltersColumns
+	// Only for a subset run, so a full-data run keeps exactly its previous outputs
+	if !is_undefined(inputs.subset) {
+		cut := restrictToSubset([annotationsColumn] + filtersColumns, inputs.subset, inputs.subsetId)
+		annotationsColumn = cut[0]
+		filtersColumns = cut[1:]
+	}
+
 	return {
 		annotationsColumn: annotationsColumn,
 		annotationsPf: convertToPFrame(annotationsColumn),
-		filtersColumns: result.annotationsFiltersColumns,
-		filtersPf: convertToPFrame(result.annotationsFiltersColumns...)
+		filtersColumns: filtersColumns,
+		filtersPf: convertToPFrame(filtersColumns...)
 	}
 }
 

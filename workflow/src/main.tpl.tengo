@@ -1,8 +1,6 @@
-pt := import("@platforma-sdk/workflow-tengo:pt")
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 assets := import("@platforma-sdk/workflow-tengo:assets")
-render := import("@platforma-sdk/workflow-tengo:render")
-pFrames := import("@platforma-sdk/workflow-tengo:pframes")
+json := import("json")
 
 annotations := import(":annotations")
 annotationsStats := import(":annotations-stats")
@@ -16,6 +14,10 @@ wf.prepare(func(args) {
 	if len(args.annotationSpec.steps) > 0 {
 		bundle := wf.createPBundleBuilder()
 		bundle.addAnchor(columns.mainAnchorName, args.inputAnchor)
+		// Optional subset column picked alongside the dataset (PlDatasetSelector)
+		if !is_undefined(args.inputFilter) {
+			bundle.addRef(json.decode(args.inputFilter))
+		}
 		result.columnBundle = bundle.build()
 		result.linkerBundle = linkers.discover(args.inputAnchor)
 	}
@@ -34,7 +36,7 @@ wf.body(func(args) {
 		!is_undefined(annotationAxesSpec) &&
 		len(annotationSpec.steps) > 0 {
 		linkerIds := is_undefined(linkerInfos) ? [] : linkers.buildIds(linkerInfos)
-		computedAnnotations := annotations.computeClonotypeAnnotations({
+		annotationInputs := {
 			title: annotationSpec.title,
 			steps: annotationSpec.steps,
 			inputAnchor: args.inputAnchor,
@@ -42,7 +44,13 @@ wf.body(func(args) {
 			annotationAxesSpec: annotationAxesSpec,
 			shouldComputeFilters: true,
 			linkerIds: linkerIds
-		})
+		}
+		// Only for a subset run, so a full-data run keeps exactly its previous inputs
+		if !is_undefined(args.inputFilter) {
+			annotationInputs.subset = args.columnBundle.getColumn(json.decode(args.inputFilter))
+			annotationInputs.subsetId = args.inputFilter
+		}
+		computedAnnotations := annotations.computeClonotypeAnnotations(annotationInputs)
 
 		exports["annotationsPf"] = computedAnnotations.annotationsPf
 		exports["filtersPf"] = computedAnnotations.filtersPf
