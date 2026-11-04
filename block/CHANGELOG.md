@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 2.3.1
+
+### Patch Changes
+
+- 9681f41: The dataset list no longer shows an error when the project has a MiXCR library.
+
 ## 2.3.0
 
 ### Minor Changes

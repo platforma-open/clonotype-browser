@@ -1,5 +1,7 @@
 # @platforma-open/milaboratories.clonotype-browser-3.workflow
 
+## 2.3.1
+
 ## 2.3.0
 
 ### Minor Changes
