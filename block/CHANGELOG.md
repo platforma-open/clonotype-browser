@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.clonotype-browser-3
 
+## 2.3.2
+
+### Patch Changes
+
+- bd64be7: Upgrade the SDK to workflow-tengo 6.22.2, so a run reports its progress to the block status tree.
+
 ## 2.3.1
 
 ### Patch Changes
