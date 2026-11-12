@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { upgradePlDataTableStateV2 } from "@platforma-sdk/model";
 import {
   PlAgDataTableV2,
+  PlAlert,
   PlBlockPage,
   PlBtnGhost,
   usePlDataTableSettingsV2,
@@ -10,12 +10,10 @@ import { computed, shallowRef } from "vue";
 import { useApp } from "../app";
 import AnnotationModal from "../components/AnnotationModal.vue";
 import BlockActions from "../components/BlockActions.vue";
-import SampleExportModal from "../components/SampleExportModal.vue";
 import SettingsModal from "../components/SettingsModal.vue";
+import { exportSampleTable } from "../sampleExport";
 
 const app = useApp();
-
-const exportOpen = shallowRef(false);
 
 const tableSettings = usePlDataTableSettingsV2({
   sourceId: () => app.model.data.inputAnchor,
@@ -23,15 +21,33 @@ const tableSettings = usePlDataTableSettingsV2({
   model: () => app.model.outputs.sampleTable,
 });
 
-/** The sample the table's sheet shows: the user's pick, else the sheet's default. */
-const currentSampleId = computed(() => {
-  const state = upgradePlDataTableStateV2(app.model.data.sampleTableState);
-  const sourceId = state.pTableParams.sourceId;
-  const picked = state.stateCache.find((e) => e.sourceId === sourceId)?.sheetsState[0]?.value;
-  const sheet = app.model.outputs.sampleTableSheets?.[0];
-  const value = picked ?? sheet?.defaultValue ?? sheet?.options[0]?.value;
-  return value === undefined ? undefined : String(value);
+/**
+ * The table on screen, once the model has built it for the samples picked on
+ * the sheet and its data can be read.
+ */
+const exportTable = computed(() => {
+  const output = app.model.outputs.sampleTable;
+  if (output === undefined || !output.ok || !output.stable) return undefined;
+  const table = output.value;
+  return table?.visibleTableHandle === undefined ? undefined : table;
 });
+
+const exporting = shallowRef(false);
+const exportError = shallowRef<undefined | string>();
+
+async function runExport() {
+  const table = exportTable.value;
+  if (table === undefined) return;
+  exporting.value = true;
+  exportError.value = undefined;
+  try {
+    await exportSampleTable(app.services, table);
+  } catch (e) {
+    exportError.value = e instanceof Error ? e.message : String(e);
+  } finally {
+    exporting.value = false;
+  }
+}
 </script>
 
 <template>
@@ -40,13 +56,22 @@ const currentSampleId = computed(() => {
     <template #append>
       <PlBtnGhost
         icon="export"
-        :disabled="!app.model.outputs.sampleTableSheets"
-        @click.stop="exportOpen = true"
+        :disabled="exportTable === undefined"
+        :loading="exporting"
+        @click.stop="runExport"
       >
         Export
       </PlBtnGhost>
       <BlockActions />
     </template>
+    <PlAlert
+      v-if="exportError"
+      type="error"
+      closeable
+      @update:model-value="exportError = undefined"
+    >
+      {{ exportError }}
+    </PlAlert>
     <PlAgDataTableV2
       key="sample-table"
       ref="tableInstance"
@@ -54,7 +79,6 @@ const currentSampleId = computed(() => {
       :settings="tableSettings"
     />
   </PlBlockPage>
-  <SampleExportModal v-model="exportOpen" :current-sample-id="currentSampleId" />
   <SettingsModal />
   <AnnotationModal />
 </template>

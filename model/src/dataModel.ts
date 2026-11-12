@@ -28,7 +28,15 @@ type StoredV2 = Omit<StoredV1, "sampleTableState"> & {
 };
 
 /** Stored shape at Ver_2026_05_28: `BlockData` before the By sample export selection. */
-type StoredV3 = Omit<BlockData, "sampleExport">;
+type StoredV3 = BlockData;
+
+/**
+ * Stored shape at Ver_2026_10_13: `BlockData` with the samples the By sample
+ * export dialog wrote into one file.
+ */
+type StoredV4 = BlockData & {
+  sampleExport: { type: "all" } | { type: "samples"; sampleIds: string[] };
+};
 
 /**
  * Legacy `inputAnchor` was a `PlRef`. The new `BlockData` carries a
@@ -57,10 +65,13 @@ export const blockDataModel = new DataModelBuilder({ kind })
     ...prev,
     inputAnchor: plRefToUniversalId(prev.inputAnchor),
   }))
-  .migrate<BlockData>("Ver_2026_10_13", (prev) => ({
+  .migrate<StoredV4>("Ver_2026_10_13", (prev) => ({
     ...prev,
     sampleExport: { type: "samples", sampleIds: [] },
   }))
+  // The export takes the samples picked on the By sample sheet, so it keeps no
+  // selection of its own.
+  .migrate<BlockData>("Ver_2026_11_11", ({ sampleExport: _, ...prev }) => prev)
   // The init params are stored exactly as they arrive. `params` is absent for a
   // block created from the UI, so each keeps its empty default — a fresh browser
   // with nothing picked and nothing annotated.
@@ -72,5 +83,4 @@ export const blockDataModel = new DataModelBuilder({ kind })
     sampleTableState: createPlDataTableStateV2(),
     statsTableState: createPlDataTableStateV2(),
     annotationSpecUi: params?.annotationSpecUi ?? { title: "", steps: [] },
-    sampleExport: { type: "samples", sampleIds: [] },
   }));

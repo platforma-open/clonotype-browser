@@ -1,17 +1,13 @@
 import type {
   AxesSpec,
-  AxisId,
   ColumnRecipe,
   ColumnUniversalId,
   ColumnVisibilityRule,
-  createPlDataTableOptionsV3,
   DatasetOption,
-  FilterSpecNode,
   InferOutputsType,
   PColumnSpec,
   PlDataTableFilters,
   PlDataTableFilterSpecLeaf,
-  PlDataTableStateV2,
   PlRef,
   PObjectId,
   PObjectSpec,
@@ -36,16 +32,14 @@ import {
   hasSingleDataColumn,
   isPColumnSpec,
   isPlRef,
-  matchAxisId,
   plRefsEqual,
   TreeNodeAccessor,
   parseJsonSafely,
-  upgradePlDataTableStateV2,
 } from "@platforma-sdk/model";
 import { kind } from "@platforma-open/milaboratories.clonotype-browser-3.kind";
 import { Annotation, PAxisName, PColumnName, readAnnotation } from "./columns";
 import { blockDataModel } from "./dataModel";
-import type { BlockArgs, BlockData, SampleExportSelection } from "./types";
+import type { BlockArgs, BlockData } from "./types";
 
 export { blockDataModel, plRefToUniversalId } from "./dataModel";
 
@@ -217,9 +211,8 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
       primaryColumns,
       columns: subset ? [...secondaryColumns, subset] : secondaryColumns,
       primaryJoinType: "full",
-      ...(subset
-        ? withSubsetFilter(ctx.data.overlapTableState, subset, ctx.data.inputAnchor)
-        : { tableState: ctx.data.overlapTableState }),
+      tableState: ctx.data.overlapTableState,
+      fixedFilters: subset ? subsetFilter(subset) : undefined,
       displayOptions: {
         visibility: [
           hideSubsetColumn,
@@ -238,52 +231,35 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     });
   })
 
+  // Given primary columns, the table adds a label column for every axis, so
+  // each row names its sample while the sheet shows several, on screen and in
+  // the export.
   .outputWithStatus("sampleTable", (ctx) => {
     if (ctx.data.inputAnchor === undefined) return undefined;
+    const sampleAxis = Column(ctx.data.inputAnchor)?.getSpec().axesSpec[0];
+    if (!sampleAxis) return undefined;
     const subset = subsetColumn(ctx.data.filterRef);
     // @TODO MILAB-6852: replace table shape to outer join with anchor in
     // primary, once the pframes-rs join fix ships.
-    if (subset === undefined) {
-      return createPlDataTableV3(ctx, {
-        columns: sampleTableColumns(ctx.data.inputAnchor),
-        tableState: ctx.data.sampleTableState,
-      });
-    }
     const { primary, secondary } = discoverTableColumnSnaphots(
       ctx,
       sampleTableColumns(ctx.data.inputAnchor),
     );
     return createPlDataTableV3(ctx, {
       primaryColumns: primary,
-      columns: [...secondary, subset],
-      ...withSubsetFilter(ctx.data.sampleTableState, subset, ctx.data.inputAnchor),
-      displayOptions: { visibility: [hideSubsetColumn] },
-    });
-  })
-
-  // The By sample table across the samples picked for export: the sample sheet
-  // gives way to a filter on the selection, the user's filters, hidden columns
-  // and sorting stay. Given primary columns, the table adds a label column for
-  // every axis, so each exported row names its sample.
-  .outputWithStatus("sampleExportTable", (ctx) => {
-    if (ctx.data.inputAnchor === undefined) return undefined;
-    const selection = ctx.data.sampleExport;
-    if (selection.type === "samples" && selection.sampleIds.length === 0) return undefined;
-    const sampleAxis = Column(ctx.data.inputAnchor)?.getSpec().axesSpec[0];
-    if (!sampleAxis) return undefined;
-    const subset = subsetColumn(ctx.data.filterRef);
-    const { primary, secondary } = discoverTableColumnSnaphots(
-      ctx,
-      sampleTableColumns(ctx.data.inputAnchor),
-    );
-    const table = createPlDataTableV3(ctx, {
-      primaryColumns: primary,
       columns: subset ? [...secondary, subset] : secondary,
-      ...sampleExportFilters(ctx.data.sampleTableState, getAxisId(sampleAxis), selection, subset),
+      tableState: ctx.data.sampleTableState,
+      fixedFilters: subset ? subsetFilter(subset) : undefined,
+      // Rows of the samples picked on the sheet stay together.
+      fixedSorting: [
+        {
+          column: { type: "axis", id: getAxisId(sampleAxis) },
+          ascending: true,
+          naAndAbsentAreLeastValues: true,
+        },
+      ],
       displayOptions: { visibility: [hideSubsetColumn] },
     });
-    if (!table) return undefined;
-    return { selection, table };
   })
 
   .output("sampleTableSheets", (ctx) => {
@@ -295,7 +271,11 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
     if (!(data instanceof TreeNodeAccessor)) return undefined;
     const samples = getUniquePartitionKeys(data)?.[0];
     if (!samples) return undefined;
-    return [createPlDataTableSheet(ctx, anchor.getSpec().axesSpec[0], samples)];
+    return [
+      createPlDataTableSheet(ctx, anchor.getSpec().axesSpec[0], samples, {
+        selection: "multiple",
+      }),
+    ];
   })
 
   .outputWithStatus("statsTable", (ctx) => {
@@ -479,41 +459,6 @@ function sampleTableColumns(inputAnchor: ColumnUniversalId) {
   };
 }
 
-/**
- * Table state and filters of the export table. The By sample table shows one
- * sample through a sheet, which reaches the table state as a top-level equality
- * filter on the sample axis; that filter is replaced by the export selection.
- */
-function sampleExportFilters(
-  tableState: PlDataTableStateV2,
-  sampleAxis: AxisId,
-  selection: SampleExportSelection,
-  subset?: ColumnRecipe,
-): Pick<createPlDataTableOptionsV3, "tableState" | "filters"> {
-  const selectionFilter: PlDataTableFilterSpecLeaf | undefined =
-    selection.type === "all"
-      ? undefined
-      : { type: "inSet", column: { type: "axis", id: sampleAxis }, value: selection.sampleIds };
-  const subsetFilter = subset === undefined ? undefined : inSubset(subset);
-  const state = upgradePlDataTableStateV2(tableState);
-  const params = state.pTableParams;
-  // The table has never been shown, so there is no user state to keep.
-  if (params.sourceId === null) {
-    const leaves = [selectionFilter, subsetFilter].filter((f) => f !== undefined);
-    return { filters: leaves.length > 0 ? { type: "and", filters: leaves } : undefined };
-  }
-  const userFilters = dropSampleSheetFilter(params.filters, sampleAxis);
-  return {
-    tableState: {
-      ...state,
-      pTableParams: {
-        ...params,
-        filters: andFilter(andFilter(userFilters, selectionFilter), subsetFilter),
-      },
-    },
-  };
-}
-
 /** The subset column picked with the dataset; an error once it is gone, rather than the full dataset. */
 function subsetColumn(filterRef: ColumnUniversalId | undefined): ColumnRecipe | undefined {
   if (filterRef === undefined) return undefined;
@@ -535,54 +480,12 @@ function inSubset(subset: ColumnRecipe): PlDataTableFilterSpecLeaf {
 }
 
 /**
- * The table state with the subset filter added on every render and never stored: it is not a user
- * filter, cannot be removed in the table, and follows a change of subset.
+ * The subset filter of a table: applied on every render and never stored, so it
+ * is not a user filter, cannot be removed in the table, and follows a change of
+ * subset.
  */
-function withSubsetFilter(
-  tableState: PlDataTableStateV2,
-  subset: ColumnRecipe,
-  sourceId: string,
-): Pick<createPlDataTableOptionsV3, "tableState"> {
-  const leaf = inSubset(subset);
-  const state = upgradePlDataTableStateV2(tableState);
-  const params = state.pTableParams;
-  // Before the first save there are no params; the page's own sourceId keeps the UI state in step.
-  const base =
-    params.sourceId === null
-      ? { sourceId, hiddenColIds: null, sorting: null, filters: null, defaultFilters: null }
-      : params;
-  return {
-    tableState: { ...state, pTableParams: { ...base, filters: andFilter(base.filters, leaf) } },
-  };
-}
-
-function dropSampleSheetFilter(
-  filters: null | PlDataTableFilters,
-  sampleAxis: AxisId,
-): null | PlDataTableFilters {
-  if (filters === null || isSampleSheetFilter(filters, sampleAxis)) return null;
-  if (filters.type !== "and") return filters;
-  const kept = filters.filters.filter((f) => !isSampleSheetFilter(f, sampleAxis));
-  return kept.length === 0 ? null : { type: "and", filters: kept };
-}
-
-function isSampleSheetFilter(
-  node: FilterSpecNode<PlDataTableFilterSpecLeaf>,
-  sampleAxis: AxisId,
-): boolean {
-  return (
-    (node.type === "patternEquals" || node.type === "equal") &&
-    node.column.type === "axis" &&
-    matchAxisId(sampleAxis, node.column.id)
-  );
-}
-
-function andFilter(
-  filters: null | PlDataTableFilters,
-  leaf: undefined | PlDataTableFilterSpecLeaf,
-): null | PlDataTableFilters {
-  if (leaf === undefined) return filters;
-  return { type: "and", filters: filters === null ? [leaf] : [filters, leaf] };
+function subsetFilter(subset: ColumnRecipe): PlDataTableFilters {
+  return { type: "and", filters: [inSubset(subset)] };
 }
 
 /**
